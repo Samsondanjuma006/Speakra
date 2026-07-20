@@ -1,0 +1,184 @@
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+const axios = require("axios");
+const fs = require("fs-extra");
+const { remember } = require("./memory");
+const { search } = require("./services/search");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json({ limit: "1mb" }));
+app.use(express.static("public"));
+
+const MEMORY_FILE = "./data/memory.json";
+const PROFILE_FILE = "./data/profile.json";
+
+let history = [];
+let profile = {};
+
+async function loadMemory() {
+  try {
+    history = await fs.readJson(MEMORY_FILE);
+  } catch {
+    history = [
+      {
+        role: "system",
+        content: "You are SamuAI, a friendly and helpful AI assistant."
+      }
+    ];
+  }
+}
+
+async function saveMemory() {
+  await fs.writeJson(MEMORY_FILE, history, {
+    spaces: 2
+  });
+}
+
+async function loadProfile() {
+  try {
+    profile = await fs.readJson(PROFILE_FILE);
+  } catch {
+    profile = {};
+  }
+}
+
+async function saveProfile() {
+  await fs.writeJson(PROFILE_FILE, profile, {
+    spaces: 2
+  });
+}
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
+
+app.post("/chat", async (req, res) => {
+  try {
+    const message = (req.body.message || "").trim();
+    if (!message) {
+      return res.status(400).json({
+        reply: "Please enter a message."
+      });
+    }
+
+    // Automatically remember important facts
+    await remember(message);
+
+    // Reload profile after saving
+    await loadProfile();
+
+    history.push({
+      role: "user",
+      content: message
+    });
+
+    let facts = "";
+
+    if (profile.name) {
+      facts += `User's name is ${profile.name}.\n`;
+    }
+
+    if (profile.favoriteColor) {
+      facts += `User's favorite color is ${profile.favoriteColor}.\n`;
+    }
+
+    if (profile.city) {
+      facts += `User lives in ${profile.city}.\n`;
+    }
+
+    if (profile.job) {
+      facts += `User works as ${profile.job}.\n`;
+    }
+
+    if (profile.learning) {
+      facts += `User is learning ${profile.learning}.\n`;
+    }
+// Use Tavily for internet searches
+let searchContext = "";
+
+const needsSearch =
+  /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(message);
+
+if (needsSearch) {
+  try {
+    const result = await search(message);
+
+console.log("===== TAVILY SEARCH =====");
+console.log(result);
+console.log("=========================");
+    searchContext =
+      `\n\nLive web search results:\n` +
+      (result.answer || "") +
+      "\n\n" +
+      JSON.stringify(result.results || []);
+  } catch (e) {
+    console.error("Tavily search failed:", e.response?.data || e.message);
+  }
+}
+    const messages = [
+      {
+        role: "system",
+        content:  "You are SamuAI, a friendly and helpful AI assistant.\n\nRemember these facts about the user:\n" +
+  facts +
+  searchContext     },
+      ...history.filter(msg => msg.role !== "system")
+    ];
+
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "openai/gpt-3.5-turbo",
+        messages: messages
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:3000",
+          "X-Title": "SamuAI"
+        }
+      }
+    );
+
+    const reply = response.data.choices[0].message.content;
+
+    history.push({
+      role: "assistant",
+      content: reply
+    });
+
+    if (history.length > 51) {
+      history = [
+        history[0],
+        ...history.slice(-50)
+      ];
+    }
+
+    await saveMemory();
+
+    res.json({
+      reply
+    });
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+
+    res.status(500).json({
+      reply: "Sorry, I couldn't contact the AI."
+    });
+  }
+});
+
+Promise.all([
+  loadMemory(),
+  loadProfile()
+]).then(() => {
+  app.listen(PORT, () => {
+    console.log(`SamuAI is running on port ${PORT}`);
+  });
+});
