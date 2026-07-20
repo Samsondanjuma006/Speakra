@@ -1,4 +1,4 @@
-const { chat } = require("./services/ai");require("dotenv").config();
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -140,7 +140,24 @@ Source: ${item.url}`
           searchContext
       },
       ...history.filter(msg => msg.role !== "system")
-    ];    const reply = await chat(messages);
+    ];    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "openai/gpt-3.5-turbo",
+        messages: messages
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:3000",
+          "X-Title": "SamuAI"
+        }
+      }
+    );
+
+    const reply = response.data.choices[0].message.content;
+
     history.push({
       role: "assistant",
       content: reply

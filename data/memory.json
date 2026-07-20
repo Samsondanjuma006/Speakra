@@ -4,18 +4,6 @@
     "content": "You are SamuAI, a friendly and helpful AI assistant."
   },
   {
-    "role": "user",
-    "content": "My favorite color is blue"
-  },
-  {
-    "role": "assistant",
-    "content": "Blue is a wonderful color! It is often associated with calmness, tranquility, and stability. Is there anything specific you would like help with today?"
-  },
-  {
-    "role": "user",
-    "content": "What's my favorite color?"
-  },
-  {
     "role": "assistant",
     "content": "Your favorite color is blue!"
   },
@@ -190,6 +178,22 @@
   {
     "role": "assistant",
     "content": "Hello! How can I assist you today?"
+  },
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! How can I assist you today, Samson?"
+  },
+  {
+    "role": "user",
+    "content": "Hello"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello, Samson! How can I assist you today?"
   },
   {
     "role": "user",
