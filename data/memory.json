@@ -5,22 +5,6 @@
   },
   {
     "role": "assistant",
-    "content": "Your favorite color is blue!"
-  },
-  {
-    "role": "user",
-    "content": "My name is Samson"
-  },
-  {
-    "role": "assistant",
-    "content": "Great to know, Samson! How can I assist you today?"
-  },
-  {
-    "role": "user",
-    "content": "What's my name again"
-  },
-  {
-    "role": "assistant",
     "content": "Your name is Samson. How can I help you today, Samson?"
   },
   {
@@ -202,5 +186,21 @@
   {
     "role": "assistant",
     "content": "Hello! How can I assist you today, Samson?"
+  },
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "Hi Samson! What can I help you with today?"
+  },
+  {
+    "role": "user",
+    "content": "hello"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello, Samson! How can I help you today?"
   }
 ]
