@@ -1,3 +1,16 @@
 node_modules/
+uploads/
 .env
-data/
+
+server.js.backup
+server.js.bak
+server.js.broken*
+server.js.current
+server.js.recovery
+server.clean-working
+
+chat-route-backup.txt
+chat-route.txt
+test.txt
+
+*.log
