@@ -50,6 +50,8 @@ h1 {
 
 .input-area {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 15px;
   background: #343541;
 }
@@ -60,18 +62,45 @@ h1 {
   font-size: 16px;
   border: none;
   border-radius: 8px;
+  outline: none;
+}
+
+#fileInput {
+  width: 100%;
+  color: white;
 }
 
 button {
-  margin-left: 10px;
-  padding: 12px 20px;
+  padding: 12px 18px;
   border: none;
   border-radius: 8px;
   background: #19c37d;
   color: white;
   cursor: pointer;
+  font-size: 15px;
 }
 
 button:hover {
   background: #15a86b;
 }
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+button {
+  min-width: 120px;
+}
+
+@media (max-width: 700px) {
+  .input-area {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #message,
+  #fileInput,
+  button {
+    width: 100%;
+  }
+

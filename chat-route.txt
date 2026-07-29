@@ -1,0 +1,391 @@
+app.post("/chat", async (req, res) => {
+  try {
+   const message = req.body?.message;
+
+if (!message) {
+  return res.status(400).json({
+    reply: "Please enter a message."
+  });
+}
+
+const text = message.toLowerCase();
+const lower = text;
+
+if (text.startsWith("forget ")) {
+  const key = message.substring(7).trim();
+
+  await forget(key);
+
+  return res.json({
+    reply: `Okay, I forgot your ${key}.`
+  });
+}    
+    // Forget commands
+    if (lower === "forget my job") {
+      await forget("job");
+      return res.json({ reply: "Okay, I've forgotten your job." });
+    }
+
+    if (lower === "forget my goals") {
+      await forget("goals");
+      await forget("goal");
+      return res.json({ reply: "Okay, I've forgotten your goals." });
+    }
+
+    if (lower === "forget my notes") {
+      await forget("notes");
+      return res.json({ reply: "Okay, I've forgotten your notes." });
+    }
+
+    if (lower === "forget everything you know about me") {
+      await forget("name");
+      await forget("job");
+      await forget("learning");
+      await forget("projects");
+      await forget("goals");
+      await forget("goal");
+      await forget("notes");
+
+      return res.json({
+        reply: "Done. I've forgotten everything I knew about you."
+      });
+    }
+
+    // Memory recall
+    if (
+      lower.includes("what do you remember about me") ||
+      lower.includes("what do you know about me")
+    ) {
+      const profile = await getProfile();
+
+      let reply = "Here's what I remember about you:\n\n";
+
+      if (profile.name) {
+        reply += `• Name: ${profile.name}\n`;
+      }
+
+      if (profile.job) {
+        reply += `• Job: ${profile.job}\n`;
+      }
+
+      if (profile.learning) {
+        reply += `• Learning: ${profile.learning}\n`;
+      }
+
+      if (profile.projects?.length) {
+        reply += `• Projects: ${profile.projects.join(", ")}\n`;
+      }
+
+      if (profile.goals?.length) {
+        reply += `• Goals: ${profile.goals.join(", ")}\n`;
+      }
+
+      if (profile.notes?.length) {
+        reply += `• Notes: ${profile.notes.join(", ")}\n`;
+      }
+
+      return res.json({ reply });
+    }
+        // Automatically remember important facts
+    await remember(message);
+
+    // AI memory extraction
+    const aiMemory = await extractMemory(message);
+    console.log("AI MEMORY:", aiMemory);
+
+    if (Object.keys(aiMemory).length > 0) {
+      await mergeMemory(aiMemory);
+    }
+
+    // Reload profile
+    await loadProfile();
+
+    history.push({
+      role: "user",
+      content: message
+    });
+
+    // Build memory context
+    let facts = "Known information about the user:\n";
+
+    if (profile.name) {
+      facts += `- Name: ${profile.name}\n`;
+    }
+
+    if (profile.favoriteColor) {
+      facts += `- Favorite color: ${profile.favoriteColor}\n`;
+    }
+
+    if (profile.city) {
+      facts += `- City: ${profile.city}\n`;
+    }
+
+    if (profile.job) {
+      facts += `- Job: ${profile.job}\n`;
+    }
+
+    if (profile.learning) {
+      facts += `- Learning: ${profile.learning}\n`;
+    }
+
+    if (profile.favoriteLanguage) {
+      facts += `- Favorite language: ${profile.favoriteLanguage}\n`;
+    }
+
+    if (profile.projects?.length) {
+      facts += `- Projects: ${profile.projects.join(", ")}\n`;
+    }
+
+    if (profile.goals?.length) {
+      facts += `- Goals: ${profile.goals.join(", ")}\n`;
+    }
+
+    if (profile.notes?.length) {
+      facts += `- Notes: ${profile.notes.join(", ")}\n`;
+    }
+
+    // Web search
+    let searchContext = "";
+
+    const needsSearch =
+      /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(message);
+
+    if (needsSearch) {
+      console.log("Searching for:", message);
+
+      try {
+        const result = await search(message);
+
+        searchContext = `
+LIVE WEB SEARCH RESULTS
+
+Summary:
+${result.answer || "No summary available."}
+
+Top Results:
+${(result.results || [])
+  .map(
+    (item, index) => `${index + 1}. ${item.title}
+${item.content}
+Source: ${item.url}`
+  )
+  .join("\n\n")}
+`;
+      } catch (e) {
+        console.error("Tavily search failed:", e.response?.data || e.message);
+      }
+    }
+
+let fileContext = "";
+
+const vectorMatches = await getRelevantVectors(message);
+
+console.log("Vector matches:", vectorMatches);
+
+const projectKeywords = [
+  "server",
+  "file",
+  "project",
+  "code",
+  ".js",
+  ".ts",
+  ".tsx",
+  ".jsx",
+  "function",
+  "class",
+  "component",
+  "upload",
+  "memory",
+  "route",
+  "api",
+  "bug",
+  "fix",
+  "error"
+];
+
+const shouldSearchProject = projectKeywords.some(keyword =>
+  message.toLowerCase().includes(keyword)
+);
+
+const relevantFiles = shouldSearchProject
+  ? findRelevantFiles(message)
+  : [];
+
+const MAX_FILES = 3;
+
+const selectedFiles = relevantFiles.slice(0, MAX_FILES);
+
+const dependencyFiles = selectedFiles.flatMap(file => collectDependencies(file));
+
+const relatedFiles = [];
+relatedFiles.push(...dependencyFiles);
+
+const symbols = message.match(/[A-Za-z_][A-Za-z0-9_]*/g) || []
+
+
+for (const symbol of symbols) {
+  for (const file of findSymbol(symbol)) {
+    if (!relevantFiles.includes(file)) {
+      relevantFiles.push(file);
+    }
+  }
+}
+
+console.log("Relevant files found:", relevantFiles.length);
+
+const projectMap = buildProjectMap();
+
+const dependencyMap = projectMap.map(file => ({
+  file: file.file,
+  importedBy: findDependencies(file.file),
+  imports: file.imports
+}));
+
+const projectContext = `
+PROJECT STRUCTURE
+
+${projectMap
+  .slice(0, 10)  
+  .map(file => `${file.file} (${file.language})`)
+  .join("\n")}
+`;
+
+const dependencyContext = `
+PROJECT DEPENDENCIES
+
+${dependencyMap
+  .slice(0, 10)
+  .map(item =>
+  `${item.file}
+Imported by: ${item.importedBy.join(", ") || "None"}
+Imports: ${item.imports.join(", ") || "None"}`
+)
+  .join("\n")}
+`;
+
+console.log("Relevant files:", relevantFiles);
+
+for (const filename of selectedFiles) {
+
+  relatedFiles.push(
+  ...collectDependencies(filename)
+);
+
+}
+
+for (const related of relatedFiles) {
+  console.log("Related:", related);
+}
+
+const uniqueRelatedFiles = [...new Set(relatedFiles)];
+
+const finalRelatedFiles = uniqueRelatedFiles.slice(0, 5);
+
+for (const related of finalRelatedFiles) {
+
+const relatedName = related
+  .replace(/^(\.\/|\.\.\/)+/, "")
+  .toLowerCase();
+
+const match = Object.keys(uploadedFiles).find(file => {
+  const normalized = file.toLowerCase().replace(/\.(tsx?|jsx?)$/, "");
+  return normalized.endsWith(relatedName);
+});
+
+if (match) {
+  console.log("Found related file:", match);
+
+ console.log("Import matched:", related, "->", match);
+
+  const relatedContent = (uploadedFiles[match] || "").slice(0, 1000);
+
+  if (relatedContent) {
+    fileContext += `RELATED FILE: ${match}
+
+${relatedContent}
+
+END OF ${match}
+
+ `;
+}
+}
+
+for (const filename of selectedFiles) {
+  const content = (uploadedFiles[filename] || "").slice(0, 2000);
+
+  if (!content) continue;
+
+  fileContext += `FILE: ${filename}
+
+${content}
+
+END OF ${filename}
+
+`;
+}
+console.log("fileContext length:", fileContext.length);
+console.log(fileContext.substring(0, 200));
+
+    const messages = [
+      {
+        role: "system",
+        content:
+  personality +
+  "\n\n" +
+  "If uploaded file content is provided below, treat it as the user's current working file.\n" +
+"You can summarize it, explain it, find bugs, optimize it, rewrite it, answer questions about it, and refer to specific code when appropriate.\n\n" +  facts +
+"\n" +
+  searchContext +
+fileContext +
+"\n\n" +
+projectContext +
+"\n\n" +
+dependencyContext
+        },
+
+        ...history.filter(msg => msg.role !== "system").slice(-10)      ];
+console.log("Sending request to AI...");
+
+let reply;
+
+try {
+  reply = await chat(messages);
+} catch (err) {
+console.log("Fallback catch reached.");
+
+  if (err.response?.status === 429) {
+    console.log("OpenRouter rate limit reached. Falling back to Groq...");
+console.log("===== MESSAGES SENT TO GROQ =====");
+console.dir(messages, { depth: null });
+console.log("=================================");
+    
+reply = await chatGroq(messages);
+  } else {
+    throw err;
+  }
+}
+
+if (!reply || reply.trim() === "{}") {
+  reply = "Sorry, I couldn't generate a useful answer. Please try asking again.";
+}
+console.log("Reply type:", typeof reply);
+console.log("Reply:", reply);
+    history.push({
+      role: "assistant",
+      content: reply
+    });
+
+    if (history.length > 51) {
+      history = [
+        history[0],
+        ...history.slice(-50)
+      ];
+    }
+
+    await saveMemory();
+
+    return res.json({
+      reply
+    });
+
+  } catch (err) {

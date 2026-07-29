@@ -1,5 +1,17 @@
 {
   "name": "Samson",
-  "learning": "JavaScript",
-  "job": "a student"
+  "job": "a student",
+  "notes": [
+    "I prefer step-by-step explanations."
+  ],
+  "projects": [
+    "SamuAI.",
+    "weather app"
+  ],
+  "goals": [
+    "to become the best AI engineer in Africa.",
+    "Become the best AI engineer in Africa"
+  ],
+  "query": "Where is AnchorProvider used?",
+  "file": "app.tsx"
 }

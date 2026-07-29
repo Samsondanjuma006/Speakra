@@ -1,5 +1,9 @@
 require("dotenv").config();
 
+console.log("API key loaded:", !!
+process.env.OPENROUTER_API_KEY);
+
+const { chat } = require("./services/ai");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -16,11 +20,21 @@ app.use(express.static("public"));
 
 const MEMORY_FILE = "./data/memory.json";
 const PROFILE_FILE = "./data/profile.json";
-
+const CHAT_HISTORY_FILE = "./data/chat-history.json";
 let history = [];
 let profile = {};
 
-async function loadMemory() {
+async function loadMemory() {    return await fs.readJson(CHAT_HISTORY_FILE);
+  } catch {
+    return [];
+  }
+}
+
+async function saveChatHistory(chatHistory) {
+  await fs.writeJson(CHAT_HISTORY_FILE, chatHistory, {
+    spaces: 2
+  });
+}
   try {
     history = await fs.readJson(MEMORY_FILE);
   } catch {
@@ -76,7 +90,15 @@ app.post("/chat", async (req, res) => {
       role: "user",
       content: message
     });
+const chatHistory = await loadChatHistory();
 
+chatHistory.push({
+  user: message,
+  assistant: reply,
+  time: new Date().toISOString()
+});
+
+await saveChatHistory(chatHistory);
     let facts = "";
 
     if (profile.name) {
@@ -140,24 +162,7 @@ Source: ${item.url}`
           searchContext
       },
       ...history.filter(msg => msg.role !== "system")
-    ];    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "openai/gpt-3.5-turbo",
-        messages: messages
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:3000",
-          "X-Title": "SamuAI"
-        }
-      }
-    );
-
-    const reply = response.data.choices[0].message.content;
-
+    ];    const reply = await chat(messages);
     history.push({
       role: "assistant",
       content: reply
@@ -186,7 +191,19 @@ Source: ${item.url}`
 });
 
 Promise.all([
-  loadMemory(),
+  loadMemory(),async function loadChatHistory() {
+  try {
+    return await fs.readJson(CHAT_HISTORY_FILE);
+  } catch {
+    return [];
+  }
+}
+
+async function saveChatHistory(chatHistory) {
+  await fs.writeJson(CHAT_HISTORY_FILE, chatHistory, {
+    spaces: 2
+  });
+}
   loadProfile()
 ]).then(() => {
   app.listen(PORT, () => {

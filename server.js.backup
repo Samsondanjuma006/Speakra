@@ -1,0 +1,274 @@
+require("dotenv").config();
+
+console.log("API key loaded:", !!
+process.env.OPENROUTER_API_KEY);
+
+const personality = require("./personality");
+const { chat } = require("./services/ai");
+const express = require("express");
+const cors = require("cors");
+const axios = require("axios");
+const fs = require("fs-extra");
+const { remember, mergeMemory, getProfile, forget } = require("./memory");
+const { search } = require("./services/search");
+const memoryPrompt = require("./memoryPrompt");
+const { extractMemory } = require("./memoryExtractor");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json({ limit: "1mb" }));
+app.use(express.static("public"));
+
+const MEMORY_FILE = "./data/memory.json";
+const PROFILE_FILE = "./data/profile.json";
+
+let history = [];
+let profile = {};
+
+async function loadMemory() {
+  try {
+    history = await fs.readJson(MEMORY_FILE);
+  } catch {
+    history = [
+      {
+        role: "system",
+        content: "You are SamuAI, a friendly and helpful AI assistant."
+      }
+    ];
+  }
+}
+
+async function saveMemory() {
+  await fs.writeJson(MEMORY_FILE, history, {
+    spaces: 2
+  });
+}
+
+async function loadProfile() {
+  try {
+    profile = await fs.readJson(PROFILE_FILE);
+  } catch {
+    profile = {};
+  }
+}
+
+async function saveProfile() {
+  await fs.writeJson(PROFILE_FILE, profile, {
+    spaces: 2
+  });
+}
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
+
+app.post("/chat", async (req, res) => {
+  try {
+    const message = (req.body.message || "").trim();const lower = message.toLowerCase();
+if (lower === "forget my job") {
+  await forget("job");
+  return res.json({ reply: "Okay, I've forgotten your job." });
+}
+
+if (lower === "forget my goals") {
+  await forget("goals");
+  await forget("goal");
+  return res.json({ reply: "Okay, I've forgotten your goals." });
+}
+
+if (lower === "forget my notes") {
+  await forget("notes");
+  return res.json({ reply: "Okay, I've forgotten your notes." });
+}
+
+if (lower === "forget everything you know about me") {
+  await forget("name");
+  await forget("job");
+  await forget("learning");
+  await forget("projects");
+  await forget("goals");
+  await forget("goal");
+  await forget("notes");
+
+  return res.json({
+    reply: "Done. I've forgotten everything I knew about you."
+  });
+}
+if (
+  lower.includes("what do you remember about me") ||
+  lower.includes("what do you know about me")
+) {
+  const profile = await getProfile();
+
+  let reply = "Here's what I remember about you:\n\n";
+
+  if (profile.name) reply += `• Name: ${profile.name}\n`;
+  if (profile.job) reply += `• Job: ${profile.job}\n`;
+  if (profile.learning) reply += `• Learning: ${profile.learning}\n`;
+
+  if (profile.projects?.length) {
+    reply += `• Projects: ${profile.projects.join(", ")}\n`;
+  }
+
+    reply += `• Goals: ${profile.goals.join(", ")}\n`;
+}
+
+    facts += `- Notes: ${profile.notes.join(", ")}\n`;
+}    reply += `• Notes: ${profile.notes.join(", ")}\n`;;
+ }
+
+  return res.json({ reply });
+}if (profile.goals?.length) {
+    reply += `• Goals: ${profile.goals.join(", ")}\n`;
+  }
+
+if (profile.notes?.length) {
+  reply += `• Notes: ${profile.notes.join(", ")}\n`;
+}
+
+return res.json({ reply });
+}
+
+  return res.json({ reply });
+}    if (!message) {
+      return res.status(400).json({
+        reply: "Please enter a message."
+      });
+    }
+
+    // Automatically remember important facts
+await remember(message);
+
+// AI memory extraction
+const aiMemory = await extractMemory(message);
+console.log("AI MEMORY:", aiMemory);
+
+if (Object.keys(aiMemory).length > 0) {
+  await mergeMemory(aiMemory);
+}
+
+// Reload profile after saving
+await loadProfile();
+    history.push({
+      role: "user",
+      content: message
+    });
+
+    
+let facts = "Known information about the user:\n";
+
+if (profile.name) {
+  facts += `- Name: ${profile.name}\n`;
+}
+
+if (profile.favoriteColor) {
+  facts += `- Favorite color: ${profile.favoriteColor}\n`;
+}
+
+if (profile.city) {
+  facts += `- City: ${profile.city}\n`;
+}
+
+if (profile.job) {
+  facts += `- Job: ${profile.job}\n`;
+}
+
+if (profile.learning) {
+  facts += `- Learning: ${profile.learning}\n`;
+}
+
+if (profile.projects?.length) {
+  facts += `- Projects: ${profile.projects.join(", ")}\n`;
+}
+
+if (profile.goals?.length) {
+  facts += `- Goals: ${profile.goals.join(", ")}\n`;
+}
+
+ if (profile.notes?.length) {
+  facts += `- Notes: ${profile.notes.join(", ")}\n`;
+}
+
+// Use Tavily for internet searches}   }    // Use Tavily for internet searches
+    let searchContext = "";
+
+    const needsSearch =
+      /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(message);
+
+    if (needsSearch) {console.log("needsSearch =", needsSearch);
+console.log("Searching for:", message)    
+console.log("needsSearch =", needsSearch);console.log("Searching for:", message)
+
+  try {
+        const result = await search(message);
+        console.log("===== TAVILY SEARCH =====");
+        console.log(result);
+        console.log("=========================");
+
+        searchContext = `
+LIVE WEB SEARCH RESULTS
+
+Summary:
+${result.answer || "No summary available."}
+
+Top Results:
+${(result.results || [])
+  .map(
+    (item, index) => `${index + 1}. ${item.title}
+${item.content}
+Source: ${item.url}`
+  )
+  .join("\n\n")}
+`;
+      } catch (e) {
+        console.error("Tavily search failed:", e.response?.data || e.message);
+      }
+    }
+
+    const messages = [
+      {
+     role: "system",
+  content:
+    personality +
+    "\n\n" +
+    facts +
+    searchContext      },
+      ...history.filter(msg => msg.role !== "system")
+    ];    const reply = await chat(messages);
+    history.push({
+      role: "assistant",
+      content: reply
+    });
+
+    if (history.length > 51) {
+      history = [
+        history[0],
+        ...history.slice(-50)
+      ];
+    }
+
+    await saveMemory();
+
+    res.json({
+      reply
+    });
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+
+    res.status(500).json({
+      reply: "Sorry, I couldn't contact the AI."
+    });
+  }
+});
+
+Promise.all([
+  loadMemory(),
+  loadProfile()
+]).then(() => {
+  app.listen(PORT, () => {
+    console.log(`SamuAI is running on port ${PORT}`);
+  });
+});

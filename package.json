@@ -11,12 +11,16 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/genai": "^2.13.0",
     "axios": "^1.18.1",
     "compromise": "^14.16.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fs-extra": "^11.3.6",
-    "natural": "^8.1.1"
+    "marked": "^18.0.6",
+    "multer": "^2.2.0",
+    "natural": "^8.1.1",
+    "openai": "^6.49.0"
   }
 }
