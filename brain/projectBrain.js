@@ -5,6 +5,7 @@ const { traceFunction } = require("./callChain");
 const { explainArchitecture } = require("./projectArchitecture");
 const { extractKeyword } = require("../index/projectQuery");
 const { dependencyTree } = require("./dependencyTree");
+const { analyzeImpact } = require("./impactAnalyzer");
 
 function answerProjectQuestion(message) {
 
@@ -39,6 +40,16 @@ ${callers
 Total files: ${callers.length}`
     };
   }
+}
+// Impact Analysis
+if (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(".js")) {
+
+  const result = analyzeImpact(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
 }
 // Dependency Tree
 if (/dependency tree|dependencies/i.test(message) && keyword.endsWith(".js")) {
