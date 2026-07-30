@@ -1,0 +1,4578 @@
+[
+  {
+    "file": "brain/executionFlow.js",
+    "functions": [
+      "explainExecution"
+    ],
+    "arrowFunctions": [],
+    "requires": [],
+    "calls": [
+      {
+        "name": "explainExecution",
+        "line": 24
+      },
+      {
+        "name": "toLowerCase",
+        "line": 25
+      },
+      {
+        "name": "includes",
+        "line": 27
+      },
+      {
+        "name": "includes",
+        "line": 27
+      },
+      {
+        "name": "map",
+        "line": 33
+      },
+      {
+        "name": "join",
+        "line": 33
+      },
+      {
+        "name": "includes",
+        "line": 37
+      },
+      {
+        "name": "includes",
+        "line": 37
+      },
+      {
+        "name": "map",
+        "line": 43
+      },
+      {
+        "name": "join",
+        "line": 43
+      }
+    ]
+  },
+  {
+    "file": "brain/fileExplainer.js",
+    "functions": [
+      "explainFile"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "explainFile",
+        "line": 3
+      },
+      {
+        "name": "loadIndex",
+        "line": 4
+      },
+      {
+        "name": "find",
+        "line": 6
+      },
+      {
+        "name": "toLowerCase",
+        "line": 7
+      },
+      {
+        "name": "toLowerCase",
+        "line": 7
+      },
+      {
+        "name": "map",
+        "line": 20
+      },
+      {
+        "name": "join",
+        "line": 20
+      },
+      {
+        "name": "map",
+        "line": 26
+      },
+      {
+        "name": "join",
+        "line": 26
+      },
+      {
+        "name": "map",
+        "line": 32
+      },
+      {
+        "name": "join",
+        "line": 32
+      }
+    ]
+  },
+  {
+    "file": "brain/projectBrain.js",
+    "functions": [
+      "answerProjectQuestion"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex",
+      "./fileExplainer",
+      "./executionFlow",
+      "../index/projectQuery"
+    ],
+    "calls": [
+      {
+        "name": "answerProjectQuestion",
+        "line": 6
+      },
+      {
+        "name": "extractKeyword",
+        "line": 8
+      },
+      {
+        "name": "test",
+        "line": 11
+      },
+      {
+        "name": "findCallers",
+        "line": 12
+      },
+      {
+        "name": "map",
+        "line": 22
+      },
+      {
+        "name": "join",
+        "line": 22
+      },
+      {
+        "name": "explainExecution",
+        "line": 29
+      },
+      {
+        "name": "test",
+        "line": 35
+      },
+      {
+        "name": "endsWith",
+        "line": 35
+      },
+      {
+        "name": "findUsedBy",
+        "line": 36
+      },
+      {
+        "name": "map",
+        "line": 46
+      },
+      {
+        "name": "join",
+        "line": 46
+      },
+      {
+        "name": "test",
+        "line": 53
+      },
+      {
+        "name": "endsWith",
+        "line": 53
+      },
+      {
+        "name": "explainFile",
+        "line": 54
+      },
+      {
+        "name": "findFunction",
+        "line": 56
+      },
+      {
+        "name": "map",
+        "line": 70
+      },
+      {
+        "name": "join",
+        "line": 70
+      },
+      {
+        "name": "test",
+        "line": 74
+      },
+      {
+        "name": "listFiles",
+        "line": 80
+      },
+      {
+        "name": "map",
+        "line": 80
+      },
+      {
+        "name": "join",
+        "line": 80
+      },
+      {
+        "name": "listFiles",
+        "line": 82
+      },
+      {
+        "name": "findRequire",
+        "line": 85
+      },
+      {
+        "name": "map",
+        "line": 93
+      },
+      {
+        "name": "join",
+        "line": 93
+      }
+    ]
+  },
+  {
+    "file": "dedupe-vectors.js",
+    "functions": [],
+    "arrowFunctions": [],
+    "requires": [
+      "fs"
+    ],
+    "calls": [
+      {
+        "name": "parse",
+        "line": 5
+      },
+      {
+        "name": "readFileSync",
+        "line": 5
+      },
+      {
+        "name": "Map",
+        "line": 7
+      },
+      {
+        "name": "set",
+        "line": 10
+      },
+      {
+        "name": "values",
+        "line": 13
+      },
+      {
+        "name": "writeFileSync",
+        "line": 15
+      },
+      {
+        "name": "stringify",
+        "line": 15
+      },
+      {
+        "name": "log",
+        "line": 17
+      },
+      {
+        "name": "log",
+        "line": 18
+      },
+      {
+        "name": "log",
+        "line": 19
+      }
+    ]
+  },
+  {
+    "file": "memory.js",
+    "functions": [
+      "remember",
+      "mergeMemory",
+      "getProfile",
+      "forget"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "fs-extra"
+    ],
+    "calls": [
+      {
+        "name": "remember",
+        "line": 5
+      },
+      {
+        "name": "pathExists",
+        "line": 9
+      },
+      {
+        "name": "readJson",
+        "line": 10
+      },
+      {
+        "name": "toLowerCase",
+        "line": 16
+      },
+      {
+        "name": "trim",
+        "line": 16
+      },
+      {
+        "name": "startsWith",
+        "line": 19
+      },
+      {
+        "name": "substring",
+        "line": 20
+      },
+      {
+        "name": "trim",
+        "line": 20
+      },
+      {
+        "name": "startsWith",
+        "line": 23
+      },
+      {
+        "name": "substring",
+        "line": 24
+      },
+      {
+        "name": "trim",
+        "line": 24
+      },
+      {
+        "name": "startsWith",
+        "line": 27
+      },
+      {
+        "name": "substring",
+        "line": 28
+      },
+      {
+        "name": "trim",
+        "line": 28
+      },
+      {
+        "name": "startsWith",
+        "line": 31
+      },
+      {
+        "name": "substring",
+        "line": 32
+      },
+      {
+        "name": "trim",
+        "line": 32
+      },
+      {
+        "name": "startsWith",
+        "line": 35
+      },
+      {
+        "name": "substring",
+        "line": 36
+      },
+      {
+        "name": "trim",
+        "line": 36
+      },
+      {
+        "name": "startsWith",
+        "line": 39
+      },
+      {
+        "name": "substring",
+        "line": 40
+      },
+      {
+        "name": "trim",
+        "line": 40
+      },
+      {
+        "name": "startsWith",
+        "line": 43
+      },
+      {
+        "name": "push",
+        "line": 45
+      },
+      {
+        "name": "substring",
+        "line": 45
+      },
+      {
+        "name": "trim",
+        "line": 45
+      },
+      {
+        "name": "startsWith",
+        "line": 48
+      },
+      {
+        "name": "push",
+        "line": 50
+      },
+      {
+        "name": "substring",
+        "line": 50
+      },
+      {
+        "name": "trim",
+        "line": 50
+      },
+      {
+        "name": "startsWith",
+        "line": 53
+      },
+      {
+        "name": "substring",
+        "line": 54
+      },
+      {
+        "name": "trim",
+        "line": 54
+      },
+      {
+        "name": "startsWith",
+        "line": 57
+      },
+      {
+        "name": "push",
+        "line": 59
+      },
+      {
+        "name": "substring",
+        "line": 59
+      },
+      {
+        "name": "trim",
+        "line": 59
+      },
+      {
+        "name": "Set",
+        "line": 63
+      },
+      {
+        "name": "Set",
+        "line": 67
+      },
+      {
+        "name": "Set",
+        "line": 71
+      },
+      {
+        "name": "writeJson",
+        "line": 74
+      },
+      {
+        "name": "mergeMemory",
+        "line": 80
+      },
+      {
+        "name": "pathExists",
+        "line": 84
+      },
+      {
+        "name": "readJson",
+        "line": 85
+      },
+      {
+        "name": "entries",
+        "line": 91
+      },
+      {
+        "name": "some",
+        "line": 95
+      },
+      {
+        "name": "toLowerCase",
+        "line": 95
+      },
+      {
+        "name": "toLowerCase",
+        "line": 95
+      },
+      {
+        "name": "push",
+        "line": 96
+      },
+      {
+        "name": "includes",
+        "line": 102
+      },
+      {
+        "name": "push",
+        "line": 103
+      },
+      {
+        "name": "includes",
+        "line": 109
+      },
+      {
+        "name": "push",
+        "line": 110
+      },
+      {
+        "name": "writeJson",
+        "line": 117
+      },
+      {
+        "name": "getProfile",
+        "line": 123
+      },
+      {
+        "name": "pathExists",
+        "line": 125
+      },
+      {
+        "name": "readJson",
+        "line": 126
+      },
+      {
+        "name": "forget",
+        "line": 132
+      },
+      {
+        "name": "pathExists",
+        "line": 136
+      },
+      {
+        "name": "readJson",
+        "line": 137
+      },
+      {
+        "name": "writeJson",
+        "line": 145
+      }
+    ]
+  },
+  {
+    "file": "memoryExtractor.js",
+    "functions": [
+      "extractMemory"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "dotenv",
+      "./services/ai",
+      "./memoryPrompt",
+      "./services/groq"
+    ],
+    "calls": [
+      {
+        "name": "config",
+        "line": 1
+      },
+      {
+        "name": "extractMemory",
+        "line": 7
+      },
+      {
+        "name": "chat",
+        "line": 12
+      },
+      {
+        "name": "log",
+        "line": 24
+      },
+      {
+        "name": "chatGroq",
+        "line": 25
+      },
+      {
+        "name": "parse",
+        "line": 41
+      }
+    ]
+  },
+  {
+    "file": "memoryPrompt.js",
+    "functions": [],
+    "arrowFunctions": [],
+    "requires": [],
+    "calls": []
+  },
+  {
+    "file": "personality.js",
+    "functions": [],
+    "arrowFunctions": [],
+    "requires": [],
+    "calls": []
+  },
+  {
+    "file": "public/app.js",
+    "functions": [
+      "send",
+      "uploadFile"
+    ],
+    "arrowFunctions": [],
+    "requires": [],
+    "calls": [
+      {
+        "name": "send",
+        "line": 1
+      },
+      {
+        "name": "getElementById",
+        "line": 2
+      },
+      {
+        "name": "getElementById",
+        "line": 3
+      },
+      {
+        "name": "trim",
+        "line": 5
+      },
+      {
+        "name": "fetch",
+        "line": 15
+      },
+      {
+        "name": "stringify",
+        "line": 20
+      },
+      {
+        "name": "json",
+        "line": 23
+      },
+      {
+        "name": "getElementById",
+        "line": 25
+      },
+      {
+        "name": "remove",
+        "line": 26
+      },
+      {
+        "name": "getElementById",
+        "line": 32
+      },
+      {
+        "name": "remove",
+        "line": 33
+      },
+      {
+        "name": "error",
+        "line": 36
+      },
+      {
+        "name": "uploadFile",
+        "line": 39
+      },
+      {
+        "name": "getElementById",
+        "line": 40
+      },
+      {
+        "name": "alert",
+        "line": 43
+      },
+      {
+        "name": "FormData",
+        "line": 47
+      },
+      {
+        "name": "append",
+        "line": 48
+      },
+      {
+        "name": "fetch",
+        "line": 51
+      },
+      {
+        "name": "json",
+        "line": 56
+      },
+      {
+        "name": "alert",
+        "line": 59
+      },
+      {
+        "name": "getElementById",
+        "line": 63
+      },
+      {
+        "name": "error",
+        "line": 73
+      },
+      {
+        "name": "alert",
+        "line": 74
+      }
+    ]
+  },
+  {
+    "file": "public/marked.min.js",
+    "functions": [
+      "z",
+      "N",
+      "h",
+      "R",
+      "V",
+      "Y",
+      "A",
+      "de",
+      "me",
+      "rt",
+      "k"
+    ],
+    "arrowFunctions": [],
+    "requires": [],
+    "calls": [
+      {
+        "name": "Copyright",
+        "line": 3
+      },
+      {
+        "name": "f",
+        "line": 11
+      },
+      {
+        "name": "define",
+        "line": 11
+      },
+      {
+        "name": "f",
+        "line": 11
+      },
+      {
+        "name": "H",
+        "line": 12
+      },
+      {
+        "name": "Te",
+        "line": 12
+      },
+      {
+        "name": "call",
+        "line": 12
+      },
+      {
+        "name": "H",
+        "line": 12
+      },
+      {
+        "name": "be",
+        "line": 12
+      },
+      {
+        "name": "Re",
+        "line": 12
+      },
+      {
+        "name": "H",
+        "line": 12
+      },
+      {
+        "name": "ye",
+        "line": 12
+      },
+      {
+        "name": "Se",
+        "line": 12
+      },
+      {
+        "name": "z",
+        "line": 12
+      },
+      {
+        "name": "z",
+        "line": 12
+      },
+      {
+        "name": "N",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "min",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "min",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "min",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "min",
+        "line": 12
+      },
+      {
+        "name": "RegExp",
+        "line": 12
+      },
+      {
+        "name": "min",
+        "line": 12
+      },
+      {
+        "name": "n",
+        "line": 12
+      },
+      {
+        "name": "n",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "n",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "n",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "tag",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "getRegex",
+        "line": 12
+      },
+      {
+        "name": "h",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 12
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "n",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "punct",
+        "line": 13
+      },
+      {
+        "name": "notPunctSpace",
+        "line": 13
+      },
+      {
+        "name": "punctSpace",
+        "line": 13
+      },
+      {
+        "name": "punct",
+        "line": 13
+      },
+      {
+        "name": "notPunctSpace",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "punct",
+        "line": 13
+      },
+      {
+        "name": "notPunctSpace",
+        "line": 13
+      },
+      {
+        "name": "punctSpace",
+        "line": 13
+      },
+      {
+        "name": "punct",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "nolink",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "h",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "getRegex",
+        "line": 13
+      },
+      {
+        "name": "R",
+        "line": 13
+      },
+      {
+        "name": "test",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "test",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "V",
+        "line": 13
+      },
+      {
+        "name": "encodeURI",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "Y",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "split",
+        "line": 13
+      },
+      {
+        "name": "trim",
+        "line": 13
+      },
+      {
+        "name": "shift",
+        "line": 13
+      },
+      {
+        "name": "at",
+        "line": 13
+      },
+      {
+        "name": "trim",
+        "line": 13
+      },
+      {
+        "name": "pop",
+        "line": 13
+      },
+      {
+        "name": "splice",
+        "line": 13
+      },
+      {
+        "name": "push",
+        "line": 13
+      },
+      {
+        "name": "trim",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "A",
+        "line": 13
+      },
+      {
+        "name": "charAt",
+        "line": 13
+      },
+      {
+        "name": "slice",
+        "line": 13
+      },
+      {
+        "name": "de",
+        "line": 13
+      },
+      {
+        "name": "indexOf",
+        "line": 13
+      },
+      {
+        "name": "me",
+        "line": 13
+      },
+      {
+        "name": "replace",
+        "line": 13
+      },
+      {
+        "name": "charAt",
+        "line": 13
+      },
+      {
+        "name": "inlineTokens",
+        "line": 13
+      },
+      {
+        "name": "rt",
+        "line": 13
+      },
+      {
+        "name": "match",
+        "line": 13
+      },
+      {
+        "name": "split",
+        "line": 13
+      },
+      {
+        "name": "map",
+        "line": 14
+      },
+      {
+        "name": "match",
+        "line": 14
+      },
+      {
+        "name": "slice",
+        "line": 14
+      },
+      {
+        "name": "join",
+        "line": 14
+      },
+      {
+        "name": "constructor",
+        "line": 15
+      },
+      {
+        "name": "space",
+        "line": 15
+      },
+      {
+        "name": "exec",
+        "line": 15
+      },
+      {
+        "name": "code",
+        "line": 15
+      },
+      {
+        "name": "exec",
+        "line": 15
+      },
+      {
+        "name": "replace",
+        "line": 15
+      },
+      {
+        "name": "A",
+        "line": 15
+      },
+      {
+        "name": "fences",
+        "line": 16
+      },
+      {
+        "name": "exec",
+        "line": 16
+      },
+      {
+        "name": "rt",
+        "line": 16
+      },
+      {
+        "name": "trim",
+        "line": 16
+      },
+      {
+        "name": "replace",
+        "line": 16
+      },
+      {
+        "name": "heading",
+        "line": 16
+      },
+      {
+        "name": "exec",
+        "line": 16
+      },
+      {
+        "name": "trim",
+        "line": 16
+      },
+      {
+        "name": "test",
+        "line": 16
+      },
+      {
+        "name": "A",
+        "line": 16
+      },
+      {
+        "name": "test",
+        "line": 16
+      },
+      {
+        "name": "trim",
+        "line": 16
+      },
+      {
+        "name": "inline",
+        "line": 16
+      },
+      {
+        "name": "hr",
+        "line": 16
+      },
+      {
+        "name": "exec",
+        "line": 16
+      },
+      {
+        "name": "A",
+        "line": 16
+      },
+      {
+        "name": "blockquote",
+        "line": 17
+      },
+      {
+        "name": "exec",
+        "line": 17
+      },
+      {
+        "name": "A",
+        "line": 17
+      },
+      {
+        "name": "split",
+        "line": 18
+      },
+      {
+        "name": "test",
+        "line": 19
+      },
+      {
+        "name": "push",
+        "line": 19
+      },
+      {
+        "name": "push",
+        "line": 19
+      },
+      {
+        "name": "slice",
+        "line": 19
+      },
+      {
+        "name": "join",
+        "line": 19
+      },
+      {
+        "name": "replace",
+        "line": 20
+      },
+      {
+        "name": "replace",
+        "line": 21
+      },
+      {
+        "name": "blockTokens",
+        "line": 23
+      },
+      {
+        "name": "at",
+        "line": 23
+      },
+      {
+        "name": "join",
+        "line": 24
+      },
+      {
+        "name": "blockquote",
+        "line": 25
+      },
+      {
+        "name": "substring",
+        "line": 25
+      },
+      {
+        "name": "substring",
+        "line": 25
+      },
+      {
+        "name": "join",
+        "line": 26
+      },
+      {
+        "name": "list",
+        "line": 27
+      },
+      {
+        "name": "substring",
+        "line": 27
+      },
+      {
+        "name": "substring",
+        "line": 27
+      },
+      {
+        "name": "substring",
+        "line": 27
+      },
+      {
+        "name": "at",
+        "line": 27
+      },
+      {
+        "name": "split",
+        "line": 27
+      },
+      {
+        "name": "list",
+        "line": 28
+      },
+      {
+        "name": "exec",
+        "line": 28
+      },
+      {
+        "name": "trim",
+        "line": 28
+      },
+      {
+        "name": "slice",
+        "line": 28
+      },
+      {
+        "name": "slice",
+        "line": 28
+      },
+      {
+        "name": "listItemRegex",
+        "line": 28
+      },
+      {
+        "name": "exec",
+        "line": 28
+      },
+      {
+        "name": "test",
+        "line": 28
+      },
+      {
+        "name": "substring",
+        "line": 28
+      },
+      {
+        "name": "split",
+        "line": 28
+      },
+      {
+        "name": "replace",
+        "line": 29
+      },
+      {
+        "name": "repeat",
+        "line": 29
+      },
+      {
+        "name": "split",
+        "line": 29
+      },
+      {
+        "name": "trim",
+        "line": 30
+      },
+      {
+        "name": "trimStart",
+        "line": 30
+      },
+      {
+        "name": "search",
+        "line": 30
+      },
+      {
+        "name": "slice",
+        "line": 30
+      },
+      {
+        "name": "test",
+        "line": 30
+      },
+      {
+        "name": "substring",
+        "line": 31
+      },
+      {
+        "name": "nextBulletRegex",
+        "line": 31
+      },
+      {
+        "name": "hrRegex",
+        "line": 31
+      },
+      {
+        "name": "fencesBeginRegex",
+        "line": 31
+      },
+      {
+        "name": "headingBeginRegex",
+        "line": 31
+      },
+      {
+        "name": "htmlBeginRegex",
+        "line": 31
+      },
+      {
+        "name": "split",
+        "line": 31
+      },
+      {
+        "name": "replace",
+        "line": 32
+      },
+      {
+        "name": "replace",
+        "line": 32
+      },
+      {
+        "name": "test",
+        "line": 32
+      },
+      {
+        "name": "test",
+        "line": 32
+      },
+      {
+        "name": "test",
+        "line": 32
+      },
+      {
+        "name": "test",
+        "line": 32
+      },
+      {
+        "name": "test",
+        "line": 32
+      },
+      {
+        "name": "search",
+        "line": 32
+      },
+      {
+        "name": "trim",
+        "line": 32
+      },
+      {
+        "name": "slice",
+        "line": 33
+      },
+      {
+        "name": "replace",
+        "line": 33
+      },
+      {
+        "name": "search",
+        "line": 33
+      },
+      {
+        "name": "test",
+        "line": 33
+      },
+      {
+        "name": "test",
+        "line": 33
+      },
+      {
+        "name": "test",
+        "line": 33
+      },
+      {
+        "name": "trim",
+        "line": 34
+      },
+      {
+        "name": "substring",
+        "line": 35
+      },
+      {
+        "name": "slice",
+        "line": 35
+      },
+      {
+        "name": "test",
+        "line": 35
+      },
+      {
+        "name": "exec",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "push",
+        "line": 35
+      },
+      {
+        "name": "at",
+        "line": 35
+      },
+      {
+        "name": "trimEnd",
+        "line": 35
+      },
+      {
+        "name": "trimEnd",
+        "line": 35
+      },
+      {
+        "name": "trimEnd",
+        "line": 35
+      },
+      {
+        "name": "blockTokens",
+        "line": 35
+      },
+      {
+        "name": "filter",
+        "line": 35
+      },
+      {
+        "name": "some",
+        "line": 35
+      },
+      {
+        "name": "test",
+        "line": 35
+      },
+      {
+        "name": "html",
+        "line": 35
+      },
+      {
+        "name": "exec",
+        "line": 35
+      },
+      {
+        "name": "def",
+        "line": 35
+      },
+      {
+        "name": "exec",
+        "line": 35
+      },
+      {
+        "name": "toLowerCase",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "substring",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "table",
+        "line": 35
+      },
+      {
+        "name": "exec",
+        "line": 35
+      },
+      {
+        "name": "test",
+        "line": 35
+      },
+      {
+        "name": "Y",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "split",
+        "line": 35
+      },
+      {
+        "name": "trim",
+        "line": 35
+      },
+      {
+        "name": "replace",
+        "line": 35
+      },
+      {
+        "name": "split",
+        "line": 35
+      },
+      {
+        "name": "test",
+        "line": 36
+      },
+      {
+        "name": "push",
+        "line": 36
+      },
+      {
+        "name": "test",
+        "line": 36
+      },
+      {
+        "name": "push",
+        "line": 36
+      },
+      {
+        "name": "test",
+        "line": 36
+      },
+      {
+        "name": "push",
+        "line": 36
+      },
+      {
+        "name": "push",
+        "line": 36
+      },
+      {
+        "name": "push",
+        "line": 36
+      },
+      {
+        "name": "inline",
+        "line": 36
+      },
+      {
+        "name": "push",
+        "line": 36
+      },
+      {
+        "name": "Y",
+        "line": 36
+      },
+      {
+        "name": "map",
+        "line": 36
+      },
+      {
+        "name": "inline",
+        "line": 36
+      },
+      {
+        "name": "lheading",
+        "line": 36
+      },
+      {
+        "name": "exec",
+        "line": 36
+      },
+      {
+        "name": "charAt",
+        "line": 36
+      },
+      {
+        "name": "inline",
+        "line": 36
+      },
+      {
+        "name": "paragraph",
+        "line": 36
+      },
+      {
+        "name": "exec",
+        "line": 36
+      },
+      {
+        "name": "charAt",
+        "line": 36
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "inline",
+        "line": 37
+      },
+      {
+        "name": "text",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "inline",
+        "line": 37
+      },
+      {
+        "name": "escape",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "tag",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "link",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "trim",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "A",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "de",
+        "line": 37
+      },
+      {
+        "name": "indexOf",
+        "line": 37
+      },
+      {
+        "name": "substring",
+        "line": 37
+      },
+      {
+        "name": "substring",
+        "line": 37
+      },
+      {
+        "name": "trim",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "trim",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "me",
+        "line": 37
+      },
+      {
+        "name": "replace",
+        "line": 37
+      },
+      {
+        "name": "replace",
+        "line": 37
+      },
+      {
+        "name": "reflink",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "replace",
+        "line": 37
+      },
+      {
+        "name": "toLowerCase",
+        "line": 37
+      },
+      {
+        "name": "charAt",
+        "line": 37
+      },
+      {
+        "name": "me",
+        "line": 37
+      },
+      {
+        "name": "emStrong",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "match",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "min",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "min",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "inlineTokens",
+        "line": 37
+      },
+      {
+        "name": "slice",
+        "line": 37
+      },
+      {
+        "name": "inlineTokens",
+        "line": 37
+      },
+      {
+        "name": "codespan",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "replace",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "test",
+        "line": 37
+      },
+      {
+        "name": "substring",
+        "line": 37
+      },
+      {
+        "name": "br",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "del",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "inlineTokens",
+        "line": 37
+      },
+      {
+        "name": "autolink",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "url",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "inlineText",
+        "line": 37
+      },
+      {
+        "name": "exec",
+        "line": 37
+      },
+      {
+        "name": "constructor",
+        "line": 37
+      },
+      {
+        "name": "create",
+        "line": 37
+      },
+      {
+        "name": "rules",
+        "line": 37
+      },
+      {
+        "name": "lex",
+        "line": 37
+      },
+      {
+        "name": "l",
+        "line": 37
+      },
+      {
+        "name": "lex",
+        "line": 37
+      },
+      {
+        "name": "lexInline",
+        "line": 37
+      },
+      {
+        "name": "l",
+        "line": 37
+      },
+      {
+        "name": "inlineTokens",
+        "line": 37
+      },
+      {
+        "name": "lex",
+        "line": 37
+      },
+      {
+        "name": "replace",
+        "line": 37
+      },
+      {
+        "name": "blockTokens",
+        "line": 38
+      },
+      {
+        "name": "inlineTokens",
+        "line": 38
+      },
+      {
+        "name": "blockTokens",
+        "line": 38
+      },
+      {
+        "name": "replace",
+        "line": 38
+      },
+      {
+        "name": "replace",
+        "line": 38
+      },
+      {
+        "name": "some",
+        "line": 38
+      },
+      {
+        "name": "call",
+        "line": 38
+      },
+      {
+        "name": "substring",
+        "line": 38
+      },
+      {
+        "name": "push",
+        "line": 38
+      },
+      {
+        "name": "space",
+        "line": 38
+      },
+      {
+        "name": "substring",
+        "line": 38
+      },
+      {
+        "name": "at",
+        "line": 38
+      },
+      {
+        "name": "push",
+        "line": 39
+      },
+      {
+        "name": "code",
+        "line": 39
+      },
+      {
+        "name": "substring",
+        "line": 39
+      },
+      {
+        "name": "at",
+        "line": 39
+      },
+      {
+        "name": "at",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "fences",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "heading",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "hr",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "blockquote",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "list",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "html",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "push",
+        "line": 41
+      },
+      {
+        "name": "def",
+        "line": 41
+      },
+      {
+        "name": "substring",
+        "line": 41
+      },
+      {
+        "name": "at",
+        "line": 41
+      },
+      {
+        "name": "at",
+        "line": 43
+      },
+      {
+        "name": "table",
+        "line": 43
+      },
+      {
+        "name": "substring",
+        "line": 43
+      },
+      {
+        "name": "push",
+        "line": 43
+      },
+      {
+        "name": "lheading",
+        "line": 43
+      },
+      {
+        "name": "substring",
+        "line": 43
+      },
+      {
+        "name": "push",
+        "line": 43
+      },
+      {
+        "name": "slice",
+        "line": 43
+      },
+      {
+        "name": "forEach",
+        "line": 43
+      },
+      {
+        "name": "call",
+        "line": 43
+      },
+      {
+        "name": "min",
+        "line": 43
+      },
+      {
+        "name": "substring",
+        "line": 43
+      },
+      {
+        "name": "paragraph",
+        "line": 43
+      },
+      {
+        "name": "at",
+        "line": 43
+      },
+      {
+        "name": "pop",
+        "line": 45
+      },
+      {
+        "name": "at",
+        "line": 45
+      },
+      {
+        "name": "push",
+        "line": 45
+      },
+      {
+        "name": "substring",
+        "line": 45
+      },
+      {
+        "name": "text",
+        "line": 45
+      },
+      {
+        "name": "substring",
+        "line": 45
+      },
+      {
+        "name": "at",
+        "line": 45
+      },
+      {
+        "name": "pop",
+        "line": 47
+      },
+      {
+        "name": "at",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "charCodeAt",
+        "line": 47
+      },
+      {
+        "name": "error",
+        "line": 47
+      },
+      {
+        "name": "Error",
+        "line": 47
+      },
+      {
+        "name": "inline",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "inlineTokens",
+        "line": 47
+      },
+      {
+        "name": "keys",
+        "line": 47
+      },
+      {
+        "name": "exec",
+        "line": 47
+      },
+      {
+        "name": "includes",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "lastIndexOf",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "repeat",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "exec",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "exec",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "repeat",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "some",
+        "line": 47
+      },
+      {
+        "name": "call",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "escape",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "tag",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "link",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "reflink",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "at",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "emStrong",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "codespan",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "br",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "del",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "autolink",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "url",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "forEach",
+        "line": 47
+      },
+      {
+        "name": "call",
+        "line": 47
+      },
+      {
+        "name": "min",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "inlineText",
+        "line": 47
+      },
+      {
+        "name": "substring",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "slice",
+        "line": 47
+      },
+      {
+        "name": "at",
+        "line": 47
+      },
+      {
+        "name": "push",
+        "line": 47
+      },
+      {
+        "name": "charCodeAt",
+        "line": 47
+      },
+      {
+        "name": "error",
+        "line": 47
+      },
+      {
+        "name": "Error",
+        "line": 47
+      },
+      {
+        "name": "constructor",
+        "line": 47
+      },
+      {
+        "name": "space",
+        "line": 47
+      },
+      {
+        "name": "code",
+        "line": 47
+      },
+      {
+        "name": "match",
+        "line": 47
+      },
+      {
+        "name": "replace",
+        "line": 47
+      },
+      {
+        "name": "R",
+        "line": 48
+      },
+      {
+        "name": "R",
+        "line": 48
+      },
+      {
+        "name": "R",
+        "line": 49
+      },
+      {
+        "name": "blockquote",
+        "line": 50
+      },
+      {
+        "name": "parse",
+        "line": 51
+      },
+      {
+        "name": "html",
+        "line": 52
+      },
+      {
+        "name": "heading",
+        "line": 52
+      },
+      {
+        "name": "parseInline",
+        "line": 52
+      },
+      {
+        "name": "hr",
+        "line": 53
+      },
+      {
+        "name": "list",
+        "line": 54
+      },
+      {
+        "name": "listitem",
+        "line": 54
+      },
+      {
+        "name": "listitem",
+        "line": 56
+      },
+      {
+        "name": "checkbox",
+        "line": 56
+      },
+      {
+        "name": "R",
+        "line": 56
+      },
+      {
+        "name": "unshift",
+        "line": 56
+      },
+      {
+        "name": "parse",
+        "line": 56
+      },
+      {
+        "name": "checkbox",
+        "line": 57
+      },
+      {
+        "name": "paragraph",
+        "line": 57
+      },
+      {
+        "name": "parseInline",
+        "line": 57
+      },
+      {
+        "name": "table",
+        "line": 58
+      },
+      {
+        "name": "tablecell",
+        "line": 58
+      },
+      {
+        "name": "tablerow",
+        "line": 58
+      },
+      {
+        "name": "tablecell",
+        "line": 58
+      },
+      {
+        "name": "tablerow",
+        "line": 58
+      },
+      {
+        "name": "tablerow",
+        "line": 62
+      },
+      {
+        "name": "tablecell",
+        "line": 64
+      },
+      {
+        "name": "parseInline",
+        "line": 64
+      },
+      {
+        "name": "return",
+        "line": 64
+      },
+      {
+        "name": "strong",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "em",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "codespan",
+        "line": 65
+      },
+      {
+        "name": "R",
+        "line": 65
+      },
+      {
+        "name": "br",
+        "line": 65
+      },
+      {
+        "name": "del",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "link",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "V",
+        "line": 65
+      },
+      {
+        "name": "R",
+        "line": 65
+      },
+      {
+        "name": "image",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "V",
+        "line": 65
+      },
+      {
+        "name": "R",
+        "line": 65
+      },
+      {
+        "name": "R",
+        "line": 65
+      },
+      {
+        "name": "text",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "R",
+        "line": 65
+      },
+      {
+        "name": "strong",
+        "line": 65
+      },
+      {
+        "name": "em",
+        "line": 65
+      },
+      {
+        "name": "codespan",
+        "line": 65
+      },
+      {
+        "name": "del",
+        "line": 65
+      },
+      {
+        "name": "html",
+        "line": 65
+      },
+      {
+        "name": "text",
+        "line": 65
+      },
+      {
+        "name": "link",
+        "line": 65
+      },
+      {
+        "name": "image",
+        "line": 65
+      },
+      {
+        "name": "br",
+        "line": 65
+      },
+      {
+        "name": "constructor",
+        "line": 65
+      },
+      {
+        "name": "parse",
+        "line": 65
+      },
+      {
+        "name": "l",
+        "line": 65
+      },
+      {
+        "name": "parse",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "l",
+        "line": 65
+      },
+      {
+        "name": "parseInline",
+        "line": 65
+      },
+      {
+        "name": "parse",
+        "line": 65
+      },
+      {
+        "name": "call",
+        "line": 65
+      },
+      {
+        "name": "includes",
+        "line": 65
+      },
+      {
+        "name": "space",
+        "line": 65
+      },
+      {
+        "name": "hr",
+        "line": 65
+      },
+      {
+        "name": "heading",
+        "line": 65
+      },
+      {
+        "name": "code",
+        "line": 65
+      },
+      {
+        "name": "table",
+        "line": 65
+      },
+      {
+        "name": "blockquote",
+        "line": 65
+      },
+      {
+        "name": "list",
+        "line": 65
+      },
+      {
+        "name": "html",
+        "line": 65
+      },
+      {
+        "name": "paragraph",
+        "line": 65
+      },
+      {
+        "name": "text",
+        "line": 65
+      },
+      {
+        "name": "text",
+        "line": 66
+      },
+      {
+        "name": "paragraph",
+        "line": 66
+      },
+      {
+        "name": "error",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "parseInline",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "includes",
+        "line": 66
+      },
+      {
+        "name": "text",
+        "line": 66
+      },
+      {
+        "name": "html",
+        "line": 66
+      },
+      {
+        "name": "link",
+        "line": 66
+      },
+      {
+        "name": "image",
+        "line": 66
+      },
+      {
+        "name": "strong",
+        "line": 66
+      },
+      {
+        "name": "em",
+        "line": 66
+      },
+      {
+        "name": "codespan",
+        "line": 66
+      },
+      {
+        "name": "br",
+        "line": 66
+      },
+      {
+        "name": "del",
+        "line": 66
+      },
+      {
+        "name": "text",
+        "line": 66
+      },
+      {
+        "name": "error",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "constructor",
+        "line": 66
+      },
+      {
+        "name": "Set",
+        "line": 66
+      },
+      {
+        "name": "preprocess",
+        "line": 66
+      },
+      {
+        "name": "postprocess",
+        "line": 66
+      },
+      {
+        "name": "processAllTokens",
+        "line": 66
+      },
+      {
+        "name": "provideLexer",
+        "line": 66
+      },
+      {
+        "name": "provideParser",
+        "line": 66
+      },
+      {
+        "name": "z",
+        "line": 66
+      },
+      {
+        "name": "parseMarkdown",
+        "line": 66
+      },
+      {
+        "name": "parseMarkdown",
+        "line": 66
+      },
+      {
+        "name": "constructor",
+        "line": 66
+      },
+      {
+        "name": "use",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "forEach",
+        "line": 66
+      },
+      {
+        "name": "flat",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "use",
+        "line": 66
+      },
+      {
+        "name": "forEach",
+        "line": 66
+      },
+      {
+        "name": "forEach",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "unshift",
+        "line": 66
+      },
+      {
+        "name": "push",
+        "line": 66
+      },
+      {
+        "name": "push",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "includes",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "S",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "includes",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "includes",
+        "line": 66
+      },
+      {
+        "name": "has",
+        "line": 66
+      },
+      {
+        "name": "resolve",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "apply",
+        "line": 66
+      },
+      {
+        "name": "push",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "concat",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "setOptions",
+        "line": 66
+      },
+      {
+        "name": "lexer",
+        "line": 66
+      },
+      {
+        "name": "lex",
+        "line": 66
+      },
+      {
+        "name": "parser",
+        "line": 66
+      },
+      {
+        "name": "parse",
+        "line": 66
+      },
+      {
+        "name": "parseMarkdown",
+        "line": 66
+      },
+      {
+        "name": "return",
+        "line": 66
+      },
+      {
+        "name": "onError",
+        "line": 66
+      },
+      {
+        "name": "o",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "marked",
+        "line": 66
+      },
+      {
+        "name": "o",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "marked",
+        "line": 66
+      },
+      {
+        "name": "o",
+        "line": 66
+      },
+      {
+        "name": "Error",
+        "line": 66
+      },
+      {
+        "name": "marked",
+        "line": 66
+      },
+      {
+        "name": "call",
+        "line": 66
+      },
+      {
+        "name": "provideLexer",
+        "line": 66
+      },
+      {
+        "name": "provideParser",
+        "line": 66
+      },
+      {
+        "name": "resolve",
+        "line": 66
+      },
+      {
+        "name": "preprocess",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "a",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "processAllTokens",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "all",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "c",
+        "line": 66
+      },
+      {
+        "name": "then",
+        "line": 66
+      },
+      {
+        "name": "postprocess",
+        "line": 66
+      },
+      {
+        "name": "preprocess",
+        "line": 66
+      },
+      {
+        "name": "a",
+        "line": 66
+      },
+      {
+        "name": "processAllTokens",
+        "line": 66
+      },
+      {
+        "name": "walkTokens",
+        "line": 66
+      },
+      {
+        "name": "c",
+        "line": 66
+      },
+      {
+        "name": "postprocess",
+        "line": 66
+      },
+      {
+        "name": "o",
+        "line": 66
+      },
+      {
+        "name": "onError",
+        "line": 66
+      },
+      {
+        "name": "R",
+        "line": 67
+      },
+      {
+        "name": "resolve",
+        "line": 67
+      },
+      {
+        "name": "reject",
+        "line": 67
+      },
+      {
+        "name": "k",
+        "line": 67
+      },
+      {
+        "name": "parse",
+        "line": 67
+      },
+      {
+        "name": "setOptions",
+        "line": 67
+      },
+      {
+        "name": "N",
+        "line": 67
+      },
+      {
+        "name": "use",
+        "line": 67
+      },
+      {
+        "name": "N",
+        "line": 67
+      },
+      {
+        "name": "walkTokens",
+        "line": 67
+      }
+    ]
+  },
+  {
+    "file": "routes/chat.js",
+    "functions": [
+      "loadMemory",
+      "saveMemory",
+      "loadProfile"
+    ],
+    "arrowFunctions": [
+      "message"
+    ],
+    "requires": [
+      "express",
+      "fs-extra",
+      "../services/ai",
+      "../memory",
+      "../utils/smartMemory"
+    ],
+    "calls": [
+      {
+        "name": "Router",
+        "line": 8
+      },
+      {
+        "name": "loadMemory",
+        "line": 16
+      },
+      {
+        "name": "readJson",
+        "line": 18
+      },
+      {
+        "name": "saveMemory",
+        "line": 29
+      },
+      {
+        "name": "writeJson",
+        "line": 30
+      },
+      {
+        "name": "loadProfile",
+        "line": 35
+      },
+      {
+        "name": "readJson",
+        "line": 37
+      },
+      {
+        "name": "post",
+        "line": 43
+      },
+      {
+        "name": "async",
+        "line": 43
+      },
+      {
+        "name": "trim",
+        "line": 45
+      },
+      {
+        "name": "status",
+        "line": 48
+      },
+      {
+        "name": "json",
+        "line": 48
+      },
+      {
+        "name": "remember",
+        "line": 53
+      },
+      {
+        "name": "loadProfile",
+        "line": 54
+      },
+      {
+        "name": "extractFacts",
+        "line": 56
+      },
+      {
+        "name": "log",
+        "line": 57
+      },
+      {
+        "name": "push",
+        "line": 59
+      },
+      {
+        "name": "filter",
+        "line": 88
+      },
+      {
+        "name": "chat",
+        "line": 91
+      },
+      {
+        "name": "push",
+        "line": 93
+      },
+      {
+        "name": "slice",
+        "line": 99
+      },
+      {
+        "name": "saveMemory",
+        "line": 102
+      },
+      {
+        "name": "json",
+        "line": 104
+      },
+      {
+        "name": "error",
+        "line": 109
+      },
+      {
+        "name": "status",
+        "line": 111
+      },
+      {
+        "name": "json",
+        "line": 111
+      },
+      {
+        "name": "async",
+        "line": 117
+      },
+      {
+        "name": "loadMemory",
+        "line": 118
+      },
+      {
+        "name": "loadProfile",
+        "line": 119
+      }
+    ]
+  },
+  {
+    "file": "server.js",
+    "functions": [
+      "loadMemory",
+      "saveMemory",
+      "loadProfile",
+      "saveProfile"
+    ],
+    "arrowFunctions": [
+      "message"
+    ],
+    "requires": [
+      "dotenv",
+      "./brain/projectBrain",
+      "express",
+      "cors",
+      "axios",
+      "fs-extra",
+      "./memory",
+      "./services/search",
+      "./index/searchIndex",
+      "./index/projectQuery"
+    ],
+    "calls": [
+      {
+        "name": "config",
+        "line": 1
+      },
+      {
+        "name": "express",
+        "line": 14
+      },
+      {
+        "name": "use",
+        "line": 17
+      },
+      {
+        "name": "cors",
+        "line": 17
+      },
+      {
+        "name": "use",
+        "line": 18
+      },
+      {
+        "name": "json",
+        "line": 18
+      },
+      {
+        "name": "use",
+        "line": 19
+      },
+      {
+        "name": "static",
+        "line": 19
+      },
+      {
+        "name": "loadMemory",
+        "line": 27
+      },
+      {
+        "name": "readJson",
+        "line": 29
+      },
+      {
+        "name": "saveMemory",
+        "line": 40
+      },
+      {
+        "name": "writeJson",
+        "line": 41
+      },
+      {
+        "name": "loadProfile",
+        "line": 46
+      },
+      {
+        "name": "readJson",
+        "line": 48
+      },
+      {
+        "name": "saveProfile",
+        "line": 54
+      },
+      {
+        "name": "writeJson",
+        "line": 55
+      },
+      {
+        "name": "get",
+        "line": 60
+      },
+      {
+        "name": "sendFile",
+        "line": 61
+      },
+      {
+        "name": "post",
+        "line": 64
+      },
+      {
+        "name": "async",
+        "line": 64
+      },
+      {
+        "name": "trim",
+        "line": 66
+      },
+      {
+        "name": "status",
+        "line": 68
+      },
+      {
+        "name": "json",
+        "line": 68
+      },
+      {
+        "name": "remember",
+        "line": 74
+      },
+      {
+        "name": "loadProfile",
+        "line": 77
+      },
+      {
+        "name": "answerProjectQuestion",
+        "line": 80
+      },
+      {
+        "name": "json",
+        "line": 83
+      },
+      {
+        "name": "push",
+        "line": 88
+      },
+      {
+        "name": "test",
+        "line": 117
+      },
+      {
+        "name": "search",
+        "line": 121
+      },
+      {
+        "name": "log",
+        "line": 123
+      },
+      {
+        "name": "log",
+        "line": 124
+      },
+      {
+        "name": "log",
+        "line": 125
+      },
+      {
+        "name": "map",
+        "line": 135
+      },
+      {
+        "name": "join",
+        "line": 140
+      },
+      {
+        "name": "error",
+        "line": 143
+      },
+      {
+        "name": "filter",
+        "line": 155
+      },
+      {
+        "name": "post",
+        "line": 156
+      },
+      {
+        "name": "push",
+        "line": 174
+      },
+      {
+        "name": "slice",
+        "line": 182
+      },
+      {
+        "name": "saveMemory",
+        "line": 186
+      },
+      {
+        "name": "json",
+        "line": 188
+      },
+      {
+        "name": "error",
+        "line": 193
+      },
+      {
+        "name": "status",
+        "line": 195
+      },
+      {
+        "name": "json",
+        "line": 195
+      },
+      {
+        "name": "all",
+        "line": 201
+      },
+      {
+        "name": "loadMemory",
+        "line": 202
+      },
+      {
+        "name": "loadProfile",
+        "line": 203
+      },
+      {
+        "name": "then",
+        "line": 204
+      },
+      {
+        "name": "listen",
+        "line": 205
+      },
+      {
+        "name": "log",
+        "line": 206
+      }
+    ]
+  },
+  {
+    "file": "services/ai.js",
+    "functions": [
+      "openRouterAvailable",
+      "chat"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "axios"
+    ],
+    "calls": [
+      {
+        "name": "openRouterAvailable",
+        "line": 5
+      },
+      {
+        "name": "now",
+        "line": 6
+      },
+      {
+        "name": "chat",
+        "line": 9
+      },
+      {
+        "name": "openRouterAvailable",
+        "line": 11
+      },
+      {
+        "name": "Error",
+        "line": 12
+      },
+      {
+        "name": "log",
+        "line": 17
+      },
+      {
+        "name": "post",
+        "line": 19
+      },
+      {
+        "name": "log",
+        "line": 38
+      },
+      {
+        "name": "log",
+        "line": 42
+      },
+      {
+        "name": "now",
+        "line": 45
+      },
+      {
+        "name": "log",
+        "line": 46
+      },
+      {
+        "name": "log",
+        "line": 58
+      },
+      {
+        "name": "log",
+        "line": 59
+      },
+      {
+        "name": "log",
+        "line": 61
+      }
+    ]
+  },
+  {
+    "file": "services/embeddings.js",
+    "functions": [
+      "loadVectors",
+      "saveVectors"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "fs-extra",
+      "path"
+    ],
+    "calls": [
+      {
+        "name": "join",
+        "line": 5
+      },
+      {
+        "name": "loadVectors",
+        "line": 7
+      },
+      {
+        "name": "readJson",
+        "line": 9
+      },
+      {
+        "name": "saveVectors",
+        "line": 15
+      },
+      {
+        "name": "outputJson",
+        "line": 16
+      }
+    ]
+  },
+  {
+    "file": "services/groq.js",
+    "functions": [
+      "chatGroq"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "openai"
+    ],
+    "calls": [
+      {
+        "name": "OpenAI",
+        "line": 3
+      },
+      {
+        "name": "chatGroq",
+        "line": 7
+      },
+      {
+        "name": "create",
+        "line": 9
+      },
+      {
+        "name": "log",
+        "line": 16
+      },
+      {
+        "name": "log",
+        "line": 19
+      },
+      {
+        "name": "log",
+        "line": 22
+      }
+    ]
+  },
+  {
+    "file": "services/search.js",
+    "functions": [
+      "search"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "axios"
+    ],
+    "calls": [
+      {
+        "name": "search",
+        "line": 3
+      },
+      {
+        "name": "post",
+        "line": 4
+      }
+    ]
+  },
+  {
+    "file": "test-env.js",
+    "functions": [],
+    "arrowFunctions": [],
+    "requires": [
+      "dotenv"
+    ],
+    "calls": [
+      {
+        "name": "config",
+        "line": 1
+      },
+      {
+        "name": "log",
+        "line": 3
+      },
+      {
+        "name": "log",
+        "line": 4
+      }
+    ]
+  },
+  {
+    "file": "test-search.js",
+    "functions": [],
+    "arrowFunctions": [],
+    "requires": [
+      "dotenv",
+      "./services/search"
+    ],
+    "calls": [
+      {
+        "name": "config",
+        "line": 1
+      },
+      {
+        "name": "async",
+        "line": 5
+      },
+      {
+        "name": "search",
+        "line": 7
+      },
+      {
+        "name": "log",
+        "line": 8
+      },
+      {
+        "name": "log",
+        "line": 9
+      },
+      {
+        "name": "error",
+        "line": 11
+      }
+    ]
+  },
+  {
+    "file": "utils/smartMemory.js",
+    "functions": [
+      "extractFacts"
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "compromise"
+    ],
+    "calls": [
+      {
+        "name": "extractFacts",
+        "line": 3
+      },
+      {
+        "name": "nlp",
+        "line": 4
+      },
+      {
+        "name": "people",
+        "line": 7
+      },
+      {
+        "name": "out",
+        "line": 7
+      },
+      {
+        "name": "places",
+        "line": 8
+      },
+      {
+        "name": "out",
+        "line": 8
+      },
+      {
+        "name": "organizations",
+        "line": 9
+      },
+      {
+        "name": "out",
+        "line": 9
+      },
+      {
+        "name": "nouns",
+        "line": 10
+      },
+      {
+        "name": "out",
+        "line": 10
+      }
+    ]
+  }
+]

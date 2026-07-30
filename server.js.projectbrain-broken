@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { answerProjectQuestion } = require("./brain/projectBrain");
 
 const express = require("express");
 const cors = require("cors");
@@ -7,7 +6,6 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const { remember } = require("./memory");
 const { search } = require("./services/search");
-
 const projectSearch = require("./index/searchIndex");
 const { extractKeyword } = require("./index/projectQuery");
 
@@ -23,6 +21,9 @@ const PROFILE_FILE = "./data/profile.json";
 
 let history = [];
 let profile = {};
+
+let uploadedFiles = {};
+let uploadedIndex = {};
 
 async function loadMemory() {
   try {
@@ -76,15 +77,6 @@ app.post("/chat", async (req, res) => {
     // Reload profile after saving
     await loadProfile();
 
-      // Project Brain
-      const result = answerProjectQuestion(message);
-
-      if (result.found) {
-        return res.json({
-          reply: result.reply
-        });
-      }
-
     history.push({
       role: "user",
       content: message
@@ -116,7 +108,50 @@ app.post("/chat", async (req, res) => {
     const needsSearch =
       /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(message);
 
-    if (needsSearch) {
+    const projectQuestion =
+  /function|file|where|project|code|remember|axios|express|search|memory/i.test(message);
+
+if (projectQuestion) {
+
+const keyword = extractKeyword(message);
+
+const functionResult = projectSearch.findFunction(keyword);
+
+if (functionResult.length > 0) {
+  const file = functionResult[0];
+
+  return res.json({
+reply: `I found the function "${keyword}".
+
+📄 File:
+${file.file}
+
+Functions in this file:
+${file.functions.map(f => "• " + f + "()").join("\n")}`
+  });
+}
+
+const requireResult = projectSearch.findRequire(keyword);
+
+console.log("DEBUG requireResult:", requireResult);
+
+if (requireResult.length > 0) {
+
+  const files = requireResult
+    .map(f => "• " + f.file)
+    .join("\n");
+
+  return res.json({
+    reply:
+`I found "${message}" in these project files:
+
+${files}
+
+Total files: ${requireResult.length}`
+  });
+
+}
+   if (needsSearch) {
       try {
         const result = await search(message);
 

@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { answerProjectQuestion } = require("./brain/projectBrain");
 
 const express = require("express");
 const cors = require("cors");
@@ -7,9 +6,6 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const { remember } = require("./memory");
 const { search } = require("./services/search");
-
-const projectSearch = require("./index/searchIndex");
-const { extractKeyword } = require("./index/projectQuery");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -75,15 +71,6 @@ app.post("/chat", async (req, res) => {
 
     // Reload profile after saving
     await loadProfile();
-
-      // Project Brain
-      const result = answerProjectQuestion(message);
-
-      if (result.found) {
-        return res.json({
-          reply: result.reply
-        });
-      }
 
     history.push({
       role: "user",
