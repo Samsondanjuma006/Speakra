@@ -6,6 +6,7 @@ const { explainArchitecture } = require("./projectArchitecture");
 const { extractKeyword } = require("../index/projectQuery");
 const { dependencyTree } = require("./dependencyTree");
 const { analyzeImpact } = require("./impactAnalyzer");
+const { listFunctions } = require("./functionExplorer");
 
 function answerProjectQuestion(message) {
 
@@ -88,6 +89,16 @@ ${usedBy.map(f => "• " + f.file).join("\n")}
 Total files: ${usedBy.length}`
     };
   }
+}
+// List functions in a file
+if (/show all functions|list functions|functions in/i.test(message) && keyword.endsWith(".js")) {
+
+  const result = listFunctions(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
 }
 // Explain a specific JavaScript file
 if (/explain/i.test(message) && keyword.endsWith(".js")) {
