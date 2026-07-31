@@ -9,6 +9,7 @@ const { analyzeImpact } = require("./impactAnalyzer");
 const { listFunctions } = require("./functionExplorer");
 const { locateFunction } = require("./functionLocator");
 const { analyzeFunction } = require("./functionAnalysis");
+const { analyzeFunctionImpact } = require("./functionImpact");
 
 function answerProjectQuestion(message) {
 
@@ -110,6 +111,16 @@ if (/explain/i.test(message) && keyword.endsWith(".js")) {
 if (/explain|analyze|details about/i.test(message)) {
 
   const result = analyzeFunction(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+// Function Impact Analysis
+if (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {
+
+  const result = analyzeFunctionImpact(keyword);
 
   if (result.found) {
     return result;
