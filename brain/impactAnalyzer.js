@@ -31,12 +31,14 @@ Affected files:
 `;
 
   for (const file of usedBy) {
-    reply += `• ${file.file}\n`;
+    reply += `• ${file.file}
+  Line ${file.line}
+
+`;
   }
 
-  reply += `
-
-Total affected: ${usedBy.length}
+  reply +=
+`Total affected: ${usedBy.length}
 
 Risk:
 HIGH`;

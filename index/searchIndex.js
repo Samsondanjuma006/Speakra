@@ -41,18 +41,33 @@ function findRequire(moduleName) {
   const index = loadIndex();
 
   return index.filter(file =>
-    file.requires.some(r => r.includes(moduleName))
+    file.requires.some(r =>
+      r.module.includes(moduleName)
+    )
   );
 }
 function findUsedBy(fileName) {
   const index = loadIndex();
 
-  return index.filter(file =>
-    file.requires.some(req =>
-      req.endsWith(fileName.replace(".js", "")) ||
-      req.endsWith(fileName)
-    )
-  );
+  const results = [];
+
+  for (const file of index) {
+
+    const dependency = file.requires.find(req =>
+      req.module.endsWith(fileName.replace(".js", "")) ||
+      req.module.endsWith(fileName)
+    );
+
+    if (dependency) {
+      results.push({
+        file: file.file,
+        line: dependency.line
+      });
+    }
+
+  }
+
+  return results;
 }
 function listFiles() {
   return loadIndex().map(file => file.file);

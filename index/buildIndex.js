@@ -71,10 +71,17 @@ lines.forEach((line, index) => {
   }
 
 });
- const requires = [
-      ...text.matchAll(/require\(["'](.+?)["']\)/g)
-    ].map(match => match[1]);
+const requires = [
+  ...text.matchAll(/require\(["'](.+?)["']\)/g)
+].map(match => {
+  const before = text.slice(0, match.index);
+  const line = before.split("\n").length;
 
+  return {
+    module: match[1],
+    line
+  };
+});
 const calls = [];
 
 lines.forEach((line, index) => {

@@ -4,29 +4,80 @@
     "functions": [
       {
         "name": "traceFunction",
-        "line": 3
+        "line": 5
       }
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "fs",
+        "line": 1
+      },
+      {
+        "module": "path",
+        "line": 2
+      },
+      {
+        "module": "../index/searchIndex",
+        "line": 3
+      }
     ],
     "calls": [
       {
         "name": "traceFunction",
-        "line": 3
-      },
-      {
-        "name": "findCallers",
         "line": 5
       },
       {
+        "name": "findCallers",
+        "line": 7
+      },
+      {
         "name": "map",
-        "line": 24
+        "line": 15
       },
       {
         "name": "join",
-        "line": 25
+        "line": 17
+      },
+      {
+        "name": "cwd",
+        "line": 17
+      },
+      {
+        "name": "existsSync",
+        "line": 19
+      },
+      {
+        "name": "readFileSync",
+        "line": 24
+      },
+      {
+        "name": "split",
+        "line": 24
+      },
+      {
+        "name": "max",
+        "line": 26
+      },
+      {
+        "name": "min",
+        "line": 27
+      },
+      {
+        "name": "slice",
+        "line": 30
+      },
+      {
+        "name": "map",
+        "line": 31
+      },
+      {
+        "name": "join",
+        "line": 35
+      },
+      {
+        "name": "join",
+        "line": 53
       }
     ]
   },
@@ -40,7 +91,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "../index/searchIndex",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -128,7 +182,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "../index/searchIndex",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -187,7 +244,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "../index/searchIndex",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -221,21 +281,72 @@
     "functions": [
       {
         "name": "locateFunction",
-        "line": 3
+        "line": 5
       }
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "fs",
+        "line": 1
+      },
+      {
+        "module": "path",
+        "line": 2
+      },
+      {
+        "module": "../index/searchIndex",
+        "line": 3
+      }
     ],
     "calls": [
       {
         "name": "locateFunction",
-        "line": 3
+        "line": 5
       },
       {
         "name": "findFunction",
-        "line": 5
+        "line": 7
+      },
+      {
+        "name": "join",
+        "line": 17
+      },
+      {
+        "name": "cwd",
+        "line": 17
+      },
+      {
+        "name": "existsSync",
+        "line": 19
+      },
+      {
+        "name": "readFileSync",
+        "line": 33
+      },
+      {
+        "name": "split",
+        "line": 33
+      },
+      {
+        "name": "max",
+        "line": 35
+      },
+      {
+        "name": "min",
+        "line": 36
+      },
+      {
+        "name": "slice",
+        "line": 39
+      },
+      {
+        "name": "map",
+        "line": 40
+      },
+      {
+        "name": "join",
+        "line": 44
       }
     ]
   },
@@ -249,7 +360,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "../index/searchIndex",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -272,7 +386,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex"
+      {
+        "module": "../index/searchIndex",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -363,16 +480,46 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "../index/searchIndex",
-      "./fileExplainer",
-      "./executionFlow",
-      "./callChain",
-      "./projectArchitecture",
-      "../index/projectQuery",
-      "./dependencyTree",
-      "./impactAnalyzer",
-      "./functionExplorer",
-      "./functionLocator"
+      {
+        "module": "../index/searchIndex",
+        "line": 1
+      },
+      {
+        "module": "./fileExplainer",
+        "line": 2
+      },
+      {
+        "module": "./executionFlow",
+        "line": 3
+      },
+      {
+        "module": "./callChain",
+        "line": 4
+      },
+      {
+        "module": "./projectArchitecture",
+        "line": 5
+      },
+      {
+        "module": "../index/projectQuery",
+        "line": 6
+      },
+      {
+        "module": "./dependencyTree",
+        "line": 7
+      },
+      {
+        "module": "./impactAnalyzer",
+        "line": 8
+      },
+      {
+        "module": "./functionExplorer",
+        "line": 9
+      },
+      {
+        "module": "./functionLocator",
+        "line": 10
+      }
     ],
     "calls": [
       {
@@ -546,7 +693,10 @@
     "functions": [],
     "arrowFunctions": [],
     "requires": [
-      "fs"
+      {
+        "module": "fs",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -613,7 +763,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "fs-extra"
+      {
+        "module": "fs-extra",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -876,10 +1029,22 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "dotenv",
-      "./services/ai",
-      "./memoryPrompt",
-      "./services/groq"
+      {
+        "module": "dotenv",
+        "line": 1
+      },
+      {
+        "module": "./services/ai",
+        "line": 3
+      },
+      {
+        "module": "./memoryPrompt",
+        "line": 4
+      },
+      {
+        "module": "./services/groq",
+        "line": 5
+      }
     ],
     "calls": [
       {
@@ -4303,11 +4468,26 @@
       }
     ],
     "requires": [
-      "express",
-      "fs-extra",
-      "../services/ai",
-      "../memory",
-      "../utils/smartMemory"
+      {
+        "module": "express",
+        "line": 1
+      },
+      {
+        "module": "fs-extra",
+        "line": 2
+      },
+      {
+        "module": "../services/ai",
+        "line": 4
+      },
+      {
+        "module": "../memory",
+        "line": 5
+      },
+      {
+        "module": "../utils/smartMemory",
+        "line": 6
+      }
     ],
     "calls": [
       {
@@ -4455,16 +4635,46 @@
       }
     ],
     "requires": [
-      "dotenv",
-      "./brain/projectBrain",
-      "express",
-      "cors",
-      "axios",
-      "fs-extra",
-      "./memory",
-      "./services/search",
-      "./index/searchIndex",
-      "./index/projectQuery"
+      {
+        "module": "dotenv",
+        "line": 1
+      },
+      {
+        "module": "./brain/projectBrain",
+        "line": 2
+      },
+      {
+        "module": "express",
+        "line": 4
+      },
+      {
+        "module": "cors",
+        "line": 5
+      },
+      {
+        "module": "axios",
+        "line": 6
+      },
+      {
+        "module": "fs-extra",
+        "line": 7
+      },
+      {
+        "module": "./memory",
+        "line": 8
+      },
+      {
+        "module": "./services/search",
+        "line": 9
+      },
+      {
+        "module": "./index/searchIndex",
+        "line": 11
+      },
+      {
+        "module": "./index/projectQuery",
+        "line": 12
+      }
     ],
     "calls": [
       {
@@ -4687,7 +4897,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "axios"
+      {
+        "module": "axios",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -4762,8 +4975,14 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "fs-extra",
-      "path"
+      {
+        "module": "fs-extra",
+        "line": 1
+      },
+      {
+        "module": "path",
+        "line": 3
+      }
     ],
     "calls": [
       {
@@ -4798,7 +5017,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "openai"
+      {
+        "module": "openai",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -4837,7 +5059,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "axios"
+      {
+        "module": "axios",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -4855,7 +5080,10 @@
     "functions": [],
     "arrowFunctions": [],
     "requires": [
-      "dotenv"
+      {
+        "module": "dotenv",
+        "line": 1
+      }
     ],
     "calls": [
       {
@@ -4877,8 +5105,14 @@
     "functions": [],
     "arrowFunctions": [],
     "requires": [
-      "dotenv",
-      "./services/search"
+      {
+        "module": "dotenv",
+        "line": 1
+      },
+      {
+        "module": "./services/search",
+        "line": 3
+      }
     ],
     "calls": [
       {
@@ -4917,7 +5151,10 @@
     ],
     "arrowFunctions": [],
     "requires": [
-      "compromise"
+      {
+        "module": "compromise",
+        "line": 1
+      }
     ],
     "calls": [
       {
