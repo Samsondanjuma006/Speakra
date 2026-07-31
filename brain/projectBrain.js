@@ -105,11 +105,6 @@ if (/show all functions|list functions|functions in/i.test(message) && keyword.e
 if (/explain/i.test(message) && keyword.endsWith(".js")) {
     return explainFile(keyword);
 }
-  const functionResult = projectSearch.findFunction(keyword);
-
-  if (functionResult.length > 0) {
-    const file = functionResult[0];
-
 // Locate a function
 if (/where is|jump to|locate|find function/i.test(message)) {
 
@@ -120,19 +115,27 @@ if (/where is|jump to|locate|find function/i.test(message)) {
   }
 
 }
-   return {
-      found: true,
-      reply:
+
+const functionResult = projectSearch.findFunction(keyword);
+
+if (functionResult.length > 0) {
+
+  const file = functionResult[0];
+
+  return {
+    found: true,
+    reply:
 `I found the function "${keyword}".
 
 📄 File:
 ${file.file}
 
 Functions in this file:
-${file.functions.map(f => "• " + f + "()").join("\n")}`
-    };
-  }
-    // List all project files
+${file.functions.map(f => "• " + f.name + "()").join("\n")}`
+  };
+
+}
+   // List all project files
     if (/list|all|files|project files/i.test(message)) {
       return {
         found: true,

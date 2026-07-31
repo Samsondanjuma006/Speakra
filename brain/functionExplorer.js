@@ -34,11 +34,12 @@ No functions found.`
 
 Functions:
 
-${functions.map(f => "• " + f + "()").join("\n")}
+${functions
+  .map(f => `• ${f.name}() — Line ${f.line}`)
+  .join("\n")}
 
-Total: ${functions.length}`
-  };
-
+  Total: ${functions.length}`
+    };
 }
 
 module.exports = {
