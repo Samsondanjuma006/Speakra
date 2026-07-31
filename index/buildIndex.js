@@ -45,21 +45,37 @@ function scan(dir) {
 
     const text = fs.readFileSync(full, "utf8");
 
-    const functions = [
-      ...text.matchAll(/function\s+([A-Za-z0-9_]+)/g)
-    ].map(match => match[1]);
+const lines = text.split("\n");
 
-    const arrowFunctions = [
-      ...text.matchAll(/const\s+([A-Za-z0-9_]+)\s*=\s*(async\s*)?\(/g)
-    ].map(match => match[1]);
+const functions = [];
+const arrowFunctions = [];
 
-    const requires = [
+lines.forEach((line, index) => {
+
+  const normal = line.match(/function\s+([A-Za-z0-9_]+)/);
+
+  if (normal) {
+    functions.push({
+      name: normal[1],
+      line: index + 1
+    });
+  }
+
+  const arrow = line.match(/const\s+([A-Za-z0-9_]+)\s*=\s*(async\s*)?\(/);
+
+  if (arrow) {
+    arrowFunctions.push({
+      name: arrow[1],
+      line: index + 1
+    });
+  }
+
+});
+ const requires = [
       ...text.matchAll(/require\(["'](.+?)["']\)/g)
     ].map(match => match[1]);
 
 const calls = [];
-
-const lines = text.split("\n");
 
 lines.forEach((line, index) => {
 

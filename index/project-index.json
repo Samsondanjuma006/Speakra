@@ -1,8 +1,77 @@
 [
   {
+    "file": "brain/callChain.js",
+    "functions": [
+      {
+        "name": "traceFunction",
+        "line": 3
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "traceFunction",
+        "line": 3
+      },
+      {
+        "name": "findCallers",
+        "line": 5
+      },
+      {
+        "name": "map",
+        "line": 24
+      },
+      {
+        "name": "join",
+        "line": 25
+      }
+    ]
+  },
+  {
+    "file": "brain/dependencyTree.js",
+    "functions": [
+      {
+        "name": "dependencyTree",
+        "line": 3
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "dependencyTree",
+        "line": 3
+      },
+      {
+        "name": "loadIndex",
+        "line": 5
+      },
+      {
+        "name": "find",
+        "line": 7
+      },
+      {
+        "name": "endsWith",
+        "line": 7
+      },
+      {
+        "name": "n",
+        "line": 18
+      }
+    ]
+  },
+  {
     "file": "brain/executionFlow.js",
     "functions": [
-      "explainExecution"
+      {
+        "name": "explainExecution",
+        "line": 24
+      }
     ],
     "arrowFunctions": [],
     "requires": [],
@@ -52,7 +121,10 @@
   {
     "file": "brain/fileExplainer.js",
     "functions": [
-      "explainFile"
+      {
+        "name": "explainFile",
+        "line": 3
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -106,121 +178,366 @@
     ]
   },
   {
+    "file": "brain/functionExplorer.js",
+    "functions": [
+      {
+        "name": "listFunctions",
+        "line": 3
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "listFunctions",
+        "line": 3
+      },
+      {
+        "name": "loadIndex",
+        "line": 5
+      },
+      {
+        "name": "find",
+        "line": 7
+      },
+      {
+        "name": "endsWith",
+        "line": 7
+      },
+      {
+        "name": "map",
+        "line": 37
+      },
+      {
+        "name": "join",
+        "line": 37
+      }
+    ]
+  },
+  {
+    "file": "brain/functionLocator.js",
+    "functions": [
+      {
+        "name": "locateFunction",
+        "line": 3
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "locateFunction",
+        "line": 3
+      },
+      {
+        "name": "findFunction",
+        "line": 5
+      }
+    ]
+  },
+  {
+    "file": "brain/impactAnalyzer.js",
+    "functions": [
+      {
+        "name": "analyzeImpact",
+        "line": 3
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "analyzeImpact",
+        "line": 3
+      },
+      {
+        "name": "findUsedBy",
+        "line": 5
+      }
+    ]
+  },
+  {
+    "file": "brain/projectArchitecture.js",
+    "functions": [
+      {
+        "name": "explainArchitecture",
+        "line": 3
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      "../index/searchIndex"
+    ],
+    "calls": [
+      {
+        "name": "explainArchitecture",
+        "line": 3
+      },
+      {
+        "name": "loadIndex",
+        "line": 5
+      },
+      {
+        "name": "startsWith",
+        "line": 21
+      },
+      {
+        "name": "push",
+        "line": 22
+      },
+      {
+        "name": "startsWith",
+        "line": 23
+      },
+      {
+        "name": "push",
+        "line": 24
+      },
+      {
+        "name": "startsWith",
+        "line": 25
+      },
+      {
+        "name": "push",
+        "line": 26
+      },
+      {
+        "name": "startsWith",
+        "line": 27
+      },
+      {
+        "name": "push",
+        "line": 28
+      },
+      {
+        "name": "startsWith",
+        "line": 29
+      },
+      {
+        "name": "push",
+        "line": 30
+      },
+      {
+        "name": "startsWith",
+        "line": 31
+      },
+      {
+        "name": "push",
+        "line": 32
+      },
+      {
+        "name": "push",
+        "line": 34
+      },
+      {
+        "name": "entries",
+        "line": 41
+      },
+      {
+        "name": "map",
+        "line": 47
+      },
+      {
+        "name": "join",
+        "line": 47
+      }
+    ]
+  },
+  {
     "file": "brain/projectBrain.js",
     "functions": [
-      "answerProjectQuestion"
+      {
+        "name": "answerProjectQuestion",
+        "line": 12
+      },
+      {
+        "name": "call",
+        "line": 16
+      }
     ],
     "arrowFunctions": [],
     "requires": [
       "../index/searchIndex",
       "./fileExplainer",
       "./executionFlow",
-      "../index/projectQuery"
+      "./callChain",
+      "./projectArchitecture",
+      "../index/projectQuery",
+      "./dependencyTree",
+      "./impactAnalyzer",
+      "./functionExplorer",
+      "./functionLocator"
     ],
     "calls": [
       {
         "name": "answerProjectQuestion",
-        "line": 6
-      },
-      {
-        "name": "extractKeyword",
-        "line": 8
-      },
-      {
-        "name": "test",
-        "line": 11
-      },
-      {
-        "name": "findCallers",
         "line": 12
       },
       {
-        "name": "map",
-        "line": 22
+        "name": "extractKeyword",
+        "line": 14
       },
       {
-        "name": "join",
-        "line": 22
+        "name": "test",
+        "line": 17
       },
       {
-        "name": "explainExecution",
+        "name": "traceFunction",
+        "line": 19
+      },
+      {
+        "name": "test",
+        "line": 28
+      },
+      {
+        "name": "findCallers",
         "line": 29
       },
       {
+        "name": "map",
+        "line": 40
+      },
+      {
+        "name": "join",
+        "line": 41
+      },
+      {
         "name": "test",
-        "line": 35
+        "line": 47
       },
       {
         "name": "endsWith",
-        "line": 35
+        "line": 47
+      },
+      {
+        "name": "analyzeImpact",
+        "line": 49
+      },
+      {
+        "name": "test",
+        "line": 57
+      },
+      {
+        "name": "endsWith",
+        "line": 57
+      },
+      {
+        "name": "dependencyTree",
+        "line": 59
+      },
+      {
+        "name": "test",
+        "line": 67
+      },
+      {
+        "name": "explainArchitecture",
+        "line": 68
+      },
+      {
+        "name": "explainExecution",
+        "line": 70
+      },
+      {
+        "name": "test",
+        "line": 77
+      },
+      {
+        "name": "endsWith",
+        "line": 77
       },
       {
         "name": "findUsedBy",
-        "line": 36
+        "line": 78
       },
       {
         "name": "map",
-        "line": 46
+        "line": 88
       },
       {
         "name": "join",
-        "line": 46
+        "line": 88
       },
       {
         "name": "test",
-        "line": 53
+        "line": 95
       },
       {
         "name": "endsWith",
-        "line": 53
+        "line": 95
       },
       {
-        "name": "explainFile",
-        "line": 54
-      },
-      {
-        "name": "findFunction",
-        "line": 56
-      },
-      {
-        "name": "map",
-        "line": 70
-      },
-      {
-        "name": "join",
-        "line": 70
+        "name": "listFunctions",
+        "line": 97
       },
       {
         "name": "test",
-        "line": 74
+        "line": 105
       },
       {
-        "name": "listFiles",
-        "line": 80
+        "name": "endsWith",
+        "line": 105
+      },
+      {
+        "name": "explainFile",
+        "line": 106
+      },
+      {
+        "name": "findFunction",
+        "line": 108
+      },
+      {
+        "name": "test",
+        "line": 114
+      },
+      {
+        "name": "locateFunction",
+        "line": 116
       },
       {
         "name": "map",
-        "line": 80
+        "line": 132
       },
       {
         "name": "join",
-        "line": 80
+        "line": 132
+      },
+      {
+        "name": "test",
+        "line": 136
       },
       {
         "name": "listFiles",
-        "line": 82
+        "line": 142
+      },
+      {
+        "name": "map",
+        "line": 142
+      },
+      {
+        "name": "join",
+        "line": 142
+      },
+      {
+        "name": "listFiles",
+        "line": 144
       },
       {
         "name": "findRequire",
-        "line": 85
+        "line": 147
       },
       {
         "name": "map",
-        "line": 93
+        "line": 155
       },
       {
         "name": "join",
-        "line": 93
+        "line": 155
       }
     ]
   },
@@ -277,10 +594,22 @@
   {
     "file": "memory.js",
     "functions": [
-      "remember",
-      "mergeMemory",
-      "getProfile",
-      "forget"
+      {
+        "name": "remember",
+        "line": 5
+      },
+      {
+        "name": "mergeMemory",
+        "line": 80
+      },
+      {
+        "name": "getProfile",
+        "line": 123
+      },
+      {
+        "name": "forget",
+        "line": 132
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -540,7 +869,10 @@
   {
     "file": "memoryExtractor.js",
     "functions": [
-      "extractMemory"
+      {
+        "name": "extractMemory",
+        "line": 7
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -593,8 +925,14 @@
   {
     "file": "public/app.js",
     "functions": [
-      "send",
-      "uploadFile"
+      {
+        "name": "send",
+        "line": 1
+      },
+      {
+        "name": "uploadFile",
+        "line": 39
+      }
     ],
     "arrowFunctions": [],
     "requires": [],
@@ -696,17 +1034,18 @@
   {
     "file": "public/marked.min.js",
     "functions": [
-      "z",
-      "N",
-      "h",
-      "R",
-      "V",
-      "Y",
-      "A",
-      "de",
-      "me",
-      "rt",
-      "k"
+      {
+        "name": "z",
+        "line": 12
+      },
+      {
+        "name": "R",
+        "line": 13
+      },
+      {
+        "name": "k",
+        "line": 67
+      }
     ],
     "arrowFunctions": [],
     "requires": [],
@@ -3944,12 +4283,24 @@
   {
     "file": "routes/chat.js",
     "functions": [
-      "loadMemory",
-      "saveMemory",
-      "loadProfile"
+      {
+        "name": "loadMemory",
+        "line": 16
+      },
+      {
+        "name": "saveMemory",
+        "line": 29
+      },
+      {
+        "name": "loadProfile",
+        "line": 35
+      }
     ],
     "arrowFunctions": [
-      "message"
+      {
+        "name": "message",
+        "line": 45
+      }
     ],
     "requires": [
       "express",
@@ -4080,13 +4431,28 @@
   {
     "file": "server.js",
     "functions": [
-      "loadMemory",
-      "saveMemory",
-      "loadProfile",
-      "saveProfile"
+      {
+        "name": "loadMemory",
+        "line": 27
+      },
+      {
+        "name": "saveMemory",
+        "line": 40
+      },
+      {
+        "name": "loadProfile",
+        "line": 46
+      },
+      {
+        "name": "saveProfile",
+        "line": 54
+      }
     ],
     "arrowFunctions": [
-      "message"
+      {
+        "name": "message",
+        "line": 66
+      }
     ],
     "requires": [
       "dotenv",
@@ -4310,8 +4676,14 @@
   {
     "file": "services/ai.js",
     "functions": [
-      "openRouterAvailable",
-      "chat"
+      {
+        "name": "openRouterAvailable",
+        "line": 5
+      },
+      {
+        "name": "chat",
+        "line": 9
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -4379,8 +4751,14 @@
   {
     "file": "services/embeddings.js",
     "functions": [
-      "loadVectors",
-      "saveVectors"
+      {
+        "name": "loadVectors",
+        "line": 7
+      },
+      {
+        "name": "saveVectors",
+        "line": 15
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -4413,7 +4791,10 @@
   {
     "file": "services/groq.js",
     "functions": [
-      "chatGroq"
+      {
+        "name": "chatGroq",
+        "line": 7
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -4449,7 +4830,10 @@
   {
     "file": "services/search.js",
     "functions": [
-      "search"
+      {
+        "name": "search",
+        "line": 3
+      }
     ],
     "arrowFunctions": [],
     "requires": [
@@ -4526,7 +4910,10 @@
   {
     "file": "utils/smartMemory.js",
     "functions": [
-      "extractFacts"
+      {
+        "name": "extractFacts",
+        "line": 3
+      }
     ],
     "arrowFunctions": [],
     "requires": [

@@ -6,16 +6,37 @@ const INDEX_FILE = path.join(__dirname, "project-index.json");
 function loadIndex() {
   return JSON.parse(fs.readFileSync(INDEX_FILE, "utf8"));
 }
-
 function findFunction(name) {
   const index = loadIndex();
 
-  return index.filter(file =>
-    file.functions.includes(name) ||
-    file.arrowFunctions.includes(name)
-  );
-}
+  const results = [];
 
+  for (const file of index) {
+
+    const normal = file.functions.find(f => f.name === name);
+
+    if (normal) {
+      results.push({
+        file: file.file,
+        line: normal.line,
+        type: "function"
+      });
+    }
+
+    const arrow = file.arrowFunctions.find(f => f.name === name);
+
+    if (arrow) {
+      results.push({
+        file: file.file,
+        line: arrow.line,
+        type: "arrow"
+      });
+    }
+
+  }
+
+  return results;
+}
 function findRequire(moduleName) {
   const index = loadIndex();
 

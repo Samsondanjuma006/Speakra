@@ -7,6 +7,7 @@ const { extractKeyword } = require("../index/projectQuery");
 const { dependencyTree } = require("./dependencyTree");
 const { analyzeImpact } = require("./impactAnalyzer");
 const { listFunctions } = require("./functionExplorer");
+const { locateFunction } = require("./functionLocator");
 
 function answerProjectQuestion(message) {
 
@@ -109,7 +110,17 @@ if (/explain/i.test(message) && keyword.endsWith(".js")) {
   if (functionResult.length > 0) {
     const file = functionResult[0];
 
-    return {
+// Locate a function
+if (/where is|jump to|locate|find function/i.test(message)) {
+
+  const result = locateFunction(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+   return {
       found: true,
       reply:
 `I found the function "${keyword}".
