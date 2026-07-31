@@ -15,23 +15,24 @@ function findFunction(name) {
 
     const normal = file.functions.find(f => f.name === name);
 
-    if (normal) {
-      results.push({
-        file: file.file,
-        line: normal.line,
-        type: "function"
-      });
-    }
-
+if (normal) {
+  results.push({
+    file: file.file,
+    line: normal.line,
+    type: "function",
+    requires: file.requires
+  });
+}
     const arrow = file.arrowFunctions.find(f => f.name === name);
 
-    if (arrow) {
-      results.push({
-        file: file.file,
-        line: arrow.line,
-        type: "arrow"
-      });
-    }
+if (arrow) {
+  results.push({
+    file: file.file,
+    line: arrow.line,
+    type: "arrow",
+    requires: file.requires
+  });
+}
 
   }
 
@@ -78,13 +79,23 @@ function findCallers(functionName) {
   const results = [];
 
   for (const file of index) {
+    const definition = file.functions.find(
+      f => f.name === functionName
+    );
+
     for (const call of file.calls) {
-      if (call.name === functionName) {
-        results.push({
-          file: file.file,
-          line: call.line
-        });
+      if (call.name !== functionName) {
+        continue;
       }
+
+      if (definition && call.line === definition.line) {
+        continue;
+      }
+
+      results.push({
+        file: file.file,
+        line: call.line
+      });
     }
   }
 

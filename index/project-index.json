@@ -235,6 +235,100 @@
     ]
   },
   {
+    "file": "brain/functionAnalysis.js",
+    "functions": [
+      {
+        "name": "analyzeFunction",
+        "line": 5
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [
+      {
+        "module": "fs",
+        "line": 1
+      },
+      {
+        "module": "path",
+        "line": 2
+      },
+      {
+        "module": "../index/searchIndex",
+        "line": 3
+      }
+    ],
+    "calls": [
+      {
+        "name": "analyzeFunction",
+        "line": 5
+      },
+      {
+        "name": "findFunction",
+        "line": 6
+      },
+      {
+        "name": "join",
+        "line": 16
+      },
+      {
+        "name": "cwd",
+        "line": 16
+      },
+      {
+        "name": "existsSync",
+        "line": 20
+      },
+      {
+        "name": "readFileSync",
+        "line": 21
+      },
+      {
+        "name": "split",
+        "line": 21
+      },
+      {
+        "name": "max",
+        "line": 23
+      },
+      {
+        "name": "min",
+        "line": 24
+      },
+      {
+        "name": "slice",
+        "line": 27
+      },
+      {
+        "name": "map",
+        "line": 28
+      },
+      {
+        "name": "join",
+        "line": 32
+      },
+      {
+        "name": "findCallers",
+        "line": 35
+      },
+      {
+        "name": "map",
+        "line": 40
+      },
+      {
+        "name": "join",
+        "line": 41
+      },
+      {
+        "name": "map",
+        "line": 47
+      },
+      {
+        "name": "join",
+        "line": 48
+      }
+    ]
+  },
+  {
     "file": "brain/functionExplorer.js",
     "functions": [
       {
@@ -268,11 +362,11 @@
       },
       {
         "name": "map",
-        "line": 37
+        "line": 38
       },
       {
         "name": "join",
-        "line": 37
+        "line": 39
       }
     ]
   },
@@ -635,56 +729,56 @@
         "line": 106
       },
       {
-        "name": "findFunction",
-        "line": 108
-      },
-      {
         "name": "test",
-        "line": 114
+        "line": 109
       },
       {
         "name": "locateFunction",
-        "line": 116
+        "line": 111
+      },
+      {
+        "name": "findFunction",
+        "line": 119
       },
       {
         "name": "map",
-        "line": 132
+        "line": 134
       },
       {
         "name": "join",
-        "line": 132
+        "line": 134
       },
       {
         "name": "test",
-        "line": 136
+        "line": 139
       },
       {
         "name": "listFiles",
-        "line": 142
+        "line": 145
       },
       {
         "name": "map",
-        "line": 142
+        "line": 145
       },
       {
         "name": "join",
-        "line": 142
+        "line": 145
       },
       {
         "name": "listFiles",
-        "line": 144
-      },
-      {
-        "name": "findRequire",
         "line": 147
       },
       {
+        "name": "findRequire",
+        "line": 150
+      },
+      {
         "name": "map",
-        "line": 155
+        "line": 158
       },
       {
         "name": "join",
-        "line": 155
+        "line": 158
       }
     ]
   },

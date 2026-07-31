@@ -8,6 +8,7 @@ const { dependencyTree } = require("./dependencyTree");
 const { analyzeImpact } = require("./impactAnalyzer");
 const { listFunctions } = require("./functionExplorer");
 const { locateFunction } = require("./functionLocator");
+const { analyzeFunction } = require("./functionAnalysis");
 
 function answerProjectQuestion(message) {
 
@@ -98,12 +99,22 @@ if (/show all functions|list functions|functions in/i.test(message) && keyword.e
 
   if (result.found) {
     return result;
-  }
+   }
 
-}
+  }
 // Explain a specific JavaScript file
 if (/explain/i.test(message) && keyword.endsWith(".js")) {
-    return explainFile(keyword);
+  return explainFile(keyword);
+}
+// Analyze a specific function
+if (/explain|analyze|details about/i.test(message)) {
+
+  const result = analyzeFunction(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
 }
 // Locate a function
 if (/where is|jump to|locate|find function/i.test(message)) {
@@ -131,10 +142,15 @@ if (functionResult.length > 0) {
 ${file.file}
 
 Functions in this file:
-${file.functions.map(f => "• " + f.name + "()").join("\n")}`
-  };
 
-}
+${projectSearch.loadIndex()
+  .find(f => f.file === file.file)
+  .functions
+  .map(f => "• " + f.name + "()")
+  .join("\n")}`
+    };
+
+    }
    // List all project files
     if (/list|all|files|project files/i.test(message)) {
       return {
