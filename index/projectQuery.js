@@ -75,6 +75,7 @@ function extractKeyword(message) {
     "would",  
     "should",
     "will",
+    "reason",
  ]);
 
   const keyword = words.find(word => !ignore.has(word));

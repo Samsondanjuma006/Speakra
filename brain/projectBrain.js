@@ -10,6 +10,7 @@ const { listFunctions } = require("./functionExplorer");
 const { locateFunction } = require("./functionLocator");
 const { analyzeFunction } = require("./functionAnalysis");
 const { analyzeFunctionImpact } = require("./functionImpact");
+const { reasonAboutFunction } = require("./projectReasoner");
 
 function answerProjectQuestion(message) {
 
@@ -107,7 +108,17 @@ if (/show all functions|list functions|functions in/i.test(message) && keyword.e
 if (/explain/i.test(message) && keyword.endsWith(".js")) {
   return explainFile(keyword);
 }
-// Analyze a specific function
+// Full reasoning about a function
+if (/reason|full analysis|everything about|analyze completely/i.test(message)) {
+
+  const result = reasonAboutFunction(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+ // Analyze a specific function
 if (/explain|analyze|details about/i.test(message)) {
 
   const result = analyzeFunction(keyword);
