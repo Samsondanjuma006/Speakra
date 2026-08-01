@@ -22,6 +22,27 @@ function getProjectFunctions(file) {
     }));
 }
 
+function groupFunctions(functions) {
+  const groups = new Map();
+
+  for (const fn of functions) {
+    if (!groups.has(fn.name)) {
+      groups.set(fn.name, {
+        name: fn.name,
+        count: 0,
+        lines: []
+      });
+    }
+
+    const group = groups.get(fn.name);
+
+    group.count++;
+    group.lines.push(fn.line);
+  }
+
+  return Array.from(groups.values());
+}
+
 function analyzeDeepFunctionImpact(functionName) {
   const results = projectSearch.findFunction(functionName);
 
@@ -37,31 +58,35 @@ function analyzeDeepFunctionImpact(functionName) {
 
   for (const caller of callers) {
     const functions = getProjectFunctions(caller.file);
+    const groupedFunctions = groupFunctions(functions);
 
     impact.push({
       file: caller.file,
       line: caller.line,
-      functions
+      functions: groupedFunctions
     });
   }
+const affectedFunctions = [];
+const uniqueFunctionNames = new Set();
+let totalFunctionReferences = 0;
 
-  const affectedFunctions = [];
+for (const caller of impact) {
+  for (const fn of caller.functions) {
+    totalFunctionReferences += fn.count;
+    uniqueFunctionNames.add(fn.name);
 
-  for (const caller of impact) {
-    for (const fn of caller.functions) {
-      if (!affectedFunctions.some(
-        item => item.file === caller.file && item.name === fn.name
-      )) {
-        affectedFunctions.push({
-          file: caller.file,
-          name: fn.name,
-          line: fn.line
-        });
-      }
+    if (!affectedFunctions.some(
+      item => item.file === caller.file && item.name === fn.name
+    )) {
+      affectedFunctions.push({
+        file: caller.file,
+        name: fn.name,
+        count: fn.count
+      });
     }
   }
-
-  let risk = "LOW";
+}
+ let risk = "LOW";
 
   if (
     callers.length >= 3 ||
@@ -83,7 +108,9 @@ function analyzeDeepFunctionImpact(functionName) {
         const functionsText =
           caller.functions.length > 0
             ? caller.functions
-                .map(fn => `  • ${fn.name}() — Line ${fn.line}`)
+                .map(fn =>
+                  `  • ${fn.name}() — ${fn.count} call${fn.count === 1 ? "" : "s"}`
+                )
                 .join("\n")
             : "  • No other project functions found.";
 
@@ -119,10 +146,9 @@ ${impactText}
 ⚠️ Risk:
 ${risk}
 
-Changing ${functionName}() may affect ${callers.length} direct caller file${callers.length === 1 ? "" : "s"} and ${affectedFunctions.length} project function call${affectedFunctions.length === 1 ? "" : "s"}.`
+Changing ${functionName}() may affect ${callers.length} direct caller file${callers.length === 1 ? "" : "s"}, ${uniqueFunctionNames.size} unique project function${uniqueFunctionNames.size === 1 ? "" : "s"}, across ${totalFunctionReferences} total function reference${totalFunctionReferences === 1 ? "" : "s"}.`
   };
 }
-
 module.exports = {
   analyzeDeepFunctionImpact
 };
