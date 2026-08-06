@@ -49,26 +49,77 @@ const lines = text.split("\n");
 
 const functions = [];
 const arrowFunctions = [];
-
+const calls = [];
+const projectFunctions = new Set();
+let currentFunction = null;
 lines.forEach((line, index) => {
 
-  const normal = line.match(/function\s+([A-Za-z0-9_]+)/);
+const normal = line.match(/(?:async\s+)?function\s+([A-Za-z0-9_]+)/);
 
-  if (normal) {
-    functions.push({
-      name: normal[1],
-      line: index + 1
-    });
-  }
+if (normal) {
+  currentFunction = normal[1];
 
-  const arrow = line.match(/const\s+([A-Za-z0-9_]+)\s*=\s*(async\s*)?\(/);
+functions.push({
+  name: normal[1],
+  line: index + 1,
+  calls: []
+});
 
-  if (arrow) {
-    arrowFunctions.push({
-      name: arrow[1],
-      line: index + 1
-    });
-  }
+  projectFunctions.add(normal[1]);
+}
+const arrow = line.match(
+  /const\s+([A-Za-z0-9_]+)\s*=\s*(async\s*)?\([^)]*\)\s*=>/
+);
+
+if (arrow) {
+  currentFunction = arrow[1];
+
+arrowFunctions.push({
+  name: arrow[1],
+  line: index + 1,
+  calls: []
+});
+
+projectFunctions.add(arrow[1]);
+
+}
+
+const matches = [
+  ...line.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*\(/g)
+];
+
+const ignore = new Set([
+  "if",
+  "for",
+  "while",
+  "switch",
+  "catch",
+  "function",
+  "require",
+  "console",
+  "message",
+  "req",
+  "res",
+  "next",
+  "callback",
+  "resolve",
+  "reject"
+]);
+
+for (const match of matches) {
+  const name = match[1];
+
+  if (ignore.has(name)) continue;
+
+  if (name === currentFunction) continue;
+
+  calls.push({
+    caller: currentFunction,
+    callee: name,
+    line: index + 1
+  });
+
+}
 
 });
 const requires = [
@@ -82,41 +133,17 @@ const requires = [
     line
   };
 });
-const calls = [];
 
-lines.forEach((line, index) => {
+for (const call of calls) {
+  const fn =
+    functions.find(f => f.name === call.caller) ||
+    arrowFunctions.find(f => f.name === call.caller);
 
-  const matches = [
-    ...line.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*\(/g)
-  ];
-
-  for (const match of matches) {
-
-    const name = match[1];
-
-    if (
-      [
-        "if",
-        "for",
-        "while",
-        "switch",
-        "catch",
-        "function",
-        "require",
-        "console"
-      ].includes(name)
-    ) {
-      continue;
-    }
-
-    calls.push({
-      name,
-      line: index + 1
-    });
+  if (fn && !fn.calls.includes(call.callee)) {
+    fn.calls.push(call.callee);
   }
-
-});
-    index.push({
+}
+   index.push({
       file: full.replace(ROOT + path.sep, ""),
       functions,
       arrowFunctions,

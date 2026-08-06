@@ -30,13 +30,13 @@ Affected files:
 
 `;
 
-  for (const file of usedBy) {
-    reply += `• ${file.file}
-  Line ${file.line}
+for (const file of usedBy) {
+  reply += `• ${file.file}
+  Import line: ${file.line}
+  This file will fail to load if ${fileName} is removed.
 
 `;
-  }
-
+}
   reply +=
 `Total affected: ${usedBy.length}
 

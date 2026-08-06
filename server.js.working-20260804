@@ -62,9 +62,6 @@ app.get("/", (req, res) => {
 });
 
 app.post("/chat", async (req, res) => {
-console.log(">>>>>>>> REQUEST FROM BROWSER <<<<<<<<");
-console.log(req.headers["user-agent"]);
-console.log(req.body);
   try {
     const message = (req.body.message || "").trim();
     if (!message) {
@@ -79,28 +76,16 @@ console.log(req.body);
     // Reload profile after saving
     await loadProfile();
 
-// Project Brain
-const projectQuestion =
-/function|trace|call|caller|chain|impact|dependency|used by|where|find|file|code|project|memory|brain|server|route|remember/i.test(message);
+      // Project Brain
+      const result = answerProjectQuestion(message);
 
-if (projectQuestion) {
+      if (result.found) {
+        return res.json({
+          reply: result.reply
+        });
+      }
 
-  console.log("MESSAGE:", message);
-
-const result = answerProjectQuestion(message);
-
-console.log("FOUND =", result.found);
-
-if (result.found) {
-  console.log("ENTERED PROJECT BRAIN");
-
-  return res.json({
-    reply: "🔥 PROJECT BRAIN ACTIVE 🔥\n\n" + result.reply
-  });
-}
-
-}
-history.push({
+    history.push({
       role: "user",
       content: message
     });
@@ -176,7 +161,7 @@ Source: ${item.url}`
      {
       model: "openai/gpt-3.5-turbo",
       messages: messages,
-      max_tokens: 64
+      max_tokens: 256
      },
 
       {

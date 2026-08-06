@@ -49,12 +49,16 @@ router.post("/", async (req, res) => {
         reply: "Please enter a message."
       });
     }
+await remember(message);
 
-    await remember(message);
-    await loadProfile();
+const factsFound = extractFacts(message);
 
-    const factsFound = extractFacts(message);
-    console.log("Smart Memory:", factsFound);
+if (Object.keys(factsFound).length > 0) {
+  await mergeMemory(factsFound);
+}
+const profile = await getProfile();
+
+
 
     history.push({
       role: "user",

@@ -48,6 +48,9 @@ ${context}`;
 Function:
 ${functionName}()
 
+Total callers:
+${callers.length}
+
 Called from:
 
 ${sections.join("\n\n")}`

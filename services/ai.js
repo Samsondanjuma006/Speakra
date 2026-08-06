@@ -18,12 +18,11 @@ async function chat(messages) {
 
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "openrouter/free",
-        messages,
-        max_tokens: 512,
-        temperature: 0.7,
-      },
+{
+  model: "openai/gpt-3.5-turbo",
+  messages: messages,
+max_tokens: 128
+},
       {
         timeout: 30000,
         headers: {

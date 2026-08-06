@@ -13,5 +13,6 @@
     "Become the best AI engineer in Africa"
   ],
   "query": "Where is AnchorProvider used?",
-  "file": "app.tsx"
+  "file": "app.tsx",
+  "favoriteColor": "blue"
 }

@@ -2,7 +2,7 @@ function extractKeyword(message) {
   const text = message.toLowerCase();
 
   const words = text
-    .replace(/[^\w\s./-]/g, "")
+    .replace(/[^\w\s/-]/g, "")
     .split(/\s+/)
     .filter(Boolean);
 
@@ -19,7 +19,10 @@ function extractKeyword(message) {
     "me",
     "which",
     "what",
+    "do",
     "does",
+    "know",
+    "you",
     "calls",
     "call",
     "use",
@@ -76,6 +79,17 @@ function extractKeyword(message) {
     "should",
     "will",
     "reason",
+    "execution",
+    "path",
+    "flow",
+    "route",
+    "routes",
+    "full",
+    "analysis",
+    "analyze",
+    "completely",
+    "everything",
+    "to",
  ]);
 
   const keyword = words.find(word => !ignore.has(word));

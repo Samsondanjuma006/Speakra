@@ -11,15 +11,21 @@ const { locateFunction } = require("./functionLocator");
 const { analyzeFunction } = require("./functionAnalysis");
 const { analyzeFunctionImpact } = require("./functionImpact");
 const { reasonAboutFunction } = require("./projectReasoner");
+const { reverseCallGraph } = require("./reverseCallGraph");
+const { buildExecutionGraph } = require("./executionGraph");
+const { buildProjectGraph } = require("./projectGraph");
 
 function answerProjectQuestion(message) {
 
 const keyword = extractKeyword(message);
+console.log("MESSAGE:", message);
+console.log("KEYWORD:", keyword);
 
 // Trace function call chain
 if (/trace/i.test(message)) {
 
   const trace = traceFunction(keyword);
+console.log("TRACE RESULT:", trace);
 
   if (trace.found) {
     return trace;
@@ -66,9 +72,78 @@ if (/dependency tree|dependencies/i.test(message) && keyword.endsWith(".js")) {
   }
 
 }
+  // Full Function Analysis
+  if (/full analysis|analyze|everything about|explain function/i.test(message)) {
+
+    let report = [];
+
+    const analysis = analyzeFunction(keyword);
+    if (analysis.found) {
+      report.push(analysis.reply);
+    }
+
+    const callers = reverseCallGraph(keyword);
+    if (callers.found) {
+      report.push("\n====================\n");
+      report.push(callers.reply);
+    }
+
+    const execution = buildExecutionGraph(keyword);
+    if (execution.found) {
+      report.push("\n====================\n");
+      report.push(execution.reply);
+    }
+
+    const impact = analyzeFunctionImpact(keyword);
+    if (impact.found) {
+      report.push("\n====================\n");
+      report.push(impact.reply);
+    }
+
+    if (report.length > 0) {
+      return {
+        found: true,
+        reply: report.join("\n")
+      };
+    }
+  }
 // Project Architecture
 if (/architecture|project architecture|show architecture/i.test(message)) {
   return explainArchitecture();
+}
+// Project Graph
+if (/project graph|show graph|graph/i.test(message)) {
+
+  const graph = buildProjectGraph();
+
+  return {
+    found: true,
+    reply:
+      "🕸 Project Graph\n\n" +
+      JSON.stringify(graph, null, 2)
+  };
+
+}
+
+// Execution path to a specific function
+if (/execution path|flow to|path to/i.test(message)) {
+
+  const result = reasonAboutFunction(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+// Execution Graph
+if (/execution graph|graph|execution path/i.test(message)) {
+
+  const result = buildExecutionGraph(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
 }
 const flow = explainExecution(message);
 // Execution Flow
@@ -132,6 +207,16 @@ if (/explain|analyze|details about/i.test(message)) {
 if (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {
 
   const result = analyzeFunctionImpact(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+// Reverse Call Graph
+if (/execution path|reverse call graph|path to|who reaches/i.test(message)) {
+
+  const result = reverseCallGraph(keyword);
 
   if (result.found) {
     return result;

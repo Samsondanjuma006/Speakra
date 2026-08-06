@@ -17,19 +17,19 @@ function explainFile(fileName) {
 
   if (file.functions.length > 0) {
     reply += "Functions:\n";
-    reply += file.functions.map(f => "• " + f + "()").join("\n");
+    reply += file.functions.map(f => "• " + f.name + "()").join("\n");
     reply += "\n\n";
   }
 
   if (file.arrowFunctions.length > 0) {
     reply += "Arrow Functions:\n";
-    reply += file.arrowFunctions.map(f => "• " + f).join("\n");
+    reply += file.arrowFunctions.map(f => "• " + f.name).join("\n");
     reply += "\n\n";
   }
 
   if (file.requires.length > 0) {
     reply += "Dependencies:\n";
-    reply += file.requires.map(r => "• " + r).join("\n");
+    reply += file.requires.map(r => "• " + r.module).join("\n");
   }
 
   return {

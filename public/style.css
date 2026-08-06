@@ -43,9 +43,16 @@ h1 {
   margin-left: auto;
 }
 
+  background: #444654;
+  margin-right: auto;
+
 .ai {
   background: #444654;
   margin-right: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 }
 
 .input-area {
@@ -104,3 +111,11 @@ button {
     width: 100%;
   }
 
+.message.ai {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message.user {
+  white-space: pre-wrap;
+}

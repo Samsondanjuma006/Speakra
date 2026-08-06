@@ -1,3 +1,4 @@
+alert("APP.JS LOADED");
 async function send() {
   const input = document.getElementById("message");
   const chat = document.getElementById("chat");
@@ -20,13 +21,17 @@ async function send() {
       body: JSON.stringify({ message })
     });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    const typing = document.getElementById("typing");
-    if (typing) typing.remove();
+      console.log(data.reply);
+alert(data.reply);
 
-    chat.innerHTML += `<div class="message ai">${data.reply}</div>`;
-    chat.scrollTop = chat.scrollHeight;
+      const typing = document.getElementById("typing");
+      if (typing) typing.remove();
+
+      chat.innerHTML += `<div class="message ai">${data.reply.replace(/\n/g, "<br>")}</div>`;
+      
+chat.scrollTop = chat.scrollHeight;
 
   } catch (err) {
     const typing = document.getElementById("typing");

@@ -84,21 +84,24 @@ function findCallers(functionName) {
     );
 
     for (const call of file.calls) {
-      if (call.name !== functionName) {
+
+      if (call.callee !== functionName) {
+
         continue;
       }
 
       if (definition && call.line === definition.line) {
         continue;
-      }
-
-      results.push({
-        file: file.file,
-        line: call.line
-      });
     }
-  }
 
+results.push({
+  file: file.file,
+  line: call.line,
+  caller: call.caller
+});
+   
+}
+  }
   return results;
 }
 module.exports = {

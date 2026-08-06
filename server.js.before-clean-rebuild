@@ -1,4 +1,5 @@
 require("dotenv").config();
+console.log("🚨 SERVER FILE:", __filename);
 const { answerProjectQuestion } = require("./brain/projectBrain");
 
 const express = require("express");
@@ -62,9 +63,6 @@ app.get("/", (req, res) => {
 });
 
 app.post("/chat", async (req, res) => {
-console.log(">>>>>>>> REQUEST FROM BROWSER <<<<<<<<");
-console.log(req.headers["user-agent"]);
-console.log(req.body);
   try {
     const message = (req.body.message || "").trim();
     if (!message) {
@@ -79,28 +77,22 @@ console.log(req.body);
     // Reload profile after saving
     await loadProfile();
 
-// Project Brain
+    // Project Brain (only for project/code questions)
 const projectQuestion =
-/function|trace|call|caller|chain|impact|dependency|used by|where|find|file|code|project|memory|brain|server|route|remember/i.test(message);
+  /function|file|code|project|upload|component|route|server|memory|brain|bug|error|javascript|js|typescript|tsx|html|css|express|api/i.test(message);
 
 if (projectQuestion) {
+  console.log("USER MESSAGE:", message);
+  const result = answerProjectQuestion(message);
+  console.log("PROJECT BRAIN RESULT:", result);
 
-  console.log("MESSAGE:", message);
-
-const result = answerProjectQuestion(message);
-
-console.log("FOUND =", result.found);
-
-if (result.found) {
-  console.log("ENTERED PROJECT BRAIN");
-
-  return res.json({
-    reply: "🔥 PROJECT BRAIN ACTIVE 🔥\n\n" + result.reply
-  });
+  if (result.found) {
+    return res.json({
+      reply: result.reply
+    });
+  }
 }
-
-}
-history.push({
+   history.push({
       role: "user",
       content: message
     });
@@ -125,7 +117,11 @@ history.push({
 
     if (profile.learning) {
       facts += `User is learning ${profile.learning}.\n`;
-    }    // Use Tavily for internet searches
+     }
+       facts = facts.slice(0, 200);    
+
+   // Use Tavily for internet searches
+
     let searchContext = "";
 
     const needsSearch =
@@ -176,7 +172,7 @@ Source: ${item.url}`
      {
       model: "openai/gpt-3.5-turbo",
       messages: messages,
-      max_tokens: 64
+      max_tokens: 256
      },
 
       {
@@ -223,6 +219,7 @@ Promise.all([
   loadProfile()
 ]).then(() => {
   app.listen(PORT, () => {
-    console.log(`SamuAI is running on port ${PORT}`);
+  console.log("🔥 THIS IS THE SERVER I AM EDITING 🔥");
+console.log(`SamuAI is running on port ${PORT}`);
   });
 });

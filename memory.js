@@ -129,7 +129,7 @@ async function getProfile() {
 
   return {};
 }
-async function forget(key) {
+async function forget(key, value = null) {
   let profile = {};
 
   try {
@@ -140,12 +140,24 @@ async function forget(key) {
     return;
   }
 
-  delete profile[key];
+  if (value && Array.isArray(profile[key])) {
+    profile[key] = profile[key].filter(
+      item => item !== value
+    );
+
+    if (profile[key].length === 0) {
+      delete profile[key];
+    }
+
+  } else {
+    delete profile[key];
+  }
 
   await fs.writeJson(FILE, profile, {
     spaces: 2
   });
-}module.exports = {
+}
+  module.exports = {
   remember,
   mergeMemory,
   getProfile,
