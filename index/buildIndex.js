@@ -62,6 +62,8 @@ if (normal) {
 functions.push({
   name: normal[1],
   line: index + 1,
+  file: full.replace(ROOT + path.sep, ""),
+  type: "function",
   calls: []
 });
 
@@ -77,6 +79,8 @@ if (arrow) {
 arrowFunctions.push({
   name: arrow[1],
   line: index + 1,
+  file: full.replace(ROOT + path.sep, ""),
+  type: "arrow",
   calls: []
 });
 
@@ -113,11 +117,14 @@ for (const match of matches) {
 
   if (name === currentFunction) continue;
 
-  calls.push({
-    caller: currentFunction,
-    callee: name,
-    line: index + 1
-  });
+calls.push({
+  caller: currentFunction,
+  callee: name,
+  file: full.replace(ROOT + path.sep, ""),
+  line: index + 1
+});
+
+console.log(calls[calls.length - 1]);
 
 }
 

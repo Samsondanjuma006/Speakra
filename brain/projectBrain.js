@@ -14,6 +14,15 @@ const { reasonAboutFunction } = require("./projectReasoner");
 const { reverseCallGraph } = require("./reverseCallGraph");
 const { buildExecutionGraph } = require("./executionGraph");
 const { buildProjectGraph } = require("./projectGraph");
+const { traceDependencies } = require("./dependencyTracer");
+const { buildCallHierarchy } = require("./callHierarchy");
+const { buildReverseCallHierarchy } = require("./reverseCallHierarchy");
+const { explainFunctionReason } = require("./functionReason");
+const { explainFeature } = require("./featureReason");
+const { buildExecutionPipeline } = require("./executionPipeline");
+const { buildAutoExecutionPipeline } = require("./autoExecutionPipeline");
+const { buildRecursiveExecution } = require("./recursiveExecution");
+const { buildExecutionTree } = require("./fullExecutionTree");
 
 function answerProjectQuestion(message) {
 
@@ -107,6 +116,72 @@ if (/dependency tree|dependencies/i.test(message) && keyword.endsWith(".js")) {
       };
     }
   }
+// Feature Reasoning
+if (/how does .* work|feature|system/i.test(message)) {
+
+  const result = explainFeature(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+// Function Reasoning
+if (/^why\b|^explain\b|purpose|reason/i.test(message)) {
+
+  const result = explainFunctionReason(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+// Recursive Execution
+if (/trace|full execution|execution trace|recursive execution/i.test(message)) {
+
+  const lines = buildRecursiveExecution(keyword);
+
+  return {
+    found: true,
+    reply: lines.join("\n")
+  };
+
+}
+// Call Hierarchy
+if (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {
+
+console.log("CALL HIERARCHY BLOCK:", message, keyword);
+
+  const result = buildCallHierarchy(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+// Execution Pipeline
+if (/execution pipeline|pipeline|execution flow/i.test(message)) {
+
+  const result =
+buildAutoExecutionPipeline(keyword);
+  if (result.found) {
+    return result;
+  }
+
+}
+// Full Execution Tree
+if (/execution tree|full tree|tree/i.test(message)) {
+
+  const lines = buildExecutionTree(keyword);
+
+  return {
+    found: true,
+    reply:
+      "🌳 Full Execution Tree\n\n" +
+      lines.join("\n")
+  };
+
+}
 // Project Architecture
 if (/architecture|project architecture|show architecture/i.test(message)) {
   return explainArchitecture();

@@ -98,10 +98,17 @@ if (intelligence.length === 0) {
 const intelligenceText = intelligence
   .map(i => `• ${i}`)
   .join("\n");
-  return {
+
+return {
     found: true,
-    
-reply:
+    summary,
+    intelligence,
+    file,
+    callers,
+    dependencies: file.requires || [],
+    code,
+
+    reply:
 `🧠 Function Analysis
 
 Function:
@@ -124,7 +131,8 @@ ${dependencyText}
 
 📝 Code:
 ${code}`
-  };
+};
+
 }
 
 module.exports = {
