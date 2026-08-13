@@ -75,35 +75,23 @@ function listFiles() {
 }
 function findCallers(functionName) {
   const index = loadIndex();
-
   const results = [];
 
   for (const file of index) {
-    const definition = file.functions.find(
-      f => f.name === functionName
-    );
-
-    for (const call of file.calls) {
-
-      if (call.callee !== functionName) {
-
-        continue;
+    for (const call of (file.calls || [])) {
+      if (call.callee === functionName) {
+        results.push({
+          file: file.file,
+          line: call.line,
+          caller: call.caller
+        });
       }
-
-      if (definition && call.line === definition.line) {
-        continue;
     }
-
-results.push({
-  file: file.file,
-  line: call.line,
-  caller: call.caller
-});
-   
-}
   }
+
   return results;
 }
+
 module.exports = {
   loadIndex,
   findFunction,

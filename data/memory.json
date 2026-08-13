@@ -5,14 +5,6 @@
   },
   {
     "role": "user",
-    "content": "i can see this"
-  },
-  {
-    "role": "assistant",
-    "content": "It seems like there might be a misunderstanding. As an AI assistant, I am unable to view or access external links or websites. How can I assist you today?"
-  },
-  {
-    "role": "user",
     "content": "🔥 THIS IS SAMUAI-OLD-BROKEN 🔥"
   },
   {
@@ -202,5 +194,13 @@
   {
     "role": "assistant",
     "content": "As an AI assistant, deploying and publishing SamuAI would typically involve some costs. The specific costs can vary depending on various factors such as the platform you choose to deploy it on, the hosting services, maintenance, and any customization or additional features you might require.\n\nHere are some general factors that could affect the cost of"
+  },
+  {
+    "role": "user",
+    "content": "Hello"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello, Samson! How can I assist you today?"
   }
 ]

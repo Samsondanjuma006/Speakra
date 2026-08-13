@@ -12,6 +12,8 @@ const SKIP = new Set([
 ]);
 
 const BACKUP_PATTERNS = [
+  "test-current.js",
+  "temp.js",
   "backup",
   "working",
   "before",
@@ -47,6 +49,77 @@ function scan(dir) {
 
 const lines = text.split("\n");
 
+let inBlockComment = false;
+
+function stripComments(line) {
+  let result = "";
+  let i = 0;
+
+  while (i < line.length) {
+    if (!inBlockComment && line.startsWith("//", i)) {
+      break;
+    }
+
+    if (!inBlockComment && line.startsWith("/*", i)) {
+      inBlockComment = true;
+      i += 2;
+      continue;
+    }
+
+    if (inBlockComment && line.startsWith("*/", i)) {
+      inBlockComment = false;
+      i += 2;
+      continue;
+    }
+
+    if (!inBlockComment) {
+      result += line[i];
+    }
+
+    i++;
+  }
+
+  return result;
+}
+function stripStrings(line) {
+  let result = "";
+  let quote = null;
+  let escaped = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (escaped) {
+      escaped = false;
+      result += " ";
+      continue;
+    }
+
+    if (quote && ch === "\\") {
+      escaped = true;
+      result += " ";
+      continue;
+    }
+
+    if (quote) {
+      if (ch === quote) {
+        quote = null;
+      }
+      result += " ";
+      continue;
+    }
+
+    if (ch === '"' || ch === "'" || ch === "`") {
+      quote = ch;
+      result += " ";
+      continue;
+    }
+
+    result += ch;
+  }
+
+  return result;
+}
 const functions = [];
 const arrowFunctions = [];
 const calls = [];
@@ -54,7 +127,9 @@ const projectFunctions = new Set();
 let currentFunction = null;
 lines.forEach((line, index) => {
 
-const normal = line.match(/(?:async\s+)?function\s+([A-Za-z0-9_]+)/);
+const codeLine = stripStrings(stripComments(line));
+
+const normal = codeLine.match(/^\s*(?:async\s+)?function\s+([A-Za-z0-9_]+)/);
 
 if (normal) {
   currentFunction = normal[1];
@@ -69,27 +144,46 @@ functions.push({
 
   projectFunctions.add(normal[1]);
 }
-const arrow = line.match(
+const arrow = codeLine.match(
   /const\s+([A-Za-z0-9_]+)\s*=\s*(async\s*)?\([^)]*\)\s*=>/
 );
 
 if (arrow) {
   currentFunction = arrow[1];
 
-arrowFunctions.push({
-  name: arrow[1],
-  line: index + 1,
-  file: full.replace(ROOT + path.sep, ""),
-  type: "arrow",
-  calls: []
-});
+  arrowFunctions.push({
+    name: arrow[1],
+    line: index + 1,
+    file: full.replace(ROOT + path.sep, ""),
+    type: "arrow",
+    calls: []
+  });
 
-projectFunctions.add(arrow[1]);
-
+  projectFunctions.add(arrow[1]);
 }
 
+// Detect inline arrow callbacks such as:
+// router.post("/", async (req, res) => {
+const inlineArrow = codeLine.match(
+  /([A-Za-z_][A-Za-z0-9_.]*)\s*\([^)]*\s*,?\s*(?:async\s*)?\([^)]*\)\s*=>/
+);
+if (inlineArrow) {
+  const callbackTarget = inlineArrow[1];
+
+  if (callbackTarget === "app.post") {
+    currentFunction = "POST /chat callback";
+  } else if (callbackTarget === "app.get") {
+    currentFunction = "GET route callback";
+  } else if (callbackTarget === "router.post") {
+    currentFunction = "POST route callback";
+  } else if (callbackTarget === "router.get") {
+    currentFunction = "GET route callback";
+  } else {
+    currentFunction = callbackTarget + " callback";
+  }
+}
 const matches = [
-  ...line.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*\(/g)
+  ...codeLine.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*\(/g)
 ];
 
 const ignore = new Set([
@@ -114,18 +208,14 @@ for (const match of matches) {
   const name = match[1];
 
   if (ignore.has(name)) continue;
-
   if (name === currentFunction) continue;
 
-calls.push({
-  caller: currentFunction,
-  callee: name,
-  file: full.replace(ROOT + path.sep, ""),
-  line: index + 1
-});
-
-console.log(calls[calls.length - 1]);
-
+  calls.push({
+    caller: currentFunction,
+    callee: name,
+    file: full.replace(ROOT + path.sep, ""),
+    line: index + 1
+  });
 }
 
 });
@@ -140,6 +230,7 @@ const requires = [
     line
   };
 });
+
 
 for (const call of calls) {
   const fn =
@@ -160,6 +251,29 @@ for (const call of calls) {
   }
 }
 scan(ROOT);
+
+// Build the complete set of project functions
+const allProjectFunctions = new Set();
+
+for (const file of index) {
+  for (const fn of [...(file.functions || []), ...(file.arrowFunctions || [])]) {
+    allProjectFunctions.add(fn.name);
+  }
+}
+
+// Keep only calls to functions that exist in the project
+for (const file of index) {
+  file.calls = file.calls.filter(call =>
+    allProjectFunctions.has(call.callee)
+  );
+
+  for (const fn of [...(file.functions || []), ...(file.arrowFunctions || [])]) {
+    fn.calls = fn.calls.filter(callee =>
+      allProjectFunctions.has(callee)
+    );
+  }
+}
+
 
 fs.writeFileSync(
   path.join(ROOT, "index", "project-index.json"),

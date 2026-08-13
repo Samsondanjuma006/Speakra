@@ -14,3 +14,11 @@ chat-route.txt
 test.txt
 
 *.log
+
+# Local development backups
+backups/
+*.before-*
+*.backup
+
+# Temporary files
+tatus

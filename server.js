@@ -13,8 +13,10 @@ const { extractKeyword } = require("./index/projectQuery");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const whatsappRoutes = require("./whatsapp/whatsappRoutes");
 
 app.use(cors());
+app.use("/whatsapp", whatsappRoutes);
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static("public"));
 
@@ -31,7 +33,7 @@ async function loadMemory() {
     history = [
       {
         role: "system",
-        content: "You are SamuAI, a friendly and helpful AI assistant."
+        content: "You are SamuAI Chatbot, a friendly and helpful AI assistant."
       }
     ];
   }
@@ -81,7 +83,7 @@ console.log(req.body);
 
 // Project Brain
 const projectQuestion =
-/function|trace|call|caller|chain|impact|dependency|used by|where|find|file|code|project|memory|brain|server|route|remember/i.test(message);
+/function|trace|call|caller|chain|impact|dependency|used by|where|find|file|code|project|memory|brain|server|route|remember|execution|pipeline|startup/i.test(message);
 
 if (projectQuestion) {
 
@@ -164,19 +166,19 @@ Source: ${item.url}`
       {
         role: "system",
         content:
-          "You are SamuAI, a friendly and helpful AI assistant.\n\nRemember these facts about the user:\n" +
+          "You are SamuAI Chatbot, a friendly and helpful AI assistant.\n\nRemember these facts about the user:\n" +
          facts.slice(0, 300) +
          searchContext.slice(0, 800)
       },
 
-      ...history.filter(msg => msg.role !== "system").slice(-3)
+      ...history.filter(msg => msg.role !== "system").slice(-1)
 
     ];    const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
      {
       model: "openai/gpt-3.5-turbo",
       messages: messages,
-      max_tokens: 64
+      max_tokens: 10
      },
 
       {
@@ -184,7 +186,7 @@ Source: ${item.url}`
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "http://localhost:3000",
-          "X-Title": "SamuAI"
+          "X-Title": "SamuAI Chatbot"
         }
       }
     );
@@ -223,6 +225,6 @@ Promise.all([
   loadProfile()
 ]).then(() => {
   app.listen(PORT, () => {
-    console.log(`SamuAI is running on port ${PORT}`);
+    console.log(`SamuAI Chatbot is running on port ${PORT}`);
   });
 });

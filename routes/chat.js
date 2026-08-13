@@ -20,7 +20,7 @@ async function loadMemory() {
     history = [
       {
         role: "system",
-        content: "You are SamuAI, a friendly and helpful AI assistant."
+        content: "You are SamuAI Chatbot, a friendly and helpful AI assistant."
       }
     ];
   }
@@ -86,7 +86,7 @@ const profile = await getProfile();
       {
         role: "system",
         content:
-          "You are SamuAI, a friendly AI assistant.\n\nKnown facts:\n" +
+          "You are SamuAI Chatbot, a friendly AI assistant.\n\nKnown facts:\n" +
           facts
       },
       ...history.filter(msg => msg.role !== "system")

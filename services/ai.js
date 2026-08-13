@@ -29,7 +29,7 @@ max_tokens: 128
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           "HTTP-Referer": process.env.SITE_URL || "http://localhost:3000",
-          "X-Title": "SamuAI"
+          "X-Title": "SamuAI Chatbot"
         }
       }
     );

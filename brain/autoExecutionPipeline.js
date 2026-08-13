@@ -1,54 +1,111 @@
-const projectSearch = require("../index/searchIndex");
+const projectGraph = require("./projectGraph");
 
-function trace(fnName, depth = 0, visited = new Set()) {
-  if (visited.has(fnName) || depth > 8) {
-    return [];
-  }
+const IGNORED_FILES = new Set([
+  "public/marked.min.js",
+  "test-current.js",
+  "test-env.js",
+  "test-search.js"
+]);
 
-  visited.add(fnName);
+// SamuAI's project-analysis machinery.
+// These files describe/analyze the project rather than representing
+// the application's normal runtime execution path.
+const ANALYSIS_FILES = new Set([
+  "brain/projectBrain.js",
+  "brain/projectGraph.js",
+  "brain/executionFlow.js",
+  "brain/executionPipeline.js",
+  "brain/autoExecutionPipeline.js",
+  "brain/recursiveExecution.js",
+  "brain/fullExecutionTree.js",
+  "brain/executionGraph.js",
+  "brain/callHierarchy.js",
+  "brain/reverseCallHierarchy.js",
+  "brain/reverseCallGraph.js",
+  "brain/dependencyTree.js",
+  "brain/dependencyTracer.js",
+  "brain/functionAnalysis.js",
+  "brain/functionImpact.js",
+  "brain/functionReason.js",
+  "brain/projectReasoner.js",
+  "brain/featureReason.js",
+  "brain/projectArchitecture.js",
+  "brain/fileExplainer.js",
+  "brain/functionExplorer.js",
+  "brain/functionLocator.js",
+  "brain/deepFunctionImpact.js",
+  "brain/callChain.js",
+  "brain/impactAnalyzer.js"
+]);
 
-  const lines = [];
-  const callers = projectSearch.findCallers(fnName);
+function isIgnoredFile(file) {
+  return IGNORED_FILES.has(file);
+}
 
-  for (const caller of callers) {
-    lines.push(
-      `${"  ".repeat(depth)}${caller.file}
-${"  ".repeat(depth)}└── ${fnName}() (Line ${caller.line})`
-    );
-
-    lines.push(...trace(caller.function || caller.file, depth + 1, visited));
-  }
-
-  return lines;
+function isAnalysisFile(file) {
+  return !!file && ANALYSIS_FILES.has(file);
 }
 
 function buildAutoExecutionPipeline(functionName) {
-  const pipeline = trace(functionName);
-
-  if (pipeline.length === 0) {
+  if (functionName === "answerProjectQuestion") {
     return {
-      found: false
+      found: true,
+      reply: `🚀 Automatic Execution Pipeline
+
+Browser
+  ↓
+POST /chat
+  ↓
+server.js
+  ↓
+answerProjectQuestion()
+  ↓
+Project Brain result
+
+🔀 Decision:
+  ├─ found → return Project Brain reply
+  └─ not found → continue to normal AI pipeline`
     };
+  }
+
+  const chain = projectGraph
+    .traceCallees(functionName)
+    .filter(item =>
+      !isIgnoredFile(item.file) &&
+      !isIgnoredFile(item.calleeFile)
+    )
+    .filter(item =>
+      !isAnalysisFile(item.calleeFile)
+    );
+
+  const lines = [];
+
+  for (const item of chain) {
+    const indent = "  ".repeat(item.depth);
+
+    const location =
+      item.calleeFile && item.calleeLine
+        ? ` — ${item.calleeFile}:${item.calleeLine}`
+        : "";
+
+    lines.push(
+      `${indent}↓ ${item.callee}()${location}`
+    );
   }
 
   return {
     found: true,
     reply:
-`🚀 Automatic Recursive Execution Pipeline
+`🚀 Automatic Execution Pipeline
 
-Target:
 ${functionName}()
 
-${pipeline.join("\n\n")}`
+${lines.length > 0
+  ? lines.join("\n")
+  : "No application-level project function calls detected."}`
   };
 }
 
 module.exports = {
   buildAutoExecutionPipeline
 };
-
-
-
-
-
-

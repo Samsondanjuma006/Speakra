@@ -1,5 +1,62 @@
+const projectSearch = require("./searchIndex");
+
 function extractKeyword(message) {
   const text = message.toLowerCase();
+
+    // Explicit trace target
+    // Supports:
+    // trace function
+    // trace both function
+    // trace callers of function
+    // trace callees of function
+    const traceMatch = message.match(
+      /^\s*trace\s+(?:(?:both|callers?|callees?|hierarchy)\s+)?(?:of\s+)?([A-Za-z_$][A-Za-z0-9_$]*)/i
+    );
+
+    if (traceMatch) {
+      const candidate = traceMatch[1];
+
+      // Only accept the candidate immediately if it is
+      // actually a known project function.
+      const knownFunction = projectSearch.findFunction(candidate);
+
+      if (knownFunction.length > 0) {
+        return candidate;
+      }
+    }
+    const index = projectSearch.loadIndex();
+  const projectFunctions = [];
+
+  for (const file of index) {
+    for (const fn of [
+      ...(file.functions || []),
+      ...(file.arrowFunctions || [])
+    ]) {
+      projectFunctions.push(fn.name);
+    }
+  }
+
+  // Prefer an exact project function name appearing anywhere
+  // in the user's question.
+  for (const functionName of projectFunctions) {
+    const pattern = new RegExp(
+      `\\b${functionName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      "i"
+    );
+
+    if (pattern.test(message)) {
+      return functionName;
+    }
+  }
+
+  // Prefer an explicit function name after "for" or "about".
+  const forMatch = message.match(
+    /\b(?:for|about)\s+([A-Za-z_$][A-Za-z0-9_$]*)/i
+  );
+
+  if (forMatch) {
+    return forMatch[1];
+  }
 
   const words = text
     .replace(/[^\w\s/-]/g, "")
@@ -51,8 +108,8 @@ function extractKeyword(message) {
     "describe",
     "tell",
     "about",
-    "trace",
     "who",
+    "both",
     "dependency",
     "tree",
     "breaks",
@@ -78,14 +135,12 @@ function extractKeyword(message) {
     "please",
     "can",
     "could",
-    "would",  
+    "would",
     "should",
     "will",
     "reason",
     "execution",
     "pipeline",
-    "execution",
-    "hierarchy",
     "reverse",
     "path",
     "flow",
@@ -97,7 +152,9 @@ function extractKeyword(message) {
     "completely",
     "everything",
     "to",
- ]);
+    "graph",
+    "trace"
+  ]);
 
   const keyword = words.find(word => !ignore.has(word));
 
@@ -107,6 +164,3 @@ function extractKeyword(message) {
 module.exports = {
   extractKeyword
 };
-
-
-

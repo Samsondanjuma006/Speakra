@@ -1,4 +1,31 @@
 const projectSearch = require("../index/searchIndex");
+const projectGraph = require("./projectGraph");
+function resolveFunctionName(keyword) {
+  const results = projectSearch.findFunction(keyword);
+
+  if (results.length > 0) {
+    return keyword;
+  }
+
+  const index = projectSearch.loadIndex();
+
+  for (const file of index) {
+    const functions = [
+      ...(file.functions || []),
+      ...(file.arrowFunctions || [])
+    ];
+
+    const match = functions.find(
+      fn => fn.name.toLowerCase() === keyword.toLowerCase()
+    );
+
+    if (match) {
+      return match.name;
+    }
+  }
+
+  return keyword;
+}
 const { explainFile } = require("./fileExplainer");
 const { explainExecution } = require("./executionFlow");
 const { traceFunction } = require("./callChain");
@@ -13,11 +40,13 @@ const { analyzeFunctionImpact } = require("./functionImpact");
 const { reasonAboutFunction } = require("./projectReasoner");
 const { reverseCallGraph } = require("./reverseCallGraph");
 const { buildExecutionGraph } = require("./executionGraph");
+const { findCallees, traceCallees } = require("./projectGraph");
 const { buildProjectGraph } = require("./projectGraph");
 const { traceDependencies } = require("./dependencyTracer");
 const { buildCallHierarchy } = require("./callHierarchy");
 const { buildReverseCallHierarchy } = require("./reverseCallHierarchy");
 const { explainFunctionReason } = require("./functionReason");
+
 const { explainFeature } = require("./featureReason");
 const { buildExecutionPipeline } = require("./executionPipeline");
 const { buildAutoExecutionPipeline } = require("./autoExecutionPipeline");
@@ -30,27 +59,121 @@ const keyword = extractKeyword(message);
 console.log("MESSAGE:", message);
 console.log("KEYWORD:", keyword);
 
-// Trace function call chain
-if (/trace/i.test(message)) {
+// Trace execution chain
+if (/trace/i.test(message) &&
+    !/what does|callees|where is|where.*defined|definition/i.test(message)) {
 
-  const trace = traceFunction(keyword);
-console.log("TRACE RESULT:", trace);
+  const actualFunctionName = resolveFunctionName(keyword);
 
-  if (trace.found) {
-    return trace;
+  // Trace both callers and callees
+  if (/trace\s+both/i.test(message)) {
+
+    const callers = projectGraph.traceCallers(actualFunctionName);
+    const chain = projectGraph.traceCallees(actualFunctionName);
+
+    const lines = [];
+
+    lines.push(`🔗 Bidirectional Trace\n`);
+    lines.push(`${actualFunctionName}()\n`);
+
+    // Backward trace
+    lines.push(`← Called by:`);
+
+      if (callers.length > 0) {
+        for (const caller of callers) {
+          const indent = "  ".repeat(caller.depth + 1);
+          lines.push(
+            `${indent}← ${caller.caller}() — ${caller.file}:${caller.line}`
+          );
+        }
+      } else {
+        lines.push(`  ← No project callers detected.`);
+      }
+    // Forward trace
+    lines.push(`\n→ Calls:`);
+
+    if (chain.length > 0) {
+      for (const item of chain) {
+        const indent = "  ".repeat(item.depth + 1);
+
+        const location =
+          item.calleeFile && item.calleeLine
+            ? ` — ${item.calleeFile}:${item.calleeLine}`
+            : "";
+
+        lines.push(
+          `${indent}→ ${item.callee}()${location}`
+        );
+      }
+    } else {
+      lines.push(`  → No project function calls detected.`);
+    }
+
+    return {
+      found: true,
+      reply: lines.join("\n")
+    };
   }
 
+  // Normal forward execution trace
+  const chain = projectGraph.traceCallees(actualFunctionName);
+
+  if (chain.length > 0) {
+    const lines = [];
+
+    for (const item of chain) {
+      const indent = "  ".repeat(item.depth);
+
+      const location =
+        item.calleeFile && item.calleeLine
+          ? ` — ${item.calleeFile}:${item.calleeLine}`
+          : "";
+
+      lines.push(
+        `${indent}↓ ${item.callee}()${location}`
+      );
+    }
+
+    return {
+      found: true,
+      reply:
+`🔗 Execution Trace
+
+${actualFunctionName}()
+
+${lines.join("\n")}`
+    };
+  }
+
+  return {
+    found: true,
+    reply:
+`🔗 Execution Trace
+
+${actualFunctionName}()
+
+No project function calls detected.`
+  };
 }
+ // Where is a function defined?
+  if (/where is|where.*defined|definition/i.test(message)) {
+    const actualFunctionName = resolveFunctionName(keyword);
+    const result = locateFunction(actualFunctionName);
+    if (result.found) {
+      return result;
+    }
+  }
 
 // Who calls a function?
 if (/what calls|who calls|called by/i.test(message)) {
-  const callers = projectSearch.findCallers(keyword);
+const actualFunctionName = resolveFunctionName(keyword);
+const callers = projectSearch.findCallers(actualFunctionName);
 
   if (callers.length > 0) {
     return {
       found: true,
       reply:
-`🔍 ${keyword}()
+`🔍 ${actualFunctionName}()
 
 Called from:
 
@@ -60,6 +183,47 @@ ${callers
 Total files: ${callers.length}`
     };
   }
+}
+// What does a function call?
+if (/what does|callees/i.test(message)) {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const functionInfo = projectSearch.findFunction(actualFunctionName);
+
+  if (functionInfo.length === 0) {
+    return {
+      found: false,
+      reply: `❌ I couldn't find ${actualFunctionName}() in the project.`
+    };
+  }
+ const callees = traceCallees(actualFunctionName);
+
+  if (callees.length > 0) {
+    return {
+      found: true,
+      reply:
+`🔍 ${actualFunctionName}()
+
+Calls:
+
+${callees
+  .map(c => `• ${c.callee}()\n  File: ${c.file}`)
+  .join("\n\n")}
+
+Total calls: ${callees.length}`
+    };
+  }
+
+  return {
+    found: true,
+    reply:
+`🔍 ${actualFunctionName}()
+
+Calls:
+
+• No other project functions detected.
+
+Note: external/library calls are not included in the project call graph.`
+  };
 }
 // Impact Analysis
 if (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(".js")) {
@@ -126,6 +290,22 @@ if (/how does .* work|feature|system/i.test(message)) {
   }
 
 }
+  // Function Execution Explanation
+  if (/explain execution|execution flow of|how .* executes|explain .* execution|execution of/i.test(message)) {
+    const actualFunctionName = resolveFunctionName(keyword);
+
+    const result = explainExecution(message);
+
+    if (result.found) {
+      return result;
+    }
+
+    const functionResult = explainExecution(actualFunctionName);
+
+    if (functionResult.found) {
+      return functionResult;
+    }
+  }
 // Function Reasoning
 if (/^why\b|^explain\b|purpose|reason/i.test(message)) {
 
@@ -159,6 +339,30 @@ console.log("CALL HIERARCHY BLOCK:", message, keyword);
   }
 
 }
+// Execution Graph
+if (/execution graph|show execution graph/i.test(message)) {
+
+  if (keyword === "graph") {
+    return {
+      found: true,
+      reply:
+        "🕸 Execution Graph\n\n" +
+        "An execution graph shows how a specific function is reached and which functions call it.\n\n" +
+        "For example, you can ask:\n" +
+        "• show execution graph for buildAutoExecutionPipeline\n" +
+        "• execution graph for answerProjectQuestion\n\n" +
+        "This lets SamuAI trace the execution path through the project."
+    };
+  }
+
+  const result = buildExecutionGraph(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+
 // Execution Pipeline
 if (/execution pipeline|pipeline|execution flow/i.test(message)) {
 
@@ -187,7 +391,7 @@ if (/architecture|project architecture|show architecture/i.test(message)) {
   return explainArchitecture();
 }
 // Project Graph
-if (/project graph|show graph|graph/i.test(message)) {
+if (/project graph|show project graph/i.test(message)) {
 
   const graph = buildProjectGraph();
 
@@ -210,16 +414,7 @@ if (/execution path|flow to|path to/i.test(message)) {
   }
 
 }
-// Execution Graph
-if (/execution graph|graph|execution path/i.test(message)) {
 
-  const result = buildExecutionGraph(keyword);
-
-  if (result.found) {
-    return result;
-  }
-
-}
 const flow = explainExecution(message);
 // Execution Flow
 
