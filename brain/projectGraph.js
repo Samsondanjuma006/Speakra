@@ -121,6 +121,11 @@ function traceCallers(
   const results = [];
 
   for (const caller of direct) {
+    // Stop circular caller chains before adding the cycle to the result.
+    if (visited.has(caller.caller)) {
+      continue;
+    }
+
     results.push({
       file: caller.file,
       caller: caller.caller,
