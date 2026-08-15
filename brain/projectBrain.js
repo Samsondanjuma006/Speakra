@@ -195,7 +195,7 @@ if (/what does|callees/i.test(message)) {
       reply: `❌ I couldn't find ${actualFunctionName}() in the project.`
     };
   }
- const callees = traceCallees(actualFunctionName);
+ const callees = findCallees(actualFunctionName);
 
   if (callees.length > 0) {
     return {
