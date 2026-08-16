@@ -68,8 +68,8 @@ if (/trace/i.test(message) &&
   // Trace both callers and callees
   if (/trace\s+both/i.test(message)) {
 
-    const callers = projectGraph.traceCallers(actualFunctionName);
-    const chain = projectGraph.traceCallees(actualFunctionName);
+    const callers = projectSearch.findCallers(actualFunctionName);
+    const chain = projectGraph.findCallees(actualFunctionName);
 
     const lines = [];
 
