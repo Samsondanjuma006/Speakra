@@ -78,6 +78,13 @@
         "file": "brain/callChain.js",
         "type": "function",
         "calls": []
+      },
+      {
+        "name": "map callback",
+        "line": 31,
+        "file": "brain/callChain.js",
+        "type": "callback",
+        "calls": []
       }
     ],
     "arrowFunctions": [],
@@ -241,6 +248,22 @@
         "file": "brain/executionFlow.js",
         "type": "function",
         "calls": []
+      },
+      {
+        "name": "flows.chat.map callback",
+        "line": 100,
+        "file": "brain/executionFlow.js",
+        "type": "callback",
+        "calls": []
+      },
+      {
+        "name": "flows.startup.map callback",
+        "line": 121,
+        "file": "brain/executionFlow.js",
+        "type": "callback",
+        "calls": [
+          "explainFunctionExecution"
+        ]
       }
     ],
     "arrowFunctions": [],
@@ -387,6 +410,13 @@
         "file": "brain/functionAnalysis.js",
         "type": "function",
         "calls": []
+      },
+      {
+        "name": "map callback",
+        "line": 28,
+        "file": "brain/functionAnalysis.js",
+        "type": "callback",
+        "calls": []
       }
     ],
     "arrowFunctions": [],
@@ -454,6 +484,13 @@
         "line": 5,
         "file": "brain/functionLocator.js",
         "type": "function",
+        "calls": []
+      },
+      {
+        "name": "map callback",
+        "line": 40,
+        "file": "brain/functionLocator.js",
+        "type": "callback",
         "calls": []
       }
     ],
@@ -571,7 +608,7 @@
         "type": "function",
         "calls": [
           "resolveFunctionName",
-          "traceCallers",
+          "findCallees",
           "traceCallees",
           "locateFunction",
           "analyzeImpact",
@@ -715,13 +752,7 @@
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "traceCallers",
-        "file": "brain/projectBrain.js",
-        "line": 71
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "traceCallees",
+        "callee": "findCallees",
         "file": "brain/projectBrain.js",
         "line": 72
       },
@@ -757,7 +788,7 @@
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "traceCallees",
+        "callee": "findCallees",
         "file": "brain/projectBrain.js",
         "line": 198
       },
@@ -1388,7 +1419,22 @@
   },
   {
     "file": "public/marked.min.js",
-    "functions": [],
+    "functions": [
+      {
+        "name": "H callback",
+        "line": 12,
+        "file": "public/marked.min.js",
+        "type": "callback",
+        "calls": []
+      },
+      {
+        "name": "l.replace callback",
+        "line": 13,
+        "file": "public/marked.min.js",
+        "type": "callback",
+        "calls": []
+      }
+    ],
     "arrowFunctions": [],
     "requires": [],
     "calls": []
@@ -1416,6 +1462,22 @@
         "file": "routes/chat.js",
         "type": "function",
         "calls": []
+      },
+      {
+        "name": "POST route callback",
+        "line": 43,
+        "file": "routes/chat.js",
+        "type": "callback",
+        "calls": [
+          "remember",
+          "extractFacts",
+          "mergeMemory",
+          "getProfile",
+          "chat",
+          "saveMemory",
+          "loadMemory",
+          "loadProfile"
+        ]
       }
     ],
     "arrowFunctions": [],
@@ -1521,6 +1583,41 @@
         "line": 56,
         "file": "server.js",
         "type": "function",
+        "calls": []
+      },
+      {
+        "name": "GET route callback",
+        "line": 62,
+        "file": "server.js",
+        "type": "callback",
+        "calls": []
+      },
+      {
+        "name": "POST /chat callback",
+        "line": 66,
+        "file": "server.js",
+        "type": "callback",
+        "calls": [
+          "remember",
+          "loadProfile",
+          "answerProjectQuestion",
+          "search",
+          "saveMemory",
+          "loadMemory"
+        ]
+      },
+      {
+        "name": "then callback",
+        "line": 226,
+        "file": "server.js",
+        "type": "callback",
+        "calls": []
+      },
+      {
+        "name": "app.listen callback",
+        "line": 227,
+        "file": "server.js",
+        "type": "callback",
         "calls": []
       }
     ],

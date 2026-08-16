@@ -163,10 +163,11 @@ if (arrow) {
 }
 
 // Detect inline arrow callbacks such as:
-// router.post("/", async (req, res) => {
+// app.post("/chat", async (req, res) => {
 const inlineArrow = codeLine.match(
   /([A-Za-z_][A-Za-z0-9_.]*)\s*\([^)]*\s*,?\s*(?:async\s*)?\([^)]*\)\s*=>/
 );
+
 if (inlineArrow) {
   const callbackTarget = inlineArrow[1];
 
@@ -180,6 +181,22 @@ if (inlineArrow) {
     currentFunction = "GET route callback";
   } else {
     currentFunction = callbackTarget + " callback";
+  }
+
+  const callbackExists =
+    functions.some(fn => fn.name === currentFunction) ||
+    arrowFunctions.some(fn => fn.name === currentFunction);
+
+  if (!callbackExists) {
+    functions.push({
+      name: currentFunction,
+      line: index + 1,
+      file: full.replace(ROOT + path.sep, ""),
+      type: "callback",
+      calls: []
+    });
+
+    projectFunctions.add(currentFunction);
   }
 }
 const matches = [

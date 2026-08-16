@@ -75,7 +75,11 @@ Project Brain result
       !isIgnoredFile(item.calleeFile)
     )
     .filter(item =>
-      !isAnalysisFile(item.calleeFile)
+      !isAnalysisFile(item.calleeFile) ||
+      item.callee === "answerProjectQuestion"
+    )
+    .filter(item =>
+      !(item.callee === "answerProjectQuestion" && item.depth > 0)
     );
 
   const lines = [];
