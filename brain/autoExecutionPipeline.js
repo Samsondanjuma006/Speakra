@@ -47,24 +47,40 @@ function isAnalysisFile(file) {
 }
 
 function buildAutoExecutionPipeline(functionName) {
-  if (functionName === "answerProjectQuestion") {
+  if (functionName === "POST /chat callback") {
     return {
       found: true,
       reply: `🚀 Automatic Execution Pipeline
 
-Browser
-  ↓
-POST /chat
-  ↓
-server.js
-  ↓
-answerProjectQuestion()
-  ↓
-Project Brain result
+POST /chat callback()
 
-🔀 Decision:
+↓ validate message
+↓ remember(message)
+↓ loadProfile()
+
+🧠 Project Brain
   ├─ found → return Project Brain reply
-  └─ not found → continue to normal AI pipeline`
+  └─ not found → continue to normal AI pipeline
+
+↓ optional search()
+↓ build AI messages
+↓ OpenRouter request
+↓ history.push(assistant reply)
+↓ saveMemory()
+↓ res.json()`
+    };
+  }
+
+  if (functionName === "answerProjectQuestion") {
+    return {
+      found: true,
+      reply: `🧠 Project Brain Pipeline
+
+answerProjectQuestion()
+
+↓ resolveFunctionName()
+↓ analyze project question
+↓ return Project Brain result`
     };
   }
 
