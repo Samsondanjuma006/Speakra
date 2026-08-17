@@ -84,6 +84,24 @@ answerProjectQuestion()
     };
   }
 
+  if (functionName === "buildAutoExecutionPipeline") {
+    return {
+      found: true,
+      reply: `🚀 Automatic Execution Pipeline
+
+buildAutoExecutionPipeline()
+
+↓ called by answerProjectQuestion()
+↓ receives the resolved project keyword
+↓ checks for runtime-specific pipeline
+↓ otherwise traces projectGraph
+↓ filters ignored files
+↓ filters analysis-only files
+↓ builds execution pipeline reply
+↓ returns { found, reply }`
+    };
+  }
+
   const chain = projectGraph
     .traceCallees(functionName)
     .filter(item =>
