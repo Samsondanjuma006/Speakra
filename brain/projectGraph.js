@@ -107,6 +107,7 @@ const direct = findCallees(functionName, graph);
       file: call.file,
       caller: call.caller,
       callee: call.callee,
+      callLine: call.line,
       calleeFile: location.file,
       calleeLine: location.line,
       depth

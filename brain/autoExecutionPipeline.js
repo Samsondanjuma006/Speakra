@@ -102,8 +102,21 @@ buildAutoExecutionPipeline()
     };
   }
 
-  const chain = projectGraph
-    .traceCallees(functionName)
+  const tracedChain = projectGraph.traceCallees(functionName);
+
+  const ignoredCalls = tracedChain.filter(item =>
+    isIgnoredFile(item.file) ||
+    isIgnoredFile(item.calleeFile)
+  );
+
+  const analysisCalls = tracedChain.filter(item =>
+    !isIgnoredFile(item.file) &&
+    !isIgnoredFile(item.calleeFile) &&
+    isAnalysisFile(item.calleeFile) &&
+    item.callee !== "answerProjectQuestion"
+  );
+
+  const chain = tracedChain
     .filter(item =>
       !isIgnoredFile(item.file) &&
       !isIgnoredFile(item.calleeFile)
@@ -122,8 +135,8 @@ buildAutoExecutionPipeline()
     const indent = "  ".repeat(item.depth);
 
     const location =
-      item.calleeFile && item.calleeLine
-        ? ` — ${item.calleeFile}:${item.calleeLine}`
+      item.file && item.callLine
+        ? ` — ${item.file}:${item.callLine}`
         : "";
 
     lines.push(
@@ -131,16 +144,46 @@ buildAutoExecutionPipeline()
     );
   }
 
-  return {
-    found: true,
-    reply:
-`🚀 Automatic Execution Pipeline
+  const sections = [
+    `🚀 Automatic Execution Pipeline
 
 ${functionName}()
 
 ${lines.length > 0
   ? lines.join("\n")
   : "No application-level project function calls detected."}`
+  ];
+
+  if (analysisCalls.length > 0) {
+    sections.push(
+      `🧠 Analysis calls excluded:
+
+${analysisCalls
+  .map(item => {
+    const location =
+      item.file && item.callLine
+        ? ` — ${item.file}:${item.callLine}`
+        : "";
+
+    return `• ${item.callee}()${location}`;
+  })
+  .join("\n")}`
+    );
+  }
+
+  if (ignoredCalls.length > 0) {
+    sections.push(
+      `🚫 Ignored calls excluded:
+
+${ignoredCalls
+  .map(item => `• ${item.callee}()`)
+  .join("\n")}`
+    );
+  }
+
+  return {
+    found: true,
+    reply: sections.join("\n\n")
   };
 }
 
