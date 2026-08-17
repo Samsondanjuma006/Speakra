@@ -178,7 +178,7 @@ const callers = projectSearch.findCallers(actualFunctionName);
 Called from:
 
 ${callers
-  .map(c => `• ${c.file}\n  Line ${c.line}`)
+  .map(c => `• ${c.caller}()\n  File: ${c.file}\n  Line: ${c.line}`)
   .join("\n\n")}
 Total files: ${callers.length}`
     };
