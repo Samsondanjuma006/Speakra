@@ -34,14 +34,32 @@ function findCallees(functionName, graph = null) {
     const functions = graph[file];
 
     if (functions[functionName]) {
-       for (const callee of functions[functionName].calls.filter(call => {
-  return Object.values(graph).some(fileFunctions => fileFunctions[call]);
-})) {
-        results.push({
-          file,
-          caller: functionName,
-          callee
-        });
+      for (const call of functions[functionName].calls || []) {
+
+        const callee =
+          typeof call === "string"
+            ? call
+            : call.name;
+
+        const line =
+          typeof call === "string"
+            ? null
+            : call.line;
+
+        if (!callee) continue;
+
+        if (
+          Object.values(graph).some(
+            fileFunctions => fileFunctions[callee]
+          )
+        ) {
+          results.push({
+            file,
+            caller: functionName,
+            callee,
+            line
+          });
+        }
       }
     }
   }

@@ -206,7 +206,7 @@ if (/what does|callees/i.test(message)) {
 Calls:
 
 ${callees
-  .map(c => `• ${c.callee}()\n  File: ${c.file}`)
+  .map(c => `• ${c.callee}()\n  File: ${c.file}\n  Line: ${c.line}`)
   .join("\n\n")}
 
 Total calls: ${callees.length}`

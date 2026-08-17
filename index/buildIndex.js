@@ -254,8 +254,11 @@ for (const call of calls) {
     functions.find(f => f.name === call.caller) ||
     arrowFunctions.find(f => f.name === call.caller);
 
-  if (fn && !fn.calls.includes(call.callee)) {
-    fn.calls.push(call.callee);
+  if (fn && !fn.calls.some(existing => existing.name === call.callee)) {
+    fn.calls.push({
+      name: call.callee,
+      line: call.line
+    });
   }
 }
    index.push({
@@ -285,8 +288,10 @@ for (const file of index) {
   );
 
   for (const fn of [...(file.functions || []), ...(file.arrowFunctions || [])]) {
-    fn.calls = fn.calls.filter(callee =>
-      allProjectFunctions.has(callee)
+    fn.calls = fn.calls.filter(call =>
+      allProjectFunctions.has(
+        typeof call === "string" ? call : call.name
+      )
     );
   }
 }

@@ -22,10 +22,42 @@
         "file": "brain/autoExecutionPipeline.js",
         "type": "function",
         "calls": [
-          "answerProjectQuestion",
-          "traceCallees",
-          "isIgnoredFile",
-          "isAnalysisFile"
+          {
+            "name": "remember",
+            "line": 58
+          },
+          {
+            "name": "loadProfile",
+            "line": 59
+          },
+          {
+            "name": "search",
+            "line": 65
+          },
+          {
+            "name": "saveMemory",
+            "line": 69
+          },
+          {
+            "name": "answerProjectQuestion",
+            "line": 79
+          },
+          {
+            "name": "resolveFunctionName",
+            "line": 81
+          },
+          {
+            "name": "traceCallees",
+            "line": 106
+          },
+          {
+            "name": "isIgnoredFile",
+            "line": 108
+          },
+          {
+            "name": "isAnalysisFile",
+            "line": 112
+          }
         ]
       }
     ],
@@ -39,33 +71,69 @@
     "calls": [
       {
         "caller": "buildAutoExecutionPipeline",
+        "callee": "remember",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 58
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "loadProfile",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 59
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "search",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 65
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "saveMemory",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 69
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
         "callee": "answerProjectQuestion",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 61
+        "line": 79
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "resolveFunctionName",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 81
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "answerProjectQuestion",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 94
       },
       {
         "caller": "buildAutoExecutionPipeline",
         "callee": "traceCallees",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 72
+        "line": 106
       },
       {
         "caller": "buildAutoExecutionPipeline",
         "callee": "isIgnoredFile",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 74
+        "line": 108
       },
       {
         "caller": "buildAutoExecutionPipeline",
         "callee": "isIgnoredFile",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 75
+        "line": 109
       },
       {
         "caller": "buildAutoExecutionPipeline",
         "callee": "isAnalysisFile",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 78
+        "line": 112
       }
     ]
   },
@@ -120,7 +188,10 @@
         "file": "brain/callHierarchy.js",
         "type": "function",
         "calls": [
-          "buildTree"
+          {
+            "name": "buildTree",
+            "line": 72
+          }
         ]
       }
     ],
@@ -163,8 +234,14 @@
         "file": "brain/deepFunctionImpact.js",
         "type": "function",
         "calls": [
-          "getProjectFunctions",
-          "groupFunctions"
+          {
+            "name": "getProjectFunctions",
+            "line": 60
+          },
+          {
+            "name": "groupFunctions",
+            "line": 61
+          }
         ]
       }
     ],
@@ -239,7 +316,10 @@
         "file": "brain/executionFlow.js",
         "type": "function",
         "calls": [
-          "findCallees"
+          {
+            "name": "findCallees",
+            "line": 42
+          }
         ]
       },
       {
@@ -262,7 +342,10 @@
         "file": "brain/executionFlow.js",
         "type": "callback",
         "calls": [
-          "explainFunctionExecution"
+          {
+            "name": "explainFunctionExecution",
+            "line": 140
+          }
         ]
       }
     ],
@@ -381,7 +464,10 @@
         "file": "brain/fullExecutionTree.js",
         "type": "function",
         "calls": [
-          "findCallees"
+          {
+            "name": "findCallees",
+            "line": 15
+          }
         ]
       }
     ],
@@ -520,8 +606,14 @@
         "file": "brain/functionReason.js",
         "type": "function",
         "calls": [
-          "analyzeFunction",
-          "analyzeFunctionImpact"
+          {
+            "name": "analyzeFunction",
+            "line": 6
+          },
+          {
+            "name": "analyzeFunctionImpact",
+            "line": 12
+          }
         ]
       }
     ],
@@ -607,28 +699,94 @@
         "file": "brain/projectBrain.js",
         "type": "function",
         "calls": [
-          "resolveFunctionName",
-          "findCallees",
-          "traceCallees",
-          "locateFunction",
-          "analyzeImpact",
-          "dependencyTree",
-          "analyzeFunction",
-          "reverseCallGraph",
-          "buildExecutionGraph",
-          "analyzeFunctionImpact",
-          "explainFeature",
-          "explainExecution",
-          "explainFunctionReason",
-          "buildRecursiveExecution",
-          "buildCallHierarchy",
-          "buildAutoExecutionPipeline",
-          "buildExecutionTree",
-          "explainArchitecture",
-          "buildProjectGraph",
-          "reasonAboutFunction",
-          "listFunctions",
-          "explainFile"
+          {
+            "name": "resolveFunctionName",
+            "line": 66
+          },
+          {
+            "name": "findCallees",
+            "line": 72
+          },
+          {
+            "name": "traceCallees",
+            "line": 119
+          },
+          {
+            "name": "locateFunction",
+            "line": 161
+          },
+          {
+            "name": "analyzeImpact",
+            "line": 231
+          },
+          {
+            "name": "dependencyTree",
+            "line": 241
+          },
+          {
+            "name": "analyzeFunction",
+            "line": 253
+          },
+          {
+            "name": "reverseCallGraph",
+            "line": 258
+          },
+          {
+            "name": "buildExecutionGraph",
+            "line": 264
+          },
+          {
+            "name": "analyzeFunctionImpact",
+            "line": 270
+          },
+          {
+            "name": "explainFeature",
+            "line": 286
+          },
+          {
+            "name": "explainExecution",
+            "line": 297
+          },
+          {
+            "name": "explainFunctionReason",
+            "line": 312
+          },
+          {
+            "name": "buildRecursiveExecution",
+            "line": 322
+          },
+          {
+            "name": "buildCallHierarchy",
+            "line": 335
+          },
+          {
+            "name": "buildAutoExecutionPipeline",
+            "line": 370
+          },
+          {
+            "name": "buildExecutionTree",
+            "line": 379
+          },
+          {
+            "name": "explainArchitecture",
+            "line": 391
+          },
+          {
+            "name": "buildProjectGraph",
+            "line": 396
+          },
+          {
+            "name": "reasonAboutFunction",
+            "line": 410
+          },
+          {
+            "name": "listFunctions",
+            "line": 445
+          },
+          {
+            "name": "explainFile",
+            "line": 454
+          }
         ]
       }
     ],
@@ -972,30 +1130,42 @@
         "file": "brain/projectGraph.js",
         "type": "function",
         "calls": [
-          "buildProjectGraph"
+          {
+            "name": "buildProjectGraph",
+            "line": 28
+          }
         ]
       },
       {
         "name": "findFunctionLocation",
-        "line": 51,
+        "line": 69,
         "file": "brain/projectGraph.js",
         "type": "function",
         "calls": []
       },
       {
         "name": "traceCallees",
-        "line": 66,
+        "line": 84,
         "file": "brain/projectGraph.js",
         "type": "function",
         "calls": [
-          "buildProjectGraph",
-          "findCallees",
-          "findFunctionLocation"
+          {
+            "name": "buildProjectGraph",
+            "line": 95
+          },
+          {
+            "name": "findCallees",
+            "line": 100
+          },
+          {
+            "name": "findFunctionLocation",
+            "line": 104
+          }
         ]
       },
       {
         "name": "traceCallers",
-        "line": 109,
+        "line": 127,
         "file": "brain/projectGraph.js",
         "type": "function",
         "calls": []
@@ -1019,19 +1189,19 @@
         "caller": "traceCallees",
         "callee": "buildProjectGraph",
         "file": "brain/projectGraph.js",
-        "line": 77
+        "line": 95
       },
       {
         "caller": "traceCallees",
         "callee": "findCallees",
         "file": "brain/projectGraph.js",
-        "line": 82
+        "line": 100
       },
       {
         "caller": "traceCallees",
         "callee": "findFunctionLocation",
         "file": "brain/projectGraph.js",
-        "line": 86
+        "line": 104
       }
     ]
   },
@@ -1044,10 +1214,22 @@
         "file": "brain/projectReasoner.js",
         "type": "function",
         "calls": [
-          "analyzeFunction",
-          "traceFunction",
-          "analyzeFunctionImpact",
-          "analyzeDeepFunctionImpact"
+          {
+            "name": "analyzeFunction",
+            "line": 10
+          },
+          {
+            "name": "traceFunction",
+            "line": 15
+          },
+          {
+            "name": "analyzeFunctionImpact",
+            "line": 20
+          },
+          {
+            "name": "analyzeDeepFunctionImpact",
+            "line": 25
+          }
         ]
       }
     ],
@@ -1204,7 +1386,10 @@
         "file": "business/customerManager.js",
         "type": "function",
         "calls": [
-          "getCustomersFile"
+          {
+            "name": "getCustomersFile",
+            "line": 19
+          }
         ]
       },
       {
@@ -1213,7 +1398,10 @@
         "file": "business/customerManager.js",
         "type": "function",
         "calls": [
-          "getCustomersFile"
+          {
+            "name": "getCustomersFile",
+            "line": 37
+          }
         ]
       },
       {
@@ -1222,8 +1410,14 @@
         "file": "business/customerManager.js",
         "type": "function",
         "calls": [
-          "getCustomers",
-          "saveCustomers"
+          {
+            "name": "getCustomers",
+            "line": 52
+          },
+          {
+            "name": "saveCustomers",
+            "line": 74
+          }
         ]
       },
       {
@@ -1232,7 +1426,10 @@
         "file": "business/customerManager.js",
         "type": "function",
         "calls": [
-          "getCustomers"
+          {
+            "name": "getCustomers",
+            "line": 83
+          }
         ]
       }
     ],
@@ -1342,8 +1539,14 @@
         "file": "memoryExtractor.js",
         "type": "function",
         "calls": [
-          "chat",
-          "chatGroq"
+          {
+            "name": "chat",
+            "line": 12
+          },
+          {
+            "name": "chatGroq",
+            "line": 25
+          }
         ]
       }
     ],
@@ -1469,14 +1672,38 @@
         "file": "routes/chat.js",
         "type": "callback",
         "calls": [
-          "remember",
-          "extractFacts",
-          "mergeMemory",
-          "getProfile",
-          "chat",
-          "saveMemory",
-          "loadMemory",
-          "loadProfile"
+          {
+            "name": "remember",
+            "line": 52
+          },
+          {
+            "name": "extractFacts",
+            "line": 54
+          },
+          {
+            "name": "mergeMemory",
+            "line": 57
+          },
+          {
+            "name": "getProfile",
+            "line": 59
+          },
+          {
+            "name": "chat",
+            "line": 95
+          },
+          {
+            "name": "saveMemory",
+            "line": 106
+          },
+          {
+            "name": "loadMemory",
+            "line": 122
+          },
+          {
+            "name": "loadProfile",
+            "line": 123
+          }
         ]
       }
     ],
@@ -1598,12 +1825,30 @@
         "file": "server.js",
         "type": "callback",
         "calls": [
-          "remember",
-          "loadProfile",
-          "answerProjectQuestion",
-          "search",
-          "saveMemory",
-          "loadMemory"
+          {
+            "name": "remember",
+            "line": 79
+          },
+          {
+            "name": "loadProfile",
+            "line": 82
+          },
+          {
+            "name": "answerProjectQuestion",
+            "line": 92
+          },
+          {
+            "name": "search",
+            "line": 138
+          },
+          {
+            "name": "saveMemory",
+            "line": 208
+          },
+          {
+            "name": "loadMemory",
+            "line": 224
+          }
         ]
       },
       {
@@ -1729,7 +1974,10 @@
         "file": "services/ai.js",
         "type": "function",
         "calls": [
-          "openRouterAvailable"
+          {
+            "name": "openRouterAvailable",
+            "line": 11
+          }
         ]
       }
     ],
@@ -1884,7 +2132,10 @@
         "file": "whatsapp/webhook.js",
         "type": "function",
         "calls": [
-          "send"
+          {
+            "name": "send",
+            "line": 14
+          }
         ]
       },
       {
