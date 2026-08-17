@@ -176,9 +176,9 @@ Source: ${item.url}`
     ];    const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
      {
-      model: "openai/gpt-3.5-turbo",
+      model: "openrouter/free",
       messages: messages,
-      max_tokens: 10
+      max_tokens: 200
      },
 
       {
