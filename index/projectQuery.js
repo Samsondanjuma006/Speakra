@@ -1,6 +1,11 @@
 const projectSearch = require("./searchIndex");
 
 function extractKeyword(message) {
+  const fileMatch = message.match(/(?:[A-Za-z0-9_$.-]+\/)*[A-Za-z0-9_$.-]+\.js\b/i);
+  if (fileMatch) {
+    return fileMatch[0];
+  }
+
   const text = message.toLowerCase();
 
     // Explicit trace target

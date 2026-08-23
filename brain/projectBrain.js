@@ -430,9 +430,19 @@ if (/execution path|flow to|path to/i.test(message)) {
 
 }
 
-// Function Impact Analysis
+// Function / File Impact Analysis
 if (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {
 
+  // File impact
+  if (keyword.endsWith(".js")) {
+    const result = analyzeImpact(keyword);
+
+    if (result.found) {
+      return result;
+    }
+  }
+
+  // Function impact
   const result = analyzeFunctionImpact(keyword);
 
   if (result.found) {
