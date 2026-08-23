@@ -1,72 +1,58 @@
 const projectSearch = require("../index/searchIndex");
 
 function buildExecutionGraph(functionName) {
-
-  const callers = projectSearch.findCallers(functionName);
-
-  if (callers.length === 0) {
+  if (!functionName) {
     return {
       found: false
     };
   }
 
-  const index = projectSearch.loadIndex();
+  const lines = [];
 
-  let reply =
-`🕸 Execution Graph
+  function walk(currentFunction, depth, path) {
+    const indent = "  ".repeat(depth);
 
-Target:
-${functionName}()
-
-`;
-
-  for (const caller of callers) {
-
-console.log("EXEC GRAPH:", caller);
-
-reply +=
-`📄 ${caller.file}
- └── ${caller.caller || "Unknown Function"}() — Line ${caller.line}
-  
-     ${functionName}()
-`;
-  const file = index.find(f => f.file === caller.file);
-
-    if (!file) {
-      reply += "\n";
-      continue;
+    if (path.has(currentFunction)) {
+      lines.push(
+        `${indent}↺ ${currentFunction}() — cycle detected`
+      );
+      return;
     }
-const functions = [
-  ...file.functions,
-  ...file.arrowFunctions
-];
 
-// Find functions that actually call the target function
-const flow = functions.filter(fn => {
-  if (!fn.calls) return false;
+    const nextPath = new Set(path);
+    nextPath.add(currentFunction);
 
-  return fn.calls.includes(functionName);
-});
+    const callers = projectSearch.findCallers(currentFunction);
 
-if (flow.length > 0) {
-  reply += "\nExecution flow:\n";
+    if (callers.length === 0) {
+      lines.push(
+        `${indent}└── No project callers found`
+      );
+      return;
+    }
 
-  for (const fn of flow) {
-    reply += `        ├── ${fn.name}() → ${functionName}()\n`;
+    for (const caller of callers) {
+      const callerName = caller.caller || "Unknown Function";
+
+      lines.push(
+        `${indent}└── ${callerName}() — ${caller.file}:${caller.line}`
+      );
+
+      walk(callerName, depth + 1, nextPath);
+    }
   }
-} else {
-  reply += "\nExecution flow:\n";
-  reply += "        └── Direct call from route or script\n";
-}
-  reply += "\n";
 
-  }
+  lines.push("🕸 Execution Path");
+  lines.push("");
+  lines.push(`Target: ${functionName}()`);
+  lines.push("");
+
+  walk(functionName, 0, new Set());
 
   return {
     found: true,
-    reply
+    reply: lines.join("\n")
   };
-
 }
 
 module.exports = {

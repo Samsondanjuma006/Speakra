@@ -252,37 +252,33 @@
     "file": "brain/deepFunctionImpact.js",
     "functions": [
       {
-        "name": "getProjectFunctions",
-        "line": 3,
+        "name": "getFunctionInfo",
+        "line": 5,
         "file": "brain/deepFunctionImpact.js",
         "type": "function",
         "calls": [],
-        "body": "function getProjectFunctions(file) {\n  const index = projectSearch.loadIndex();\n\n  const target = index.find(f => f.file === file);\n\n  if (!target) {\n    return [];\n  }\n\n  const definedFunctions = new Set([\n    ...target.functions.map(f => f.name),\n    ...target.arrowFunctions.map(f => f.name)\n  ]);\n\n  return target.calls\n    .filter(call => definedFunctions.has(call.name))\n    .map(call => ({\n      name: call.name,\n      line: call.line\n    }));\n}"
+        "body": "function getFunctionInfo(file, functionName) {\n  const index = projectSearch.loadIndex();\n\n  const target = index.find(f => f.file === file);\n\n  if (!target) {\n    return null;\n  }\n\n  return [\n    ...(target.functions || []),\n    ...(target.arrowFunctions || [])\n  ].find(fn => fn.name === functionName) || null;\n}"
       },
       {
-        "name": "groupFunctions",
-        "line": 25,
+        "name": "buildRecursiveImpact",
+        "line": 20,
         "file": "brain/deepFunctionImpact.js",
         "type": "function",
         "calls": [],
-        "body": "function groupFunctions(functions) {\n  const groups = new Map();\n\n  for (const fn of functions) {\n    if (!groups.has(fn.name)) {\n      groups.set(fn.name, {\n        name: fn.name,\n        count: 0,\n        lines: []\n      });\n    }\n\n    const group = groups.get(fn.name);\n\n    group.count++;\n    group.lines.push(fn.line);\n  }\n\n  return Array.from(groups.values());\n}"
+        "body": "function buildRecursiveImpact(functionName) {\n  const results = [];\n  const queue = [\n    {\n      functionName,\n      depth: 0,\n      path: [functionName]\n    }\n  ];\n\n  const visited = new Set();\n\n  while (queue.length > 0) {\n    const current = queue.shift();\n\n    if (current.depth >= MAX_DEPTH) {\n      continue;\n    }\n\n    const callers = projectSearch.findCallers(current.functionName);\n\n    for (const caller of callers) {\n      const key =\n        `${caller.caller}|${caller.file}|${caller.line}|${current.functionName}`;\n\n      if (visited.has(key)) {\n        continue;\n      }\n\n      visited.add(key);\n\n      const nextDepth = current.depth + 1;\n\n      // Do not record circular call paths as additional impact.\n      if (current.path.includes(caller.caller)) {\n        continue;\n      }\n\n      const nextPath = [\n        ...current.path,\n        caller.caller\n      ];\n\n      results.push({\n        functionName: caller.caller,\n        file: caller.file,\n        line: caller.line,\n        depth: nextDepth,\n        via: current.functionName,\n        path: nextPath\n      });\n\n      if (nextDepth < MAX_DEPTH) {\n        queue.push({\n          functionName: caller.caller,\n          depth: nextDepth,\n          path: nextPath\n        });\n      }\n    }\n  }\n\n  return results;\n}"
       },
       {
         "name": "analyzeDeepFunctionImpact",
-        "line": 46,
+        "line": 85,
         "file": "brain/deepFunctionImpact.js",
         "type": "function",
         "calls": [
           {
-            "name": "getProjectFunctions",
-            "line": 60
-          },
-          {
-            "name": "groupFunctions",
-            "line": 61
+            "name": "buildRecursiveImpact",
+            "line": 96
           }
         ],
-        "body": "function analyzeDeepFunctionImpact(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const callers = projectSearch.findCallers(functionName);\n\n  const impact = [];\n\n  for (const caller of callers) {\n    const functions = getProjectFunctions(caller.file);\n    const groupedFunctions = groupFunctions(functions);\n\n    impact.push({\n      file: caller.file,\n      line: caller.line,\n      functions: groupedFunctions\n    });\n  }\nconst affectedFunctions = [];\nconst uniqueFunctionNames = new Set();\nlet totalFunctionReferences = 0;\n\nfor (const caller of impact) {\n  for (const fn of caller.functions) {\n    totalFunctionReferences += fn.count;\n    uniqueFunctionNames.add(fn.name);\n\n    if (!affectedFunctions.some(\n      item => item.file === caller.file && item.name === fn.name\n    )) {\n      affectedFunctions.push({\n        file: caller.file,\n        name: fn.name,\n        count: fn.count\n      });\n    }\n  }\n}\n let risk = \"LOW\";\n\n  if (\n    callers.length >= 3 ||\n    affectedFunctions.length >= 6\n  ) {\n    risk = \"HIGH\";\n  } else if (\n    callers.length > 0 ||\n    affectedFunctions.length > 0\n  ) {\n    risk = \"MEDIUM\";\n  }\n\n  let impactText = \"No second-level project functions found.\";\n\n  if (impact.length > 0) {\n    impactText = impact\n      .map(caller => {\n        const functionsText =\n          caller.functions.length > 0\n            ? caller.functions\n                .map(fn =>\n                  `  • ${fn.name}() — ${fn.count} call${fn.count === 1 ? \"\" : \"s\"}`\n                )\n                .join(\"\\n\")\n            : \"  • No other project functions found.\";\n\n        return `📄 ${caller.file} — Line ${caller.line}\\n${functionsText}`;\n      })\n      .join(\"\\n\\n\");\n  }\n\n  return {\n    found: true,\n    reply:\n`🧠 Deep Function Impact Analysis\n\nFunction:\n${functionName}()\n\n📍 Defined in:\n${results[0].file} — Line ${results[0].line}\n\n🔗 Direct callers:\n${\n  callers.length > 0\n    ? callers\n        .map(c => `• ${c.file} — Line ${c.line}`)\n        .join(\"\\n\")\n    : \"No callers found.\"\n}\n\n🌐 Second-level project impact:\n\n${impactText}\n\n⚠️ Risk:\n${risk}\n\nChanging ${functionName}() may affect ${callers.length} direct caller file${callers.length === 1 ? \"\" : \"s\"}, ${uniqueFunctionNames.size} unique project function${uniqueFunctionNames.size === 1 ? \"\" : \"s\"}, across ${totalFunctionReferences} total function reference${totalFunctionReferences === 1 ? \"\" : \"s\"}.`\n  };\n}"
+        "body": "function analyzeDeepFunctionImpact(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const functionInfo = results[0];\n\n  const impact = buildRecursiveImpact(functionName);\n\n  const directCallers = impact.filter(\n    item => item.depth === 1\n  );\n\n  const indirectCallers = impact.filter(\n    item => item.depth > 1\n  );\n\n  const uniqueFunctions = new Set(\n    impact.map(item => item.functionName)\n  );\n\n  const directCallerFunctions = new Set(\n    directCallers.map(item => item.functionName)\n  );\n\n  const directCallSites = directCallers.length;\n\n  const indirectCallSites = indirectCallers.length;\n\n  const affectedFiles = new Set(\n    impact.map(item => item.file)\n  );\n\n  const maxDepth =\n    impact.length > 0\n      ? Math.max(...impact.map(item => item.depth))\n      : 0;\n\n  let risk = \"LOW\";\n\n  if (\n    uniqueFunctions.size >= 8 ||\n    affectedFiles.size >= 3 ||\n    maxDepth >= 5\n  ) {\n    risk = \"HIGH\";\n  } else if (\n    uniqueFunctions.size > 0\n  ) {\n    risk = \"MEDIUM\";\n  }\n\n  const directText =\n    directCallers.length > 0\n      ? directCallers\n          .map(item =>\n            `• ${item.functionName}() — ${item.file}:${item.line}`\n          )\n          .join(\"\\n\")\n      : \"No direct callers found.\";\n\n  let recursiveText =\n    \"No recursive callers beyond level 1.\";\n\n  if (indirectCallers.length > 0) {\n    recursiveText = indirectCallers\n      .map(item =>\n        `• Level ${item.depth}: ${item.functionName}() — ${item.file}:${item.line} → ${item.via}()`\n      )\n      .join(\"\\n\");\n  }\n\n  const affectedFileText =\n    affectedFiles.size > 0\n      ? [...affectedFiles]\n          .map(file => `• ${file}`)\n          .join(\"\\n\")\n      : \"No affected files found.\";\n\n  return {\n    found: true,\n    reply:\n`🧠 Deep Function Impact Analysis\n\nFunction:\n${functionName}()\n\n📍 Defined in:\n${functionInfo.file} — Line ${functionInfo.line}\n\n🔗 Direct callers:\n${directText}\n\n🌐 Recursive impact:\n${recursiveText}\n\n📊 Impact Summary:\n• Direct caller functions: ${directCallerFunctions.size}\n• Direct call sites: ${directCallSites}\n• Recursive call sites: ${indirectCallSites}\n• Unique affected functions: ${uniqueFunctions.size}\n• Affected files: ${affectedFiles.size}\n• Maximum caller depth: ${maxDepth}\n• Maximum analysis depth: ${MAX_DEPTH}\n\n📁 Affected files:\n${affectedFileText}\n\n⚠️ Risk:\n${risk}\n\nChanging ${functionName}() may affect ${directCallerFunctions.size} direct caller function${directCallerFunctions.size === 1 ? \"\" : \"s\"} and ${uniqueFunctions.size} unique affected caller function${uniqueFunctions.size === 1 ? \"\" : \"s\"} across ${affectedFiles.size} file${affectedFiles.size === 1 ? \"\" : \"s\"}.`\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -295,15 +291,9 @@
     "calls": [
       {
         "caller": "analyzeDeepFunctionImpact",
-        "callee": "getProjectFunctions",
+        "callee": "buildRecursiveImpact",
         "file": "brain/deepFunctionImpact.js",
-        "line": 60
-      },
-      {
-        "caller": "analyzeDeepFunctionImpact",
-        "callee": "groupFunctions",
-        "file": "brain/deepFunctionImpact.js",
-        "line": 61
+        "line": 96
       }
     ]
   },
@@ -430,7 +420,15 @@
         "file": "brain/executionGraph.js",
         "type": "function",
         "calls": [],
-        "body": "function buildExecutionGraph(functionName) {\n\n  const callers = projectSearch.findCallers(functionName);\n\n  if (callers.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const index = projectSearch.loadIndex();\n\n  let reply =\n`🕸 Execution Graph\n\nTarget:\n${functionName}()\n\n`;\n\n  for (const caller of callers) {\n\nconsole.log(\"EXEC GRAPH:\", caller);\n\nreply +=\n`📄 ${caller.file}\n └── ${caller.caller || \"Unknown Function\"}() — Line ${caller.line}\n  \n     ${functionName}()\n`;\n  const file = index.find(f => f.file === caller.file);\n\n    if (!file) {\n      reply += \"\\n\";\n      continue;\n    }\nconst functions = [\n  ...file.functions,\n  ...file.arrowFunctions\n];\n\n// Find functions that actually call the target function\nconst flow = functions.filter(fn => {\n  if (!fn.calls) return false;\n\n  return fn.calls.includes(functionName);\n});\n\nif (flow.length > 0) {\n  reply += \"\\nExecution flow:\\n\";\n\n  for (const fn of flow) {\n    reply += `        ├── ${fn.name}() → ${functionName}()\\n`;\n  }\n} else {\n  reply += \"\\nExecution flow:\\n\";\n  reply += \"        └── Direct call from route or script\\n\";\n}\n  reply += \"\\n\";\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
+        "body": "function buildExecutionGraph(functionName) {\n  if (!functionName) {\n    return {\n      found: false\n    };\n  }\n\n  const lines = [];\n\n  function walk(currentFunction, depth, path) {\n    const indent = \"  \".repeat(depth);\n\n    if (path.has(currentFunction)) {\n      lines.push(\n        `${indent}↺ ${currentFunction}() — cycle detected`\n      );\n      return;\n    }\n\n    const nextPath = new Set(path);\n    nextPath.add(currentFunction);\n\n    const callers = projectSearch.findCallers(currentFunction);\n\n    if (callers.length === 0) {\n      lines.push(\n        `${indent}└── No project callers found`\n      );\n      return;\n    }\n\n    for (const caller of callers) {\n      const callerName = caller.caller || \"Unknown Function\";\n\n      lines.push(\n        `${indent}└── ${callerName}() — ${caller.file}:${caller.line}`\n      );\n\n      walk(callerName, depth + 1, nextPath);\n    }\n  }\n\n  lines.push(\"🕸 Execution Path\");\n  lines.push(\"\");\n  lines.push(`Target: ${functionName}()`);\n  lines.push(\"\");\n\n  walk(functionName, 0, new Set());\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n}"
+      },
+      {
+        "name": "walk",
+        "line": 12,
+        "file": "brain/executionGraph.js",
+        "type": "function",
+        "calls": [],
+        "body": "  function walk(currentFunction, depth, path) {\n    const indent = \"  \".repeat(depth);\n\n    if (path.has(currentFunction)) {\n      lines.push(\n        `${indent}↺ ${currentFunction}() — cycle detected`\n      );\n      return;\n    }\n\n    const nextPath = new Set(path);\n    nextPath.add(currentFunction);\n\n    const callers = projectSearch.findCallers(currentFunction);\n\n    if (callers.length === 0) {\n      lines.push(\n        `${indent}└── No project callers found`\n      );\n      return;\n    }\n\n    for (const caller of callers) {\n      const callerName = caller.caller || \"Unknown Function\";\n\n      lines.push(\n        `${indent}└── ${callerName}() — ${caller.file}:${caller.line}`\n      );\n\n      walk(callerName, depth + 1, nextPath);\n    }\n  }"
       }
     ],
     "arrowFunctions": [],
@@ -547,15 +545,15 @@
         "file": "brain/functionAnalysis.js",
         "type": "function",
         "calls": [],
-        "body": "function analyzeFunction(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const file = results[0];\n\n  const fullPath = path.join(process.cwd(), file.file);\n\n  let code = \"\";\n\n  if (fs.existsSync(fullPath)) {\n    const lines = fs.readFileSync(fullPath, \"utf8\").split(\"\\n\");\n\n    const start = Math.max(0, file.line - 3);\n    const end = Math.min(lines.length, file.line + 4);\n\n    code = lines\n      .slice(start, end)\n      .map((line, index) => {\n        const lineNumber = start + index + 1;\n        return `${lineNumber}  ${line}`;\n      })\n      .join(\"\\n\");\n  }\n// Generate a simple explanation of the function\nlet summary = `This function is named ${functionName}.`;\n\nif (/remember/i.test(functionName)) {\n  summary =\n    \"This function stores important user information into SamuAI's long-term memory and updates the saved profile.\";\n}\nelse if (/search/i.test(functionName)) {\n  summary =\n    \"This function searches the project index to locate files, functions or dependencies.\";\n}\nelse if (/load/i.test(functionName)) {\n  summary =\n    \"This function loads information from disk into memory.\";\n}\nelse if (/save/i.test(functionName)) {\n  summary =\n    \"This function writes information from memory back to disk.\";\n}\nconst callers = projectSearch.findCallers(functionName);\n\n  const callerText =\n    callers.length > 0\n      ? callers\n          .map(c => `• ${c.file} — Line ${c.line}`)\n          .join(\"\\n\")\n      : \"No callers found.\";\n\nconst dependencyText =\n  file.requires && file.requires.length > 0\n    ? file.requires\n        .map(r => `• ${r.module} — Line ${r.line}`)\n        .join(\"\\n\")\n    : \"No dependencies found.\";\n\n// Function Intelligence\nlet intelligence = [];\n\nif (/remember/i.test(functionName)) {\n  intelligence.push(\"Stores user memory permanently.\");\n  intelligence.push(\"Reads profile.json.\");\n  intelligence.push(\"Updates profile.json.\");\n}\n\nif (/save/i.test(functionName)) {\n  intelligence.push(\"Writes data to disk.\");\n}\n\nif (/load/i.test(functionName)) {\n  intelligence.push(\"Reads data from disk.\");\n}\n\nif (/find/i.test(functionName)) {\n  intelligence.push(\"Searches project information.\");\n}\n\nif (/build/i.test(functionName)) {\n  intelligence.push(\"Constructs project structures.\");\n}\n\nif (intelligence.length === 0) {\n  intelligence.push(\"Purpose could not be inferred automatically.\");\n}\n\nconst intelligenceText = intelligence\n  .map(i => `• ${i}`)\n  .join(\"\\n\");\n\nreturn {\n    found: true,\n    summary,\n    intelligence,\n    file,\n    callers,\n    dependencies: file.requires || [],\n    code,\n\n    reply:\n`🧠 Function Analysis\n\nFunction:\n${functionName}()\n\n📖 Summary:\n${summary}\n\n🧠 Function Intelligence:\n${intelligenceText}\n\n📍 Defined in:\n${file.file} — Line ${file.line}\n\n🔗 Called from:\n${callerText}\n\n📦 Dependencies:\n${dependencyText}\n\n📝 Code:\n${code}`\n};\n\n}"
+        "body": "function analyzeFunction(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const file = results[0];\n\n  // Prefer the complete function body stored in the project index.\n  // Fall back to reading the source file for older indexes.\n  let code = file.body || \"\";\n\n  if (!code) {\n    const fullPath = path.join(process.cwd(), file.file);\n\n    if (fs.existsSync(fullPath)) {\n      const lines = fs.readFileSync(fullPath, \"utf8\").split(\"\\n\");\n      const startLine = Math.max(0, file.line - 3);\n      const endLine = Math.min(lines.length, file.line + 4);\n\n      code = lines\n        .slice(startLine, endLine)\n        .map((line, index) => {\n          const lineNumber = startLine + index + 1;\n          return `${lineNumber}  ${line}`;\n        })\n        .join(\"\\n\");\n    }\n  }\n\n  const calls = file.calls || [];\n  const body = code;\n\n  // -----------------------------\n  // Function Intelligence\n  // -----------------------------\n\n  const intelligence = [];\n\n  // Input validation\n  if (\n    /if\\s*\\(\\s*!?\\s*[A-Za-z_][A-Za-z0-9_]*/.test(body) &&\n    /throw new Error/i.test(body)\n  ) {\n    intelligence.push(\"Validates input and rejects invalid data.\");\n  }\n\n  // Reads data\n  if (\n    /\\b(get[A-Z][A-Za-z0-9_]*|read[A-Z][A-Za-z0-9_]*)\\s*\\(/.test(body) ||\n    /\\breadJson\\s*\\(/.test(body) ||\n    /\\breadFile\\s*\\(/.test(body)\n  ) {\n    intelligence.push(\"Reads existing data before performing its operation.\");\n  }\n\n  // Writes data\n  if (\n    /\\b(save[A-Z][A-Za-z0-9_]*|write[A-Z][A-Za-z0-9_]*)\\s*\\(/.test(body) ||\n    /\\bwriteJson\\s*\\(/.test(body) ||\n    /\\bwriteFile\\s*\\(/.test(body)\n  ) {\n    intelligence.push(\"Writes or persists data.\");\n  }\n\n  // Array search / duplicate detection\n  if (\n    /\\.find\\s*\\(/.test(body) ||\n    /\\.findIndex\\s*\\(/.test(body)\n  ) {\n    intelligence.push(\"Searches a collection to locate an existing item.\");\n  }\n\n  // Array insertion\n  if (\n    /\\.push\\s*\\(/.test(body)\n  ) {\n    intelligence.push(\"Adds a new item to a collection.\");\n  }\n\n  // Object creation\n  if (\n    /const\\s+[A-Za-z_][A-Za-z0-9_]*\\s*=\\s*\\{/.test(body)\n  ) {\n    intelligence.push(\"Constructs an object containing processed data.\");\n  }\n\n  // Return behavior\n  if (/return\\s+\\[\\s*\\]/.test(body)) {\n    intelligence.push(\"Can return an empty collection when no data exists.\");\n  }\n\n  if (/return\\s+new[A-Za-z0-9_]*/.test(body)) {\n    intelligence.push(\"Returns newly created data.\");\n  }\n\n  if (/return\\s+[A-Za-z_][A-Za-z0-9_]*/.test(body)) {\n    intelligence.push(\"Returns a computed or retrieved value.\");\n  }\n\n  // Async behavior\n  if (/async\\s+function/.test(body) || /\\bawait\\s+/.test(body)) {\n    intelligence.push(\"Performs asynchronous operations.\");\n  }\n\n  // Calls detected by the project index\n  if (calls.length > 0) {\n    const uniqueCalls = [\n      ...new Set(calls.map(call => call.name))\n    ];\n\n    intelligence.push(\n      `Uses project functions: ${uniqueCalls.map(name => `${name}()`).join(\", \")}.`\n    );\n  }\n\n  if (intelligence.length === 0) {\n    intelligence.push(\n      \"Purpose could not be inferred automatically from the indexed code.\"\n    );\n  }\n\n  // -----------------------------\n  // Summary\n  // -----------------------------\n\n  let summary = `This function is named ${functionName}.`;\n\n  if (\n    /customer/i.test(functionName) &&\n    /\\.push\\s*\\(/.test(body) &&\n    /saveCustomers\\s*\\(/.test(body)\n  ) {\n    summary =\n      \"Adds a customer to the business customer list, prevents duplicate customer IDs, and saves the updated customer data.\";\n  } else if (/remember/i.test(functionName)) {\n    summary =\n      \"Stores important user information into SamuAI's long-term memory and updates the saved profile.\";\n  } else if (/search/i.test(functionName)) {\n    summary =\n      \"Searches the project index to locate files, functions or dependencies.\";\n  } else if (/load/i.test(functionName)) {\n    summary =\n      \"Loads information from disk into memory.\";\n  } else if (/save/i.test(functionName)) {\n    summary =\n      \"Writes information from memory back to disk.\";\n  }\n\n  // -----------------------------\n  // Callers\n  // -----------------------------\n\n  const callers = projectSearch.findCallers(functionName);\n\n  const callerText =\n    callers.length > 0\n      ? callers\n          .map(c => `• ${c.file} — Line ${c.line}`)\n          .join(\"\\n\")\n      : \"No callers found.\";\n\n  // -----------------------------\n  // Dependencies\n  // -----------------------------\n\n  const dependencyText =\n    file.requires && file.requires.length > 0\n      ? file.requires\n          .map(r => `• ${r.module} — Line ${r.line}`)\n          .join(\"\\n\")\n      : \"No dependencies found.\";\n\n  const intelligenceText = intelligence\n    .map(item => `• ${item}`)\n    .join(\"\\n\");\n\n  return {\n    found: true,\n    summary,\n    intelligence,\n    file,\n    callers,\n    dependencies: file.requires || [],\n    calls,\n    code,\n\n    reply:\n`🧠 Function Analysis\n\nFunction: ${functionName}()\n\n📖 Summary:\n${summary}\n\n🧠 Function Intelligence:\n${intelligenceText}\n\n📍 Defined in:\n${file.file} — Line ${file.line}\n\n🔗 Called from:\n${callerText}\n\n📞 Calls:\n${\n  calls.length > 0\n    ? calls\n        .map(c => `• ${c.name}() — Line ${c.line}`)\n        .join(\"\\n\")\n    : \"No project functions called.\"\n}\n\n📦 Dependencies:\n${dependencyText}\n\n📝 Code:\n${code}`\n  };\n}\n\nmodule.exports = {\n  analyzeFunction\n};\n"
       },
       {
         "name": "map callback",
-        "line": 28,
+        "line": 30,
         "file": "brain/functionAnalysis.js",
         "type": "callback",
         "calls": [],
-        "body": "      .map((line, index) => {\n        const lineNumber = start + index + 1;\n        return `${lineNumber}  ${line}`;\n      })"
+        "body": "        .map((line, index) => {\n          const lineNumber = startLine + index + 1;\n          return `${lineNumber}  ${line}`;\n        })"
       }
     ],
     "arrowFunctions": [],
@@ -601,11 +599,20 @@
     "functions": [
       {
         "name": "analyzeFunctionImpact",
-        "line": 3,
+        "line": 7,
         "file": "brain/functionImpact.js",
         "type": "function",
-        "calls": [],
-        "body": "function analyzeFunctionImpact(functionName) {\n\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const functionInfo = results[0];\n\n  const callers = projectSearch.findCallers(functionName);\n\n  const callerText =\n    callers.length > 0\n      ? callers\n          .map(c => `• ${c.file} — Line ${c.line}`)\n          .join(\"\\n\")\n      : \"No callers found.\";\n\n  const dependencyText =\n    functionInfo.requires && functionInfo.requires.length > 0\n      ? functionInfo.requires\n          .map(r => `• ${r.module} — Line ${r.line}`)\n          .join(\"\\n\")\n      : \"No direct dependencies found.\";\n\n  let risk = \"LOW\";\n\n  if (callers.length >= 3) {\n    risk = \"HIGH\";\n  } else if (callers.length > 0) {\n    risk = \"MEDIUM\";\n  }\n\n  return {\n    found: true,\n    reply:\n`🛡 Function Impact Analysis\n\nFunction:\n${functionName}()\n\n📍 Defined in:\n${functionInfo.file} — Line ${functionInfo.line}\n\n🔗 Called from:\n${callerText}\n\n📦 Dependencies:\n${dependencyText}\n\n⚠️ Risk:\n${risk}\n\nChanging ${functionName}() may affect ${callers.length} caller file${callers.length === 1 ? \"\" : \"s\"}.`\n  };\n}"
+        "calls": [
+          {
+            "name": "traceCallers",
+            "line": 18
+          },
+          {
+            "name": "traceCallees",
+            "line": 19
+          }
+        ],
+        "body": "function analyzeFunctionImpact(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const functionInfo = results[0];\n\n  const callers = traceCallers(functionName);\n  const callees = traceCallees(functionName);\n\n  const directCallers = callers.filter(c => c.depth === 0);\n\n  const callerText =\n    directCallers.length > 0\n      ? directCallers\n          .map(c =>\n            `• ${c.caller}() — ${c.file}:${c.line}`\n          )\n          .join(\"\\n\")\n      : \"No direct callers found.\";\n\n  const recursiveCallerText =\n    callers.length > 0\n      ? callers\n          .map(c =>\n            `• ${c.caller}() — ${c.file}:${c.line} (depth ${c.depth})`\n          )\n          .join(\"\\n\")\n      : \"No recursive callers found.\";\n\n  const calleeText =\n    callees.length > 0\n      ? callees\n          .map(c =>\n            `• ${c.callee}() — ${c.calleeFile}:${c.calleeLine}`\n          )\n          .join(\"\\n\")\n      : \"No project function calls detected.\";\n\n  const affectedFiles = [\n    ...new Set(\n      callers.map(c => c.file)\n    )\n  ];\n\n  let risk = \"LOW\";\n\n  if (callers.length >= 5 || affectedFiles.length >= 3) {\n    risk = \"HIGH\";\n  } else if (callers.length > 0) {\n    risk = \"MEDIUM\";\n  }\n\n  return {\n    found: true,\n    reply:\n`🛡 Function Impact Analysis\n\nFunction:\n${functionName}()\n\n📍 Defined in:\n${functionInfo.file} — Line ${functionInfo.line}\n\n🔗 Direct callers:\n${callerText}\n\n📈 Recursive callers:\n${recursiveCallerText}\n\n→ Calls:\n${calleeText}\n\n📁 Affected files:\n${\n  affectedFiles.length > 0\n    ? affectedFiles.map(file => `• ${file}`).join(\"\\n\")\n    : \"No caller files found.\"\n}\n\n⚠️ Risk:\n${risk}\n\nChanging ${functionName}() may affect ${callers.length} caller function${callers.length === 1 ? \"\" : \"s\"} across ${affectedFiles.length} file${affectedFiles.length === 1 ? \"\" : \"s\"}.`\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -613,9 +620,26 @@
       {
         "module": "../index/searchIndex",
         "line": 1
+      },
+      {
+        "module": "./projectGraph",
+        "line": 5
       }
     ],
-    "calls": []
+    "calls": [
+      {
+        "caller": "analyzeFunctionImpact",
+        "callee": "traceCallers",
+        "file": "brain/functionImpact.js",
+        "line": 18
+      },
+      {
+        "caller": "analyzeFunctionImpact",
+        "callee": "traceCallees",
+        "file": "brain/functionImpact.js",
+        "line": 19
+      }
+    ]
   },
   {
     "file": "brain/functionLocator.js",
@@ -762,94 +786,98 @@
         "calls": [
           {
             "name": "resolveFunctionName",
-            "line": 66
+            "line": 64
           },
           {
-            "name": "findCallees",
-            "line": 72
+            "name": "traceCallers",
+            "line": 65
           },
           {
             "name": "traceCallees",
-            "line": 119
+            "line": 102
           },
           {
             "name": "locateFunction",
-            "line": 161
+            "line": 191
+          },
+          {
+            "name": "findCallees",
+            "line": 228
           },
           {
             "name": "analyzeImpact",
-            "line": 231
+            "line": 261
           },
           {
             "name": "dependencyTree",
-            "line": 241
-          },
-          {
-            "name": "analyzeFunction",
-            "line": 253
-          },
-          {
-            "name": "reverseCallGraph",
-            "line": 258
-          },
-          {
-            "name": "buildExecutionGraph",
-            "line": 264
-          },
-          {
-            "name": "analyzeFunctionImpact",
-            "line": 270
-          },
-          {
-            "name": "explainFeature",
-            "line": 286
-          },
-          {
-            "name": "explainExecution",
-            "line": 297
-          },
-          {
-            "name": "explainFunctionReason",
-            "line": 312
-          },
-          {
-            "name": "buildRecursiveExecution",
-            "line": 322
-          },
-          {
-            "name": "buildCallHierarchy",
-            "line": 335
-          },
-          {
-            "name": "buildAutoExecutionPipeline",
-            "line": 370
-          },
-          {
-            "name": "buildExecutionTree",
-            "line": 379
-          },
-          {
-            "name": "explainArchitecture",
-            "line": 391
-          },
-          {
-            "name": "buildProjectGraph",
-            "line": 396
+            "line": 271
           },
           {
             "name": "reasonAboutFunction",
-            "line": 410
+            "line": 280
+          },
+          {
+            "name": "explainFeature",
+            "line": 290
+          },
+          {
+            "name": "explainExecution",
+            "line": 301
+          },
+          {
+            "name": "explainFunctionReason",
+            "line": 316
+          },
+          {
+            "name": "buildRecursiveExecution",
+            "line": 326
+          },
+          {
+            "name": "buildCallHierarchy",
+            "line": 339
+          },
+          {
+            "name": "buildExecutionGraph",
+            "line": 362
+          },
+          {
+            "name": "buildAutoExecutionPipeline",
+            "line": 374
+          },
+          {
+            "name": "buildExecutionTree",
+            "line": 383
+          },
+          {
+            "name": "explainArchitecture",
+            "line": 395
+          },
+          {
+            "name": "buildProjectGraph",
+            "line": 400
+          },
+          {
+            "name": "analyzeFunctionImpact",
+            "line": 426
           },
           {
             "name": "listFunctions",
-            "line": 445
+            "line": 461
           },
           {
             "name": "explainFile",
-            "line": 454
+            "line": 470
+          },
+          {
+            "name": "analyzeFunction",
+            "line": 475
+          },
+          {
+            "name": "reverseCallGraph",
+            "line": 485
           }
         ],
-        "body": "function answerProjectQuestion(message) {\n\nconst keyword = extractKeyword(message);\nconsole.log(\"MESSAGE:\", message);\nconsole.log(\"KEYWORD:\", keyword);\n\n// Trace execution chain\nif (/trace/i.test(message) &&\n    !/what does|callees|where is|where.*defined|definition/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n\n  // Trace both callers and callees\n  if (/trace\\s+both/i.test(message)) {\n\n    const callers = projectSearch.findCallers(actualFunctionName);\n    const chain = projectGraph.findCallees(actualFunctionName);\n\n    const lines = [];\n\n    lines.push(`🔗 Bidirectional Trace\\n`);\n    lines.push(`${actualFunctionName}()\\n`);\n\n    // Backward trace\n    lines.push(`← Called by:`);\n\n      if (callers.length > 0) {\n        for (const caller of callers) {\n          const indent = \"  \".repeat(caller.depth + 1);\n          lines.push(\n            `${indent}← ${caller.caller}() — ${caller.file}:${caller.line}`\n          );\n        }\n      } else {\n        lines.push(`  ← No project callers detected.`);\n      }\n    // Forward trace\n    lines.push(`\\n→ Calls:`);\n\n    if (chain.length > 0) {\n      for (const item of chain) {\n        const indent = \"  \".repeat(item.depth + 1);\n\n        const location =\n          item.calleeFile && item.calleeLine\n            ? ` — ${item.calleeFile}:${item.calleeLine}`\n            : \"\";\n\n        lines.push(\n          `${indent}→ ${item.callee}()${location}`\n        );\n      }\n    } else {\n      lines.push(`  → No project function calls detected.`);\n    }\n\n    return {\n      found: true,\n      reply: lines.join(\"\\n\")\n    };\n  }\n\n  // Normal forward execution trace\n  const chain = projectGraph.traceCallees(actualFunctionName);\n\n  if (chain.length > 0) {\n    const lines = [];\n\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth);\n\n      const location =\n        item.calleeFile && item.calleeLine\n          ? ` — ${item.calleeFile}:${item.calleeLine}`\n          : \"\";\n\n      lines.push(\n        `${indent}↓ ${item.callee}()${location}`\n      );\n    }\n\n    return {\n      found: true,\n      reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\n${lines.join(\"\\n\")}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\nNo project function calls detected.`\n  };\n}\n // Where is a function defined?\n  if (/where is|where.*defined|definition/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n    const result = locateFunction(actualFunctionName);\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Who calls a function?\nif (/what calls|who calls|called by/i.test(message)) {\nconst actualFunctionName = resolveFunctionName(keyword);\nconst callers = projectSearch.findCallers(actualFunctionName);\n\n  if (callers.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalled from:\n\n${callers\n  .map(c => `• ${c.caller}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\nTotal files: ${callers.length}`\n    };\n  }\n}\n// What does a function call?\nif (/what does|callees/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const functionInfo = projectSearch.findFunction(actualFunctionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply: `❌ I couldn't find ${actualFunctionName}() in the project.`\n    };\n  }\n const callees = findCallees(actualFunctionName);\n\n  if (callees.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n${callees\n  .map(c => `• ${c.callee}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\n\nTotal calls: ${callees.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n• No other project functions detected.\n\nNote: external/library calls are not included in the project call graph.`\n  };\n}\n// Impact Analysis\nif (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = analyzeImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Dependency Tree\nif (/dependency tree|dependencies/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const tree = dependencyTree(keyword);\n\n  if (tree.found) {\n    return tree;\n  }\n\n}\n  // Full Function Analysis\n  if (/full analysis|analyze|everything about|explain function/i.test(message)) {\n\n    let report = [];\n\n    const analysis = analyzeFunction(keyword);\n    if (analysis.found) {\n      report.push(analysis.reply);\n    }\n\n    const callers = reverseCallGraph(keyword);\n    if (callers.found) {\n      report.push(\"\\n====================\\n\");\n      report.push(callers.reply);\n    }\n\n    const execution = buildExecutionGraph(keyword);\n    if (execution.found) {\n      report.push(\"\\n====================\\n\");\n      report.push(execution.reply);\n    }\n\n    const impact = analyzeFunctionImpact(keyword);\n    if (impact.found) {\n      report.push(\"\\n====================\\n\");\n      report.push(impact.reply);\n    }\n\n    if (report.length > 0) {\n      return {\n        found: true,\n        reply: report.join(\"\\n\")\n      };\n    }\n  }\n// Feature Reasoning\nif (/how does .* work|feature|system/i.test(message)) {\n\n  const result = explainFeature(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n  // Function Execution Explanation\n  if (/explain execution|execution flow of|how .* executes|explain .* execution|execution of/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n\n    const result = explainExecution(message);\n\n    if (result.found) {\n      return result;\n    }\n\n    const functionResult = explainExecution(actualFunctionName);\n\n    if (functionResult.found) {\n      return functionResult;\n    }\n  }\n// Function Reasoning\nif (/^why\\b|^explain\\b|purpose|reason/i.test(message)) {\n\n  const result = explainFunctionReason(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Recursive Execution\nif (/trace|full execution|execution trace|recursive execution/i.test(message)) {\n\n  const lines = buildRecursiveExecution(keyword);\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n\n}\n// Call Hierarchy\nif (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {\n\nconsole.log(\"CALL HIERARCHY BLOCK:\", message, keyword);\n\n  const result = buildCallHierarchy(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Execution Graph\nif (/execution graph|show execution graph/i.test(message)) {\n\n  if (keyword === \"graph\") {\n    return {\n      found: true,\n      reply:\n        \"🕸 Execution Graph\\n\\n\" +\n        \"An execution graph shows how a specific function is reached and which functions call it.\\n\\n\" +\n        \"For example, you can ask:\\n\" +\n        \"• show execution graph for buildAutoExecutionPipeline\\n\" +\n        \"• execution graph for answerProjectQuestion\\n\\n\" +\n        \"This lets SamuAI trace the execution path through the project.\"\n    };\n  }\n\n  const result = buildExecutionGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Execution Pipeline\nif (/execution pipeline|pipeline|execution flow/i.test(message)) {\n\n  const result =\nbuildAutoExecutionPipeline(keyword);\n  if (result.found) {\n    return result;\n  }\n\n}\n// Full Execution Tree\nif (/execution tree|full tree|tree/i.test(message)) {\n\n  const lines = buildExecutionTree(keyword);\n\n  return {\n    found: true,\n    reply:\n      \"🌳 Full Execution Tree\\n\\n\" +\n      lines.join(\"\\n\")\n  };\n\n}\n// Project Architecture\nif (/architecture|project architecture|show architecture/i.test(message)) {\n  return explainArchitecture();\n}\n// Project Graph\nif (/project graph|show project graph/i.test(message)) {\n\n  const graph = buildProjectGraph();\n\n  return {\n    found: true,\n    reply:\n      \"🕸 Project Graph\\n\\n\" +\n      JSON.stringify(graph, null, 2)\n  };\n\n}\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n\n  const result = reasonAboutFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst flow = explainExecution(message);\n// Execution Flow\n\nif (flow.found) {\n  return flow;\n}\n// Who uses a file?\nif (/who uses|used by|imports/i.test(message) && keyword.endsWith(\".js\")) {\n  const usedBy = projectSearch.findUsedBy(keyword);\n\n  if (usedBy.length > 0) {\n    return {\n      found: true,\n      reply:\n`📄 ${keyword}\n\nUsed by:\n\n${usedBy.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${usedBy.length}`\n    };\n  }\n}\n// List functions in a file\nif (/show all functions|list functions|functions in/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = listFunctions(keyword);\n\n  if (result.found) {\n    return result;\n   }\n\n  }\n// Explain a specific JavaScript file\nif (/explain/i.test(message) && keyword.endsWith(\".js\")) {\n  return explainFile(keyword);\n}\n// Full reasoning about a function\nif (/reason|full analysis|everything about|analyze completely/i.test(message)) {\n\n  const result = reasonAboutFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n // Analyze a specific function\nif (/explain|analyze|details about/i.test(message)) {\n\n  const result = analyzeFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Function Impact Analysis\nif (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {\n\n  const result = analyzeFunctionImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Reverse Call Graph\nif (/execution path|reverse call graph|path to|who reaches/i.test(message)) {\n\n  const result = reverseCallGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Locate a function\nif (/where is|jump to|locate|find function/i.test(message)) {\n\n  const result = locateFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst functionResult = projectSearch.findFunction(keyword);\n\nif (functionResult.length > 0) {\n\n  const file = functionResult[0];\n\n  return {\n    found: true,\n    reply:\n`I found the function \"${keyword}\".\n\n📄 File:\n${file.file}\n\nFunctions in this file:\n\n${projectSearch.loadIndex()\n  .find(f => f.file === file.file)\n  .functions\n  .map(f => \"• \" + f.name + \"()\")\n  .join(\"\\n\")}`\n    };\n\n    }\n   // List all project files\n    if (/list|all|files|project files/i.test(message)) {\n      return {\n        found: true,\n        reply:\n`Project files:\n\n${projectSearch.listFiles().map(f => \"• \" + f).join(\"\\n\")}\n\nTotal files: ${projectSearch.listFiles().length}`\n      };\n    }\n  const requireResult = projectSearch.findRequire(keyword);\n\n  if (requireResult.length > 0) {\n    return {\n      found: true,\n      reply:\n`I found \"${keyword}\" in these project files:\n\n${requireResult.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${requireResult.length}`\n    };\n  }\n\n  return {\n    found: false\n  };\n}"
+        "body": "function answerProjectQuestion(message) {\n\nconst keyword = extractKeyword(message);\nconsole.log(\"MESSAGE:\", message);\nconsole.log(\"KEYWORD:\", keyword);\n\n// Recursive caller trace\nif (/trace\\s+callers/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const chain = projectGraph.traceCallers(actualFunctionName);\n\n  const lines = [];\n\n  lines.push(`🔙 Caller Trace\\n`);\n  lines.push(`${actualFunctionName}()\\n`);\n  lines.push(\"← Called by:\");\n\n  if (chain.length > 0) {\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth + 1);\n\n      lines.push(\n        `${indent}← ${item.caller}() — ${item.file}:${item.line}`\n      );\n    }\n  } else {\n    lines.push(\"  ← No project callers detected.\");\n  }\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n}\n\n\n// Trace execution chain\nif (/trace/i.test(message) &&\n    !/what does|callees|where is|where.*defined|definition/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n\n  // Trace both callers and callees\n  if (/trace\\s+both/i.test(message)) {\n\n    const callers = projectGraph.traceCallers(actualFunctionName);\n    const chain = projectGraph.traceCallees(actualFunctionName);\n\n    const lines = [];\n\n    lines.push(`🔗 Bidirectional Trace\\n`);\n    lines.push(`${actualFunctionName}()\\n`);\n\n    // Backward trace\n    lines.push(`← Called by:`);\n\n      if (callers.length > 0) {\n        for (const caller of callers) {\n          const indent = \"  \".repeat(caller.depth + 1);\n          lines.push(\n            `${indent}← ${caller.caller}() — ${caller.file}:${caller.line}`\n          );\n        }\n      } else {\n        lines.push(`  ← No project callers detected.`);\n      }\n    // Forward trace\n    lines.push(`\\n→ Calls:`);\n\n    if (chain.length > 0) {\n      for (const item of chain) {\n        const indent = \"  \".repeat(item.depth + 1);\n\n        const location =\n          item.calleeFile && item.calleeLine\n            ? ` — ${item.calleeFile}:${item.calleeLine}`\n            : \"\";\n\n        lines.push(\n          `${indent}→ ${item.callee}()${location}`\n        );\n      }\n    } else {\n      lines.push(`  → No project function calls detected.`);\n    }\n\n    return {\n      found: true,\n      reply: lines.join(\"\\n\")\n    };\n  }\n\n  // Normal forward execution trace\n  const chain = projectGraph.traceCallees(actualFunctionName);\n\n  if (chain.length > 0) {\n    const lines = [];\n\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth);\n\n      const location =\n        item.calleeFile && item.calleeLine\n          ? ` — ${item.calleeFile}:${item.calleeLine}`\n          : \"\";\n\n      lines.push(\n        `${indent}↓ ${item.callee}()${location}`\n      );\n    }\n\n    return {\n      found: true,\n      reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\n${lines.join(\"\\n\")}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\nNo project function calls detected.`\n  };\n}\n // Where is a function defined?\n  if (/where is|where.*defined|definition/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n    const result = locateFunction(actualFunctionName);\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Who calls a function?\nif (/what calls|who calls|called by/i.test(message)) {\nconst actualFunctionName = resolveFunctionName(keyword);\nconst callers = projectSearch.findCallers(actualFunctionName);\n\n  if (callers.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalled from:\n\n${callers\n  .map(c => `• ${c.caller}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\nTotal files: ${callers.length}`\n    };\n  }\n}\n// What does a function call?\nif (/what does|callees/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const functionInfo = projectSearch.findFunction(actualFunctionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply: `❌ I couldn't find ${actualFunctionName}() in the project.`\n    };\n  }\n const callees = findCallees(actualFunctionName);\n\n  if (callees.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n${callees\n  .map(c => `• ${c.callee}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\n\nTotal calls: ${callees.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n• No other project functions detected.\n\nNote: external/library calls are not included in the project call graph.`\n  };\n}\n// Impact Analysis\nif (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = analyzeImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Dependency Tree\nif (/dependency tree|dependencies/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const tree = dependencyTree(keyword);\n\n  if (tree.found) {\n    return tree;\n  }\n\n}\n  // Full Function Analysis\n  if (/full analysis|analyze|everything about|explain function/i.test(message)) {\n    const result = reasonAboutFunction(keyword);\n\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Feature Reasoning\nif (/how does .* work|feature|system/i.test(message)) {\n\n  const result = explainFeature(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n  // Function Execution Explanation\n  if (/explain execution|execution flow of|how .* executes|explain .* execution|execution of/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n\n    const result = explainExecution(message);\n\n    if (result.found) {\n      return result;\n    }\n\n    const functionResult = explainExecution(actualFunctionName);\n\n    if (functionResult.found) {\n      return functionResult;\n    }\n  }\n// Function Reasoning\n  if (/^why\\b|^explain\\b|purpose/i.test(message)) {\n\n  const result = explainFunctionReason(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Recursive Execution\nif (/trace|full execution|execution trace|recursive execution/i.test(message)) {\n\n  const lines = buildRecursiveExecution(keyword);\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n\n}\n// Call Hierarchy\nif (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {\n\nconsole.log(\"CALL HIERARCHY BLOCK:\", message, keyword);\n\n  const result = buildCallHierarchy(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Execution Graph\nif (/execution graph|show execution graph/i.test(message)) {\n\n  if (keyword === \"graph\") {\n    return {\n      found: true,\n      reply:\n        \"🕸 Execution Graph\\n\\n\" +\n        \"An execution graph shows how a specific function is reached and which functions call it.\\n\\n\" +\n        \"For example, you can ask:\\n\" +\n        \"• show execution graph for buildAutoExecutionPipeline\\n\" +\n        \"• execution graph for answerProjectQuestion\\n\\n\" +\n        \"This lets SamuAI trace the execution path through the project.\"\n    };\n  }\n\n  const result = buildExecutionGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Execution Pipeline\nif (/execution pipeline|pipeline|execution flow/i.test(message)) {\n\n  const result =\nbuildAutoExecutionPipeline(keyword);\n  if (result.found) {\n    return result;\n  }\n\n}\n// Full Execution Tree\nif (/execution tree|full tree|tree/i.test(message)) {\n\n  const lines = buildExecutionTree(keyword);\n\n  return {\n    found: true,\n    reply:\n      \"🌳 Full Execution Tree\\n\\n\" +\n      lines.join(\"\\n\")\n  };\n\n}\n// Project Architecture\nif (/architecture|project architecture|show architecture/i.test(message)) {\n  return explainArchitecture();\n}\n// Project Graph\nif (/project graph|show project graph/i.test(message)) {\n\n  const graph = buildProjectGraph();\n\n  return {\n    found: true,\n    reply:\n      \"🕸 Project Graph\\n\\n\" +\n      JSON.stringify(graph, null, 2)\n  };\n\n}\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = buildExecutionGraph(actualFunctionName);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Function Impact Analysis\nif (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {\n\n  const result = analyzeFunctionImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst flow = explainExecution(message);\n// Execution Flow\n\nif (flow.found) {\n  return flow;\n}\n// Who uses a file?\nif (/who uses|used by|imports/i.test(message) && keyword.endsWith(\".js\")) {\n  const usedBy = projectSearch.findUsedBy(keyword);\n\n  if (usedBy.length > 0) {\n    return {\n      found: true,\n      reply:\n`📄 ${keyword}\n\nUsed by:\n\n${usedBy.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${usedBy.length}`\n    };\n  }\n}\n// List functions in a file\nif (/show all functions|list functions|functions in/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = listFunctions(keyword);\n\n  if (result.found) {\n    return result;\n   }\n\n  }\n// Explain a specific JavaScript file\nif (/explain/i.test(message) && keyword.endsWith(\".js\")) {\n  return explainFile(keyword);\n}\n // Analyze a specific function\nif (/explain|analyze|details about/i.test(message)) {\n\n  const result = analyzeFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Reverse Call Graph\nif (/execution path|reverse call graph|path to|who reaches/i.test(message)) {\n\n  const result = reverseCallGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Locate a function\nif (/where is|jump to|locate|find function/i.test(message)) {\n\n  const result = locateFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst functionResult = projectSearch.findFunction(keyword);\n\nif (functionResult.length > 0) {\n\n  const file = functionResult[0];\n\n  return {\n    found: true,\n    reply:\n`I found the function \"${keyword}\".\n\n📄 File:\n${file.file}\n\nFunctions in this file:\n\n${projectSearch.loadIndex()\n  .find(f => f.file === file.file)\n  .functions\n  .map(f => \"• \" + f.name + \"()\")\n  .join(\"\\n\")}`\n    };\n\n    }\n   // List all project files\n    if (/list|all|files|project files/i.test(message)) {\n      return {\n        found: true,\n        reply:\n`Project files:\n\n${projectSearch.listFiles().map(f => \"• \" + f).join(\"\\n\")}\n\nTotal files: ${projectSearch.listFiles().length}`\n      };\n    }\n  const requireResult = projectSearch.findRequire(keyword);\n\n  if (requireResult.length > 0) {\n    return {\n      found: true,\n      reply:\n`I found \"${keyword}\" in these project files:\n\n${requireResult.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${requireResult.length}`\n    };\n  }\n\n  return {\n    found: false\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -968,211 +996,211 @@
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 66
+        "line": 64
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "findCallees",
+        "callee": "traceCallers",
         "file": "brain/projectBrain.js",
-        "line": 72
+        "line": 65
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 96
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "traceCallers",
+        "file": "brain/projectBrain.js",
+        "line": 101
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "traceCallees",
         "file": "brain/projectBrain.js",
-        "line": 119
+        "line": 102
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "traceCallees",
+        "file": "brain/projectBrain.js",
+        "line": 149
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 160
+        "line": 190
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "locateFunction",
         "file": "brain/projectBrain.js",
-        "line": 161
+        "line": 191
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 169
+        "line": 199
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 189
+        "line": 219
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "findCallees",
         "file": "brain/projectBrain.js",
-        "line": 198
+        "line": 228
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "analyzeImpact",
         "file": "brain/projectBrain.js",
-        "line": 231
+        "line": 261
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "dependencyTree",
         "file": "brain/projectBrain.js",
-        "line": 241
+        "line": 271
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "analyzeFunction",
+        "callee": "reasonAboutFunction",
         "file": "brain/projectBrain.js",
-        "line": 253
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "reverseCallGraph",
-        "file": "brain/projectBrain.js",
-        "line": 258
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "buildExecutionGraph",
-        "file": "brain/projectBrain.js",
-        "line": 264
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "analyzeFunctionImpact",
-        "file": "brain/projectBrain.js",
-        "line": 270
+        "line": 280
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "explainFeature",
         "file": "brain/projectBrain.js",
-        "line": 286
+        "line": 290
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 295
+        "line": 299
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "explainExecution",
         "file": "brain/projectBrain.js",
-        "line": 297
+        "line": 301
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "explainExecution",
         "file": "brain/projectBrain.js",
-        "line": 303
+        "line": 307
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "explainFunctionReason",
         "file": "brain/projectBrain.js",
-        "line": 312
+        "line": 316
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildRecursiveExecution",
         "file": "brain/projectBrain.js",
-        "line": 322
+        "line": 326
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildCallHierarchy",
         "file": "brain/projectBrain.js",
-        "line": 335
+        "line": 339
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildExecutionGraph",
         "file": "brain/projectBrain.js",
-        "line": 358
+        "line": 362
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildAutoExecutionPipeline",
         "file": "brain/projectBrain.js",
-        "line": 370
+        "line": 374
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildExecutionTree",
         "file": "brain/projectBrain.js",
-        "line": 379
+        "line": 383
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "explainArchitecture",
         "file": "brain/projectBrain.js",
-        "line": 391
+        "line": 395
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildProjectGraph",
         "file": "brain/projectBrain.js",
-        "line": 396
+        "line": 400
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "reasonAboutFunction",
+        "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 410
+        "line": 414
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "explainExecution",
+        "callee": "buildExecutionGraph",
         "file": "brain/projectBrain.js",
-        "line": 418
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "listFunctions",
-        "file": "brain/projectBrain.js",
-        "line": 445
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainFile",
-        "file": "brain/projectBrain.js",
-        "line": 454
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "reasonAboutFunction",
-        "file": "brain/projectBrain.js",
-        "line": 459
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "analyzeFunction",
-        "file": "brain/projectBrain.js",
-        "line": 469
+        "line": 415
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "analyzeFunctionImpact",
         "file": "brain/projectBrain.js",
-        "line": 479
+        "line": 426
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainExecution",
+        "file": "brain/projectBrain.js",
+        "line": 434
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "listFunctions",
+        "file": "brain/projectBrain.js",
+        "line": 461
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainFile",
+        "file": "brain/projectBrain.js",
+        "line": 470
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeFunction",
+        "file": "brain/projectBrain.js",
+        "line": 475
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "reverseCallGraph",
         "file": "brain/projectBrain.js",
-        "line": 489
+        "line": 485
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "locateFunction",
         "file": "brain/projectBrain.js",
-        "line": 499
+        "line": 495
       }
     ]
   },

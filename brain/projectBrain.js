@@ -277,39 +277,13 @@ if (/dependency tree|dependencies/i.test(message) && keyword.endsWith(".js")) {
 }
   // Full Function Analysis
   if (/full analysis|analyze|everything about|explain function/i.test(message)) {
+    const result = reasonAboutFunction(keyword);
 
-    let report = [];
-
-    const analysis = analyzeFunction(keyword);
-    if (analysis.found) {
-      report.push(analysis.reply);
-    }
-
-    const callers = reverseCallGraph(keyword);
-    if (callers.found) {
-      report.push("\n====================\n");
-      report.push(callers.reply);
-    }
-
-    const execution = buildExecutionGraph(keyword);
-    if (execution.found) {
-      report.push("\n====================\n");
-      report.push(execution.reply);
-    }
-
-    const impact = analyzeFunctionImpact(keyword);
-    if (impact.found) {
-      report.push("\n====================\n");
-      report.push(impact.reply);
-    }
-
-    if (report.length > 0) {
-      return {
-        found: true,
-        reply: report.join("\n")
-      };
+    if (result.found) {
+      return result;
     }
   }
+
 // Feature Reasoning
 if (/how does .* work|feature|system/i.test(message)) {
 
@@ -337,7 +311,7 @@ if (/how does .* work|feature|system/i.test(message)) {
     }
   }
 // Function Reasoning
-if (/^why\b|^explain\b|purpose|reason/i.test(message)) {
+  if (/^why\b|^explain\b|purpose/i.test(message)) {
 
   const result = explainFunctionReason(keyword);
 
@@ -437,7 +411,8 @@ if (/project graph|show project graph/i.test(message)) {
 // Execution path to a specific function
 if (/execution path|flow to|path to/i.test(message)) {
 
-  const result = reasonAboutFunction(keyword);
+  const actualFunctionName = resolveFunctionName(keyword);
+  const result = buildExecutionGraph(actualFunctionName);
 
   if (result.found) {
     return result;
@@ -493,16 +468,6 @@ if (/show all functions|list functions|functions in/i.test(message) && keyword.e
 // Explain a specific JavaScript file
 if (/explain/i.test(message) && keyword.endsWith(".js")) {
   return explainFile(keyword);
-}
-// Full reasoning about a function
-if (/reason|full analysis|everything about|analyze completely/i.test(message)) {
-
-  const result = reasonAboutFunction(keyword);
-
-  if (result.found) {
-    return result;
-  }
-
 }
  // Analyze a specific function
 if (/explain|analyze|details about/i.test(message)) {
