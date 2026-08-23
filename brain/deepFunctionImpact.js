@@ -1,5 +1,7 @@
 const projectSearch = require("../index/searchIndex");
 
+const MAX_DEPTH = 10;
+
 function getFunctionInfo(file, functionName) {
   const index = projectSearch.loadIndex();
 
@@ -15,29 +17,63 @@ function getFunctionInfo(file, functionName) {
   ].find(fn => fn.name === functionName) || null;
 }
 
-function findIndirectCallers(functionName) {
-  const directCallers = projectSearch.findCallers(functionName);
-
+function buildRecursiveImpact(functionName) {
   const results = [];
-  const seen = new Set();
+  const queue = [
+    {
+      functionName,
+      depth: 0,
+      path: [functionName]
+    }
+  ];
 
-  for (const direct of directCallers) {
-    const secondLevel = projectSearch.findCallers(direct.caller);
+  const visited = new Set();
 
-    for (const caller of secondLevel) {
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    if (current.depth >= MAX_DEPTH) {
+      continue;
+    }
+
+    const callers = projectSearch.findCallers(current.functionName);
+
+    for (const caller of callers) {
       const key =
-        `${caller.caller}|${caller.file}|${caller.line}|${direct.caller}`;
+        `${caller.caller}|${caller.file}|${caller.line}|${current.functionName}`;
 
-      if (!seen.has(key)) {
-        seen.add(key);
+      if (visited.has(key)) {
+        continue;
+      }
 
-        results.push({
-          intermediate: direct.caller,
-          intermediateFile: direct.file,
-          intermediateLine: direct.line,
-          caller: caller.caller,
-          callerFile: caller.file,
-          callerLine: caller.line
+      visited.add(key);
+
+      const nextDepth = current.depth + 1;
+
+      // Do not record circular call paths as additional impact.
+      if (current.path.includes(caller.caller)) {
+        continue;
+      }
+
+      const nextPath = [
+        ...current.path,
+        caller.caller
+      ];
+
+      results.push({
+        functionName: caller.caller,
+        file: caller.file,
+        line: caller.line,
+        depth: nextDepth,
+        via: current.functionName,
+        path: nextPath
+      });
+
+      if (nextDepth < MAX_DEPTH) {
+        queue.push({
+          functionName: caller.caller,
+          depth: nextDepth,
+          path: nextPath
         });
       }
     }
@@ -57,59 +93,77 @@ function analyzeDeepFunctionImpact(functionName) {
 
   const functionInfo = results[0];
 
-  const callers = projectSearch.findCallers(functionName);
+  const impact = buildRecursiveImpact(functionName);
 
-  const indirect = findIndirectCallers(functionName);
+  const directCallers = impact.filter(
+    item => item.depth === 1
+  );
 
-  const uniqueFunctions = new Set();
+  const indirectCallers = impact.filter(
+    item => item.depth > 1
+  );
 
-  for (const item of indirect) {
-    uniqueFunctions.add(item.caller);
-  }
+  const uniqueFunctions = new Set(
+    impact.map(item => item.functionName)
+  );
 
-  const affectedFiles = new Set();
+  const directCallerFunctions = new Set(
+    directCallers.map(item => item.functionName)
+  );
 
-  for (const caller of callers) {
-    affectedFiles.add(caller.file);
-  }
+  const directCallSites = directCallers.length;
 
-  for (const item of indirect) {
-    affectedFiles.add(item.callerFile);
-  }
+  const indirectCallSites = indirectCallers.length;
+
+  const affectedFiles = new Set(
+    impact.map(item => item.file)
+  );
+
+  const maxDepth =
+    impact.length > 0
+      ? Math.max(...impact.map(item => item.depth))
+      : 0;
 
   let risk = "LOW";
 
   if (
-    callers.length >= 3 ||
-    indirect.length >= 5 ||
-    affectedFiles.size >= 3
+    uniqueFunctions.size >= 8 ||
+    affectedFiles.size >= 3 ||
+    maxDepth >= 5
   ) {
     risk = "HIGH";
   } else if (
-    callers.length > 0 ||
-    indirect.length > 0
+    uniqueFunctions.size > 0
   ) {
     risk = "MEDIUM";
   }
 
-  const directCallerText =
-    callers.length > 0
-      ? callers
-          .map(c =>
-            `• ${c.caller}() — ${c.file}:${c.line}`
+  const directText =
+    directCallers.length > 0
+      ? directCallers
+          .map(item =>
+            `• ${item.functionName}() — ${item.file}:${item.line}`
           )
           .join("\n")
       : "No direct callers found.";
 
-  let indirectText = "No second-level callers found.";
+  let recursiveText =
+    "No recursive callers beyond level 1.";
 
-  if (indirect.length > 0) {
-    indirectText = indirect
+  if (indirectCallers.length > 0) {
+    recursiveText = indirectCallers
       .map(item =>
-        `• ${item.caller}() — ${item.callerFile}:${item.callerLine} → ${item.intermediate}()`
+        `• Level ${item.depth}: ${item.functionName}() — ${item.file}:${item.line} → ${item.via}()`
       )
       .join("\n");
   }
+
+  const affectedFileText =
+    affectedFiles.size > 0
+      ? [...affectedFiles]
+          .map(file => `• ${file}`)
+          .join("\n")
+      : "No affected files found.";
 
   return {
     found: true,
@@ -123,24 +177,27 @@ ${functionName}()
 ${functionInfo.file} — Line ${functionInfo.line}
 
 🔗 Direct callers:
-${directCallerText}
+${directText}
 
-🌐 Second-level project impact:
-${indirectText}
+🌐 Recursive impact:
+${recursiveText}
+
+📊 Impact Summary:
+• Direct caller functions: ${directCallerFunctions.size}
+• Direct call sites: ${directCallSites}
+• Recursive call sites: ${indirectCallSites}
+• Unique affected functions: ${uniqueFunctions.size}
+• Affected files: ${affectedFiles.size}
+• Maximum caller depth: ${maxDepth}
+• Maximum analysis depth: ${MAX_DEPTH}
 
 📁 Affected files:
-${
-  affectedFiles.size > 0
-    ? [...affectedFiles]
-        .map(file => `• ${file}`)
-        .join("\n")
-    : "No affected files found."
-}
+${affectedFileText}
 
 ⚠️ Risk:
 ${risk}
 
-Changing ${functionName}() may affect ${callers.length} direct caller${callers.length === 1 ? "" : "s"} and ${uniqueFunctions.size} second-level function${uniqueFunctions.size === 1 ? "" : "s"} across ${affectedFiles.size} file${affectedFiles.size === 1 ? "" : "s"}.`
+Changing ${functionName}() may affect ${directCallerFunctions.size} direct caller function${directCallerFunctions.size === 1 ? "" : "s"} and ${uniqueFunctions.size} unique affected caller function${uniqueFunctions.size === 1 ? "" : "s"} across ${affectedFiles.size} file${affectedFiles.size === 1 ? "" : "s"}.`
   };
 }
 
