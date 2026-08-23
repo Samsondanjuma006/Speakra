@@ -445,6 +445,17 @@ if (/execution path|flow to|path to/i.test(message)) {
 
 }
 
+// Function Impact Analysis
+if (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {
+
+  const result = analyzeFunctionImpact(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+}
+
 const flow = explainExecution(message);
 // Execution Flow
 
@@ -497,16 +508,6 @@ if (/reason|full analysis|everything about|analyze completely/i.test(message)) {
 if (/explain|analyze|details about/i.test(message)) {
 
   const result = analyzeFunction(keyword);
-
-  if (result.found) {
-    return result;
-  }
-
-}
-// Function Impact Analysis
-if (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {
-
-  const result = analyzeFunctionImpact(keyword);
 
   if (result.found) {
     return result;

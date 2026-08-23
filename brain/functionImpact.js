@@ -1,7 +1,10 @@
 const projectSearch = require("../index/searchIndex");
+const {
+  traceCallers,
+  traceCallees
+} = require("./projectGraph");
 
 function analyzeFunctionImpact(functionName) {
-
   const results = projectSearch.findFunction(functionName);
 
   if (results.length === 0) {
@@ -12,25 +15,47 @@ function analyzeFunctionImpact(functionName) {
 
   const functionInfo = results[0];
 
-  const callers = projectSearch.findCallers(functionName);
+  const callers = traceCallers(functionName);
+  const callees = traceCallees(functionName);
+
+  const directCallers = callers.filter(c => c.depth === 0);
 
   const callerText =
+    directCallers.length > 0
+      ? directCallers
+          .map(c =>
+            `• ${c.caller}() — ${c.file}:${c.line}`
+          )
+          .join("\n")
+      : "No direct callers found.";
+
+  const recursiveCallerText =
     callers.length > 0
       ? callers
-          .map(c => `• ${c.file} — Line ${c.line}`)
+          .map(c =>
+            `• ${c.caller}() — ${c.file}:${c.line} (depth ${c.depth})`
+          )
           .join("\n")
-      : "No callers found.";
+      : "No recursive callers found.";
 
-  const dependencyText =
-    functionInfo.requires && functionInfo.requires.length > 0
-      ? functionInfo.requires
-          .map(r => `• ${r.module} — Line ${r.line}`)
+  const calleeText =
+    callees.length > 0
+      ? callees
+          .map(c =>
+            `• ${c.callee}() — ${c.calleeFile}:${c.calleeLine}`
+          )
           .join("\n")
-      : "No direct dependencies found.";
+      : "No project function calls detected.";
+
+  const affectedFiles = [
+    ...new Set(
+      callers.map(c => c.file)
+    )
+  ];
 
   let risk = "LOW";
 
-  if (callers.length >= 3) {
+  if (callers.length >= 5 || affectedFiles.length >= 3) {
     risk = "HIGH";
   } else if (callers.length > 0) {
     risk = "MEDIUM";
@@ -47,16 +72,26 @@ ${functionName}()
 📍 Defined in:
 ${functionInfo.file} — Line ${functionInfo.line}
 
-🔗 Called from:
+🔗 Direct callers:
 ${callerText}
 
-📦 Dependencies:
-${dependencyText}
+📈 Recursive callers:
+${recursiveCallerText}
+
+→ Calls:
+${calleeText}
+
+📁 Affected files:
+${
+  affectedFiles.length > 0
+    ? affectedFiles.map(file => `• ${file}`).join("\n")
+    : "No caller files found."
+}
 
 ⚠️ Risk:
 ${risk}
 
-Changing ${functionName}() may affect ${callers.length} caller file${callers.length === 1 ? "" : "s"}.`
+Changing ${functionName}() may affect ${callers.length} caller function${callers.length === 1 ? "" : "s"} across ${affectedFiles.length} file${affectedFiles.length === 1 ? "" : "s"}.`
   };
 }
 
