@@ -1,46 +1,49 @@
 const projectSearch = require("../index/searchIndex");
 
-function getProjectFunctions(file) {
+function getFunctionInfo(file, functionName) {
   const index = projectSearch.loadIndex();
 
   const target = index.find(f => f.file === file);
 
   if (!target) {
-    return [];
+    return null;
   }
 
-  const definedFunctions = new Set([
-    ...target.functions.map(f => f.name),
-    ...target.arrowFunctions.map(f => f.name)
-  ]);
-
-  return target.calls
-    .filter(call => definedFunctions.has(call.name))
-    .map(call => ({
-      name: call.name,
-      line: call.line
-    }));
+  return [
+    ...(target.functions || []),
+    ...(target.arrowFunctions || [])
+  ].find(fn => fn.name === functionName) || null;
 }
 
-function groupFunctions(functions) {
-  const groups = new Map();
+function findIndirectCallers(functionName) {
+  const directCallers = projectSearch.findCallers(functionName);
 
-  for (const fn of functions) {
-    if (!groups.has(fn.name)) {
-      groups.set(fn.name, {
-        name: fn.name,
-        count: 0,
-        lines: []
-      });
+  const results = [];
+  const seen = new Set();
+
+  for (const direct of directCallers) {
+    const secondLevel = projectSearch.findCallers(direct.caller);
+
+    for (const caller of secondLevel) {
+      const key =
+        `${caller.caller}|${caller.file}|${caller.line}|${direct.caller}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+
+        results.push({
+          intermediate: direct.caller,
+          intermediateFile: direct.file,
+          intermediateLine: direct.line,
+          caller: caller.caller,
+          callerFile: caller.file,
+          callerLine: caller.line
+        });
+      }
     }
-
-    const group = groups.get(fn.name);
-
-    group.count++;
-    group.lines.push(fn.line);
   }
 
-  return Array.from(groups.values());
+  return results;
 }
 
 function analyzeDeepFunctionImpact(functionName) {
@@ -52,71 +55,60 @@ function analyzeDeepFunctionImpact(functionName) {
     };
   }
 
+  const functionInfo = results[0];
+
   const callers = projectSearch.findCallers(functionName);
 
-  const impact = [];
+  const indirect = findIndirectCallers(functionName);
+
+  const uniqueFunctions = new Set();
+
+  for (const item of indirect) {
+    uniqueFunctions.add(item.caller);
+  }
+
+  const affectedFiles = new Set();
 
   for (const caller of callers) {
-    const functions = getProjectFunctions(caller.file);
-    const groupedFunctions = groupFunctions(functions);
-
-    impact.push({
-      file: caller.file,
-      line: caller.line,
-      functions: groupedFunctions
-    });
+    affectedFiles.add(caller.file);
   }
-const affectedFunctions = [];
-const uniqueFunctionNames = new Set();
-let totalFunctionReferences = 0;
 
-for (const caller of impact) {
-  for (const fn of caller.functions) {
-    totalFunctionReferences += fn.count;
-    uniqueFunctionNames.add(fn.name);
-
-    if (!affectedFunctions.some(
-      item => item.file === caller.file && item.name === fn.name
-    )) {
-      affectedFunctions.push({
-        file: caller.file,
-        name: fn.name,
-        count: fn.count
-      });
-    }
+  for (const item of indirect) {
+    affectedFiles.add(item.callerFile);
   }
-}
- let risk = "LOW";
+
+  let risk = "LOW";
 
   if (
     callers.length >= 3 ||
-    affectedFunctions.length >= 6
+    indirect.length >= 5 ||
+    affectedFiles.size >= 3
   ) {
     risk = "HIGH";
   } else if (
     callers.length > 0 ||
-    affectedFunctions.length > 0
+    indirect.length > 0
   ) {
     risk = "MEDIUM";
   }
 
-  let impactText = "No second-level project functions found.";
+  const directCallerText =
+    callers.length > 0
+      ? callers
+          .map(c =>
+            `• ${c.caller}() — ${c.file}:${c.line}`
+          )
+          .join("\n")
+      : "No direct callers found.";
 
-  if (impact.length > 0) {
-    impactText = impact
-      .map(caller => {
-        const functionsText =
-          caller.functions.length > 0
-            ? caller.functions
-                .map(fn =>
-                  `  • ${fn.name}() — ${fn.count} call${fn.count === 1 ? "" : "s"}`
-                )
-                .join("\n")
-            : "  • No other project functions found.";
+  let indirectText = "No second-level callers found.";
 
-        return `📄 ${caller.file} — Line ${caller.line}\n${functionsText}`;
-      })
-      .join("\n\n");
+  if (indirect.length > 0) {
+    indirectText = indirect
+      .map(item =>
+        `• ${item.caller}() — ${item.callerFile}:${item.callerLine} → ${item.intermediate}()`
+      )
+      .join("\n");
   }
 
   return {
@@ -128,27 +120,30 @@ Function:
 ${functionName}()
 
 📍 Defined in:
-${results[0].file} — Line ${results[0].line}
+${functionInfo.file} — Line ${functionInfo.line}
 
 🔗 Direct callers:
-${
-  callers.length > 0
-    ? callers
-        .map(c => `• ${c.file} — Line ${c.line}`)
-        .join("\n")
-    : "No callers found."
-}
+${directCallerText}
 
 🌐 Second-level project impact:
+${indirectText}
 
-${impactText}
+📁 Affected files:
+${
+  affectedFiles.size > 0
+    ? [...affectedFiles]
+        .map(file => `• ${file}`)
+        .join("\n")
+    : "No affected files found."
+}
 
 ⚠️ Risk:
 ${risk}
 
-Changing ${functionName}() may affect ${callers.length} direct caller file${callers.length === 1 ? "" : "s"}, ${uniqueFunctionNames.size} unique project function${uniqueFunctionNames.size === 1 ? "" : "s"}, across ${totalFunctionReferences} total function reference${totalFunctionReferences === 1 ? "" : "s"}.`
+Changing ${functionName}() may affect ${callers.length} direct caller${callers.length === 1 ? "" : "s"} and ${uniqueFunctions.size} second-level function${uniqueFunctions.size === 1 ? "" : "s"} across ${affectedFiles.size} file${affectedFiles.size === 1 ? "" : "s"}.`
   };
 }
+
 module.exports = {
   analyzeDeepFunctionImpact
 };
