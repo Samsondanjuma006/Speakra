@@ -1,4 +1,4 @@
-const projectSearch = require("../index/searchIndex");
+const projectGraph = require("./projectGraph");
 
 function buildExecutionGraph(functionName) {
   if (!functionName) {
@@ -7,47 +7,26 @@ function buildExecutionGraph(functionName) {
     };
   }
 
+  const callers = projectGraph.traceCallers(functionName);
+
   const lines = [];
-
-  function walk(currentFunction, depth, path) {
-    const indent = "  ".repeat(depth);
-
-    if (path.has(currentFunction)) {
-      lines.push(
-        `${indent}↺ ${currentFunction}() — cycle detected`
-      );
-      return;
-    }
-
-    const nextPath = new Set(path);
-    nextPath.add(currentFunction);
-
-    const callers = projectSearch.findCallers(currentFunction);
-
-    if (callers.length === 0) {
-      lines.push(
-        `${indent}└── No project callers found`
-      );
-      return;
-    }
-
-    for (const caller of callers) {
-      const callerName = caller.caller || "Unknown Function";
-
-      lines.push(
-        `${indent}└── ${callerName}() — ${caller.file}:${caller.line}`
-      );
-
-      walk(callerName, depth + 1, nextPath);
-    }
-  }
 
   lines.push("🕸 Execution Path");
   lines.push("");
   lines.push(`Target: ${functionName}()`);
   lines.push("");
 
-  walk(functionName, 0, new Set());
+  if (callers.length === 0) {
+    lines.push("└── No project callers detected");
+  } else {
+    for (const item of callers) {
+      const indent = "  ".repeat(item.depth);
+
+      lines.push(
+        `${indent}└── ${item.caller}() — ${item.file}:${item.line}`
+      );
+    }
+  }
 
   return {
     found: true,

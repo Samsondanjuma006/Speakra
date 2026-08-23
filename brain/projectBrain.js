@@ -59,6 +59,16 @@ const keyword = extractKeyword(message);
 console.log("MESSAGE:", message);
 console.log("KEYWORD:", keyword);
 
+// Execution path to a specific function
+if (/execution path|flow to|path to/i.test(message)) {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const result = buildExecutionGraph(actualFunctionName);
+
+  if (result.found) {
+    return result;
+  }
+}
+
 // Recursive caller trace
 if (/trace\s+callers/i.test(message)) {
   const actualFunctionName = resolveFunctionName(keyword);
