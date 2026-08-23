@@ -7,14 +7,16 @@
         "line": 41,
         "file": "brain/autoExecutionPipeline.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function isIgnoredFile(file) {\n  return IGNORED_FILES.has(file);\n}"
       },
       {
         "name": "isAnalysisFile",
         "line": 45,
         "file": "brain/autoExecutionPipeline.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function isAnalysisFile(file) {\n  return !!file && ANALYSIS_FILES.has(file);\n}"
       },
       {
         "name": "buildAutoExecutionPipeline",
@@ -48,7 +50,7 @@
           },
           {
             "name": "traceCallees",
-            "line": 106
+            "line": 105
           },
           {
             "name": "isIgnoredFile",
@@ -56,9 +58,10 @@
           },
           {
             "name": "isAnalysisFile",
-            "line": 112
+            "line": 115
           }
-        ]
+        ],
+        "body": "function buildAutoExecutionPipeline(functionName) {\n  if (functionName === \"POST /chat callback\") {\n    return {\n      found: true,\n      reply: `🚀 Automatic Execution Pipeline\n\nPOST /chat callback()\n\n↓ validate message\n↓ remember(message)\n↓ loadProfile()\n\n🧠 Project Brain\n  ├─ found → return Project Brain reply\n  └─ not found → continue to normal AI pipeline\n\n↓ optional search()\n↓ build AI messages\n↓ OpenRouter request\n↓ history.push(assistant reply)\n↓ saveMemory()\n↓ res.json()`\n    };\n  }\n\n  if (functionName === \"answerProjectQuestion\") {\n    return {\n      found: true,\n      reply: `🧠 Project Brain Pipeline\n\nanswerProjectQuestion()\n\n↓ resolveFunctionName()\n↓ analyze project question\n↓ return Project Brain result`\n    };\n  }\n\n  if (functionName === \"buildAutoExecutionPipeline\") {\n    return {\n      found: true,\n      reply: `🚀 Automatic Execution Pipeline\n\nbuildAutoExecutionPipeline()\n\n↓ called by answerProjectQuestion()\n↓ receives the resolved project keyword\n↓ checks for runtime-specific pipeline\n↓ otherwise traces projectGraph\n↓ filters ignored files\n↓ filters analysis-only files\n↓ builds execution pipeline reply\n↓ returns { found, reply }`\n    };\n  }\n\n  const tracedChain = projectGraph.traceCallees(functionName);\n\n  const ignoredCalls = tracedChain.filter(item =>\n    isIgnoredFile(item.file) ||\n    isIgnoredFile(item.calleeFile)\n  );\n\n  const analysisCalls = tracedChain.filter(item =>\n    !isIgnoredFile(item.file) &&\n    !isIgnoredFile(item.calleeFile) &&\n    isAnalysisFile(item.calleeFile) &&\n    item.callee !== \"answerProjectQuestion\"\n  );\n\n  const chain = tracedChain\n    .filter(item =>\n      !isIgnoredFile(item.file) &&\n      !isIgnoredFile(item.calleeFile)\n    )\n    .filter(item =>\n      !isAnalysisFile(item.calleeFile) ||\n      item.callee === \"answerProjectQuestion\"\n    )\n    .filter(item =>\n      !(item.callee === \"answerProjectQuestion\" && item.depth > 0)\n    );\n\n  const lines = [];\n\n  for (const item of chain) {\n    const indent = \"  \".repeat(item.depth);\n\n    const location =\n      item.file && item.callLine\n        ? ` — ${item.file}:${item.callLine}`\n        : \"\";\n\n    lines.push(\n      `${indent}↓ ${item.callee}()${location}`\n    );\n  }\n\n  const sections = [\n    `🚀 Automatic Execution Pipeline\n\n${functionName}()\n\n${lines.length > 0\n  ? lines.join(\"\\n\")\n  : \"No application-level project function calls detected.\"}`\n  ];\n\n  if (analysisCalls.length > 0) {\n    sections.push(\n      `🧠 Analysis calls excluded:\n\n${analysisCalls\n  .map(item => {\n    const location =\n      item.file && item.callLine\n        ? ` — ${item.file}:${item.callLine}`\n        : \"\";\n\n    return `• ${item.callee}()${location}`;\n  })\n  .join(\"\\n\")}`\n    );\n  }\n\n  if (ignoredCalls.length > 0) {\n    sections.push(\n      `🚫 Ignored calls excluded:\n\n${ignoredCalls\n  .map(item => `• ${item.callee}()`)\n  .join(\"\\n\")}`\n    );\n  }\n\n  return {\n    found: true,\n    reply: sections.join(\"\\n\\n\")\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -115,7 +118,7 @@
         "caller": "buildAutoExecutionPipeline",
         "callee": "traceCallees",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 106
+        "line": 105
       },
       {
         "caller": "buildAutoExecutionPipeline",
@@ -131,9 +134,39 @@
       },
       {
         "caller": "buildAutoExecutionPipeline",
+        "callee": "isIgnoredFile",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 113
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "isIgnoredFile",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 114
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
         "callee": "isAnalysisFile",
         "file": "brain/autoExecutionPipeline.js",
-        "line": 112
+        "line": 115
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "isIgnoredFile",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 121
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "isIgnoredFile",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 122
+      },
+      {
+        "caller": "buildAutoExecutionPipeline",
+        "callee": "isAnalysisFile",
+        "file": "brain/autoExecutionPipeline.js",
+        "line": 125
       }
     ]
   },
@@ -145,14 +178,16 @@
         "line": 5,
         "file": "brain/callChain.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function traceFunction(functionName) {\n\n  const callers = projectSearch.findCallers(functionName);\n\n  if (callers.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const sections = callers.map(c => {\n\n    const fullPath = path.join(process.cwd(), c.file);\n\n    if (!fs.existsSync(fullPath)) {\n      return `• ${c.file}\n  Line ${c.line}`;\n    }\n\n    const lines = fs.readFileSync(fullPath, \"utf8\").split(\"\\n\");\n\n    const start = Math.max(0, c.line - 2);\n    const end = Math.min(lines.length, c.line + 1);\n\n    const context = lines\n      .slice(start, end)\n      .map((line, index) => {\n        const lineNumber = start + index + 1;\n        return `${lineNumber}  ${line}`;\n      })\n      .join(\"\\n\");\n\n    return `${c.file}\nLine ${c.line}\n\n${context}`;\n  });\n\n  return {\n    found: true,\n    reply:\n`🔗 Call Chain\n\nFunction:\n${functionName}()\n\nTotal callers:\n${callers.length}\n\nCalled from:\n\n${sections.join(\"\\n\\n\")}`\n  };\n\n}"
       },
       {
         "name": "map callback",
         "line": 31,
         "file": "brain/callChain.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "      .map((line, index) => {\n        const lineNumber = start + index + 1;\n        return `${lineNumber}  ${line}`;\n      })"
       }
     ],
     "arrowFunctions": [],
@@ -180,7 +215,8 @@
         "line": 3,
         "file": "brain/callHierarchy.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function buildTree(index, fnName, depth = 0, visited = new Set()) {\n\n  const indent = \"│   \".repeat(depth);\n\n  if (visited.has(fnName)) {\n    return indent + \"└── \" + fnName + \"() (recursive)\\n\";\n  }\n\n  visited.add(fnName);\n\n  let output = \"\";\n\n  for (const file of index) {\n\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const fn = functions.find(f => f.name === fnName);\n\n    if (!fn) continue;\n\n    if (!fn.calls || fn.calls.length === 0) {\n      return \"\";\n    }\n\n    for (const call of fn.calls) {\n\n      output += indent + \"├── \" + call + \"()\\n\";\n\n      output += buildTree(\n        index,\n        call,\n        depth + 1,\n        new Set(visited)\n      );\n\n    }\n\n    break;\n\n  }\n\n  return output;\n\n}"
       },
       {
         "name": "buildCallHierarchy",
@@ -192,7 +228,8 @@
             "name": "buildTree",
             "line": 72
           }
-        ]
+        ],
+        "body": "function buildCallHierarchy(functionName) {\n\n  const index = projectSearch.loadIndex();\n\n  for (const file of index) {\n\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const fn = functions.find(f => f.name === functionName);\n\n    if (!fn) continue;\n\n    return {\n      found: true,\n      reply:\n`🌳 Call Hierarchy\n\n${functionName}()\n${buildTree(index, functionName)}`\n    };\n\n  }\n\n  return {\n    found: false\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -219,14 +256,16 @@
         "line": 3,
         "file": "brain/deepFunctionImpact.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function getProjectFunctions(file) {\n  const index = projectSearch.loadIndex();\n\n  const target = index.find(f => f.file === file);\n\n  if (!target) {\n    return [];\n  }\n\n  const definedFunctions = new Set([\n    ...target.functions.map(f => f.name),\n    ...target.arrowFunctions.map(f => f.name)\n  ]);\n\n  return target.calls\n    .filter(call => definedFunctions.has(call.name))\n    .map(call => ({\n      name: call.name,\n      line: call.line\n    }));\n}"
       },
       {
         "name": "groupFunctions",
         "line": 25,
         "file": "brain/deepFunctionImpact.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function groupFunctions(functions) {\n  const groups = new Map();\n\n  for (const fn of functions) {\n    if (!groups.has(fn.name)) {\n      groups.set(fn.name, {\n        name: fn.name,\n        count: 0,\n        lines: []\n      });\n    }\n\n    const group = groups.get(fn.name);\n\n    group.count++;\n    group.lines.push(fn.line);\n  }\n\n  return Array.from(groups.values());\n}"
       },
       {
         "name": "analyzeDeepFunctionImpact",
@@ -242,7 +281,8 @@
             "name": "groupFunctions",
             "line": 61
           }
-        ]
+        ],
+        "body": "function analyzeDeepFunctionImpact(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const callers = projectSearch.findCallers(functionName);\n\n  const impact = [];\n\n  for (const caller of callers) {\n    const functions = getProjectFunctions(caller.file);\n    const groupedFunctions = groupFunctions(functions);\n\n    impact.push({\n      file: caller.file,\n      line: caller.line,\n      functions: groupedFunctions\n    });\n  }\nconst affectedFunctions = [];\nconst uniqueFunctionNames = new Set();\nlet totalFunctionReferences = 0;\n\nfor (const caller of impact) {\n  for (const fn of caller.functions) {\n    totalFunctionReferences += fn.count;\n    uniqueFunctionNames.add(fn.name);\n\n    if (!affectedFunctions.some(\n      item => item.file === caller.file && item.name === fn.name\n    )) {\n      affectedFunctions.push({\n        file: caller.file,\n        name: fn.name,\n        count: fn.count\n      });\n    }\n  }\n}\n let risk = \"LOW\";\n\n  if (\n    callers.length >= 3 ||\n    affectedFunctions.length >= 6\n  ) {\n    risk = \"HIGH\";\n  } else if (\n    callers.length > 0 ||\n    affectedFunctions.length > 0\n  ) {\n    risk = \"MEDIUM\";\n  }\n\n  let impactText = \"No second-level project functions found.\";\n\n  if (impact.length > 0) {\n    impactText = impact\n      .map(caller => {\n        const functionsText =\n          caller.functions.length > 0\n            ? caller.functions\n                .map(fn =>\n                  `  • ${fn.name}() — ${fn.count} call${fn.count === 1 ? \"\" : \"s\"}`\n                )\n                .join(\"\\n\")\n            : \"  • No other project functions found.\";\n\n        return `📄 ${caller.file} — Line ${caller.line}\\n${functionsText}`;\n      })\n      .join(\"\\n\\n\");\n  }\n\n  return {\n    found: true,\n    reply:\n`🧠 Deep Function Impact Analysis\n\nFunction:\n${functionName}()\n\n📍 Defined in:\n${results[0].file} — Line ${results[0].line}\n\n🔗 Direct callers:\n${\n  callers.length > 0\n    ? callers\n        .map(c => `• ${c.file} — Line ${c.line}`)\n        .join(\"\\n\")\n    : \"No callers found.\"\n}\n\n🌐 Second-level project impact:\n\n${impactText}\n\n⚠️ Risk:\n${risk}\n\nChanging ${functionName}() may affect ${callers.length} direct caller file${callers.length === 1 ? \"\" : \"s\"}, ${uniqueFunctionNames.size} unique project function${uniqueFunctionNames.size === 1 ? \"\" : \"s\"}, across ${totalFunctionReferences} total function reference${totalFunctionReferences === 1 ? \"\" : \"s\"}.`\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -275,7 +315,8 @@
         "line": 3,
         "file": "brain/dependencyTracer.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function traceDependencies(functionName, visited = new Set()) {\n  if (visited.has(functionName)) {\n    return [];\n  }\n\n  visited.add(functionName);\n\n  const callers = projectSearch.findCallers(functionName);\n\n  let result = [];\n\n  for (const caller of callers) {\n    result.push(caller);\n\n    result.push(\n      ...traceDependencies(caller.caller, visited)\n    );\n  }\n\n  return result;\n}"
       }
     ],
     "arrowFunctions": [],
@@ -295,7 +336,8 @@
         "line": 3,
         "file": "brain/dependencyTree.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function dependencyTree(fileName) {\n\n  const index = projectSearch.loadIndex();\n\n  const file = index.find(f => f.file.endsWith(fileName));\n\n  if (!file) {\n    return {\n      found: false\n    };\n  }\n\n  let reply = `🌳 Dependency Tree\\n\\n${file.file}\\n`;\n\n  if (file.requires.length === 0) {\n    reply += \"\\n(No dependencies)\";\n  } else {\n\n    for (const dep of file.requires) {\n      reply += `├── ${dep}\\n`;\n    }\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -320,21 +362,24 @@
             "name": "findCallees",
             "line": 42
           }
-        ]
+        ],
+        "body": "function explainFunctionExecution(functionName) {\n  const direct = projectGraph.findCallees(functionName);\n\n  const functionInfo = projectSearch.findFunction(functionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply: `❌ I couldn't find ${functionName}() in the project.`\n    };\n  }\n\n  const lines = [];\n\n  lines.push(\"🚀 Function Call Map\");\n  lines.push(\"\");\n  lines.push(`${functionName}()`);\n  lines.push(\"\");\n\n  if (direct.length === 0) {\n    lines.push(\"└─ No other project functions detected.\");\n  } else {\n    for (const item of direct) {\n      const location =\n        item.file\n          ? ` — ${item.file}`\n          : \"\";\n\n      lines.push(\n        `↓ ${item.callee}()${location}`\n      );\n    }\n  }\n\n  lines.push(\"\");\n  lines.push(\"ℹ️ This shows direct project-function calls.\");\n  lines.push(\n    \"Conditional branches may execute only when their conditions match.\"\n  );\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n}"
       },
       {
         "name": "explainExecution",
         "line": 87,
         "file": "brain/executionFlow.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function explainExecution(topic) {\n  const key = topic.toLowerCase().trim();\n\n  if (\n    key.includes(\"chat\") ||\n    key.includes(\"message\") ||\n    key.includes(\"/chat\")\n  ) {\n    return {\n      found: true,\n      reply:\n`🚀 Chat Runtime Execution Flow\n\n${flows.chat.map((step, i) => `${i + 1}. ${step}`).join(\"\\n\")}\n\n🔀 Main decision:\n\nPOST /chat\n   ↓\nProject Brain\n   ├─ found → return Project Brain reply\n   └─ not found → continue to normal AI pipeline`\n    };\n  }\n\n  if (\n    key.includes(\"startup\") ||\n    key.includes(\"start\")\n  ) {\n    return {\n      found: true,\n      reply:\n`🚀 Startup Execution Flow\n\n${flows.startup.map((step, i) => `${i + 1}. ${step}`).join(\"\\n\")}`\n    };\n  }\n\n  const index = projectSearch.loadIndex();\n\n  for (const file of index) {\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const match = functions.find(\n      fn =>\n        fn.name.toLowerCase() === key ||\n        key.includes(fn.name.toLowerCase())\n    );\n\n    if (match) {\n      return explainFunctionExecution(match.name);\n    }\n  }\n\n  return {\n    found: false\n  };\n}"
       },
       {
         "name": "flows.chat.map callback",
         "line": 100,
         "file": "brain/executionFlow.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "${flows.chat.map((step, i) => `${i + 1}. ${step}`).join(\"\\n\")}"
       },
       {
         "name": "flows.startup.map callback",
@@ -346,7 +391,8 @@
             "name": "explainFunctionExecution",
             "line": 140
           }
-        ]
+        ],
+        "body": "${flows.startup.map((step, i) => `${i + 1}. ${step}`).join(\"\\n\")}`"
       }
     ],
     "arrowFunctions": [],
@@ -383,7 +429,8 @@
         "line": 3,
         "file": "brain/executionGraph.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function buildExecutionGraph(functionName) {\n\n  const callers = projectSearch.findCallers(functionName);\n\n  if (callers.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const index = projectSearch.loadIndex();\n\n  let reply =\n`🕸 Execution Graph\n\nTarget:\n${functionName}()\n\n`;\n\n  for (const caller of callers) {\n\nconsole.log(\"EXEC GRAPH:\", caller);\n\nreply +=\n`📄 ${caller.file}\n └── ${caller.caller || \"Unknown Function\"}() — Line ${caller.line}\n  \n     ${functionName}()\n`;\n  const file = index.find(f => f.file === caller.file);\n\n    if (!file) {\n      reply += \"\\n\";\n      continue;\n    }\nconst functions = [\n  ...file.functions,\n  ...file.arrowFunctions\n];\n\n// Find functions that actually call the target function\nconst flow = functions.filter(fn => {\n  if (!fn.calls) return false;\n\n  return fn.calls.includes(functionName);\n});\n\nif (flow.length > 0) {\n  reply += \"\\nExecution flow:\\n\";\n\n  for (const fn of flow) {\n    reply += `        ├── ${fn.name}() → ${functionName}()\\n`;\n  }\n} else {\n  reply += \"\\nExecution flow:\\n\";\n  reply += \"        └── Direct call from route or script\\n\";\n}\n  reply += \"\\n\";\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -403,7 +450,8 @@
         "line": 3,
         "file": "brain/executionPipeline.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function buildExecutionPipeline(feature) {\n\n  const keyword = feature.toLowerCase();\n\n  const files = projectSearch.loadIndex();\n\n  const pipeline = [];\n\n  for (const file of files) {\n\n    if (!file.file.toLowerCase().includes(keyword)) continue;\n\n    pipeline.push(file.file);\n\n  }\n\n  if (pipeline.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🚀 Execution Pipeline\n\nFeature:\n${feature}\n\nExecution Flow\n\nBrowser\n   │\n   ▼\nPOST /chat\n   │\n${pipeline.join(\"\\n↓\\n\")}`\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -423,7 +471,8 @@
         "line": 3,
         "file": "brain/featureReason.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function explainFeature(feature) {\n\n  const index = projectSearch.loadIndex();\n\n  const keyword = feature.toLowerCase();\n\n  const files = [];\n\n  for (const file of index) {\n\n    const name = file.file.toLowerCase();\n\n    if (name.includes(keyword)) {\n      files.push(file.file);\n      continue;\n    }\n\n    const allFunctions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    if (\n      allFunctions.some(fn =>\n        fn.name.toLowerCase().includes(keyword)\n      )\n    ) {\n      files.push(file.file);\n    }\n\n  }\n\n  if (files.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🧠 Feature Analysis\n\nFeature:\n${feature}\n\nFiles involved:\n\n${files.map(f => \"• \" + f).join(\"\\n\")}\n\nTotal files:\n${files.length}`\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -443,7 +492,8 @@
         "line": 3,
         "file": "brain/fileExplainer.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function explainFile(fileName) {\n  const files = projectSearch.loadIndex();\n\n  const file = files.find(f =>\n    f.file.toLowerCase() === fileName.toLowerCase()\n  );\n\n  if (!file) {\n    return {\n      found: false\n    };\n  }\n\n  let reply = `📄 ${file.file}\\n\\n`;\n\n  if (file.functions.length > 0) {\n    reply += \"Functions:\\n\";\n    reply += file.functions.map(f => \"• \" + f.name + \"()\").join(\"\\n\");\n    reply += \"\\n\\n\";\n  }\n\n  if (file.arrowFunctions.length > 0) {\n    reply += \"Arrow Functions:\\n\";\n    reply += file.arrowFunctions.map(f => \"• \" + f.name).join(\"\\n\");\n    reply += \"\\n\\n\";\n  }\n\n  if (file.requires.length > 0) {\n    reply += \"Dependencies:\\n\";\n    reply += file.requires.map(r => \"• \" + r.module).join(\"\\n\");\n  }\n\n  return {\n    found: true,\n    reply\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -468,7 +518,8 @@
             "name": "findCallees",
             "line": 15
           }
-        ]
+        ],
+        "body": "function buildExecutionTree(functionName, visited = new Set(), depth = 0) {\n  if (!functionName) return [];\n\n  if (visited.has(functionName)) {\n    return [`${\"  \".repeat(depth)}↺ ${functionName}()`];\n  }\n\n  visited.add(functionName);\n\n  const output = [];\n  output.push(`${\"  \".repeat(depth)}📌 ${functionName}()`);\n\n  const callees = projectSearch.findCallees(functionName);\n\n  if (!callees || callees.length === 0) {\n    output.push(`${\"  \".repeat(depth + 1)}(No further calls)`);\n    return output;\n  }\n\n  for (const callee of callees) {\n    output.push(`${\"  \".repeat(depth + 1)}↓ ${callee.callee}()`);\n\n    output.push(\n      ...buildExecutionTree(\n        callee.callee,\n        visited,\n        depth + 2\n      )\n    );\n  }\n\n  return output;\n}"
       }
     ],
     "arrowFunctions": [],
@@ -495,14 +546,16 @@
         "line": 5,
         "file": "brain/functionAnalysis.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function analyzeFunction(functionName) {\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const file = results[0];\n\n  const fullPath = path.join(process.cwd(), file.file);\n\n  let code = \"\";\n\n  if (fs.existsSync(fullPath)) {\n    const lines = fs.readFileSync(fullPath, \"utf8\").split(\"\\n\");\n\n    const start = Math.max(0, file.line - 3);\n    const end = Math.min(lines.length, file.line + 4);\n\n    code = lines\n      .slice(start, end)\n      .map((line, index) => {\n        const lineNumber = start + index + 1;\n        return `${lineNumber}  ${line}`;\n      })\n      .join(\"\\n\");\n  }\n// Generate a simple explanation of the function\nlet summary = `This function is named ${functionName}.`;\n\nif (/remember/i.test(functionName)) {\n  summary =\n    \"This function stores important user information into SamuAI's long-term memory and updates the saved profile.\";\n}\nelse if (/search/i.test(functionName)) {\n  summary =\n    \"This function searches the project index to locate files, functions or dependencies.\";\n}\nelse if (/load/i.test(functionName)) {\n  summary =\n    \"This function loads information from disk into memory.\";\n}\nelse if (/save/i.test(functionName)) {\n  summary =\n    \"This function writes information from memory back to disk.\";\n}\nconst callers = projectSearch.findCallers(functionName);\n\n  const callerText =\n    callers.length > 0\n      ? callers\n          .map(c => `• ${c.file} — Line ${c.line}`)\n          .join(\"\\n\")\n      : \"No callers found.\";\n\nconst dependencyText =\n  file.requires && file.requires.length > 0\n    ? file.requires\n        .map(r => `• ${r.module} — Line ${r.line}`)\n        .join(\"\\n\")\n    : \"No dependencies found.\";\n\n// Function Intelligence\nlet intelligence = [];\n\nif (/remember/i.test(functionName)) {\n  intelligence.push(\"Stores user memory permanently.\");\n  intelligence.push(\"Reads profile.json.\");\n  intelligence.push(\"Updates profile.json.\");\n}\n\nif (/save/i.test(functionName)) {\n  intelligence.push(\"Writes data to disk.\");\n}\n\nif (/load/i.test(functionName)) {\n  intelligence.push(\"Reads data from disk.\");\n}\n\nif (/find/i.test(functionName)) {\n  intelligence.push(\"Searches project information.\");\n}\n\nif (/build/i.test(functionName)) {\n  intelligence.push(\"Constructs project structures.\");\n}\n\nif (intelligence.length === 0) {\n  intelligence.push(\"Purpose could not be inferred automatically.\");\n}\n\nconst intelligenceText = intelligence\n  .map(i => `• ${i}`)\n  .join(\"\\n\");\n\nreturn {\n    found: true,\n    summary,\n    intelligence,\n    file,\n    callers,\n    dependencies: file.requires || [],\n    code,\n\n    reply:\n`🧠 Function Analysis\n\nFunction:\n${functionName}()\n\n📖 Summary:\n${summary}\n\n🧠 Function Intelligence:\n${intelligenceText}\n\n📍 Defined in:\n${file.file} — Line ${file.line}\n\n🔗 Called from:\n${callerText}\n\n📦 Dependencies:\n${dependencyText}\n\n📝 Code:\n${code}`\n};\n\n}"
       },
       {
         "name": "map callback",
         "line": 28,
         "file": "brain/functionAnalysis.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "      .map((line, index) => {\n        const lineNumber = start + index + 1;\n        return `${lineNumber}  ${line}`;\n      })"
       }
     ],
     "arrowFunctions": [],
@@ -530,7 +583,8 @@
         "line": 3,
         "file": "brain/functionExplorer.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function listFunctions(fileName) {\n\n  const index = projectSearch.loadIndex();\n\n  const file = index.find(f => f.file.endsWith(fileName));\n\n  if (!file) {\n    return {\n      found: false\n    };\n  }\n\n  const functions = [\n    ...file.functions,\n    ...file.arrowFunctions\n  ];\n\n  if (functions.length === 0) {\n    return {\n      found: true,\n      reply:\n`📄 ${file.file}\n\nNo functions found.`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`📄 ${file.file}\n\nFunctions:\n\n${functions\n  .map(f => `• ${f.name}() — Line ${f.line}`)\n  .join(\"\\n\")}\n\n  Total: ${functions.length}`\n    };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -550,7 +604,8 @@
         "line": 3,
         "file": "brain/functionImpact.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function analyzeFunctionImpact(functionName) {\n\n  const results = projectSearch.findFunction(functionName);\n\n  if (results.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const functionInfo = results[0];\n\n  const callers = projectSearch.findCallers(functionName);\n\n  const callerText =\n    callers.length > 0\n      ? callers\n          .map(c => `• ${c.file} — Line ${c.line}`)\n          .join(\"\\n\")\n      : \"No callers found.\";\n\n  const dependencyText =\n    functionInfo.requires && functionInfo.requires.length > 0\n      ? functionInfo.requires\n          .map(r => `• ${r.module} — Line ${r.line}`)\n          .join(\"\\n\")\n      : \"No direct dependencies found.\";\n\n  let risk = \"LOW\";\n\n  if (callers.length >= 3) {\n    risk = \"HIGH\";\n  } else if (callers.length > 0) {\n    risk = \"MEDIUM\";\n  }\n\n  return {\n    found: true,\n    reply:\n`🛡 Function Impact Analysis\n\nFunction:\n${functionName}()\n\n📍 Defined in:\n${functionInfo.file} — Line ${functionInfo.line}\n\n🔗 Called from:\n${callerText}\n\n📦 Dependencies:\n${dependencyText}\n\n⚠️ Risk:\n${risk}\n\nChanging ${functionName}() may affect ${callers.length} caller file${callers.length === 1 ? \"\" : \"s\"}.`\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -570,14 +625,16 @@
         "line": 5,
         "file": "brain/functionLocator.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function locateFunction(name) {\n\n  const result = projectSearch.findFunction(name);\n\n  if (result.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  const file = result[0];\n\n  const fullPath = path.join(process.cwd(), file.file);\n\n  if (!fs.existsSync(fullPath)) {\n    return {\n      found: true,\n      reply:\n`📍 ${name}()\n\nFile:\n${file.file}\n\nLine:\n${file.line}`\n    };\n  }\n\n  const lines = fs.readFileSync(fullPath, \"utf8\").split(\"\\n\");\n\n  const start = Math.max(0, file.line - 3);\n  const end = Math.min(lines.length, file.line + 2);\n\n  const context = lines\n    .slice(start, end)\n    .map((line, index) => {\n      const lineNumber = start + index + 1;\n      return `${lineNumber}  ${line}`;\n    })\n    .join(\"\\n\");\n\n  return {\n    found: true,\n    reply:\n`📍 ${name}()\n\nFile:\n${file.file}\n\nLine:\n${file.line}\n\nCode:\n${context}`\n  };\n\n}"
       },
       {
         "name": "map callback",
         "line": 40,
         "file": "brain/functionLocator.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "    .map((line, index) => {\n      const lineNumber = start + index + 1;\n      return `${lineNumber}  ${line}`;\n    })"
       }
     ],
     "arrowFunctions": [],
@@ -614,7 +671,8 @@
             "name": "analyzeFunctionImpact",
             "line": 12
           }
-        ]
+        ],
+        "body": "function explainFunctionReason(functionName) {\n\n  const analysis = analyzeFunction(functionName);\n\n  if (!analysis.found) {\n    return { found: false };\n  }\n\n  const impact = analyzeFunctionImpact(functionName);\n\n  let reply =\n`🧠 Function Reasoning\n\nFunction:\n${functionName}()\n\n${analysis.summary}\n`;\n\n  if (impact.found) {\n    reply += \"\\n\\n\" + impact.reply;\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -651,7 +709,8 @@
         "line": 3,
         "file": "brain/impactAnalyzer.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function analyzeImpact(fileName) {\n\n  const usedBy = projectSearch.findUsedBy(fileName);\n\n  if (usedBy.length === 0) {\n    return {\n      found: true,\n      reply:\n`🛡 Impact Analysis\n\n${fileName}\n\nNo project files depend on this file.\n\nRisk:\nLOW`\n    };\n  }\n\n  let reply =\n`⚠️ Impact Analysis\n\nDeleting:\n\n${fileName}\n\nAffected files:\n\n`;\n\nfor (const file of usedBy) {\n  reply += `• ${file.file}\n  Import line: ${file.line}\n  This file will fail to load if ${fileName} is removed.\n\n`;\n}\n  reply +=\n`Total affected: ${usedBy.length}\n\nRisk:\nHIGH`;\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -671,7 +730,8 @@
         "line": 3,
         "file": "brain/projectArchitecture.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function explainArchitecture() {\n\n  const files = projectSearch.loadIndex();\n\n  const groups = {\n    Brain: [],\n    Index: [],\n    Services: [],\n    Routes: [],\n    Public: [],\n    Data: [],\n    Other: []\n  };\n\n  for (const file of files) {\n\n    const name = file.file;\n\n    if (name.startsWith(\"brain/\")) {\n      groups.Brain.push(name);\n    } else if (name.startsWith(\"index/\")) {\n      groups.Index.push(name);\n    } else if (name.startsWith(\"services/\")) {\n      groups.Services.push(name);\n    } else if (name.startsWith(\"routes/\")) {\n      groups.Routes.push(name);\n    } else if (name.startsWith(\"public/\")) {\n      groups.Public.push(name);\n    } else if (name.startsWith(\"data/\")) {\n      groups.Data.push(name);\n    } else {\n      groups.Other.push(name);\n    }\n\n  }\n\n  let reply = \"🏗️ Project Architecture\\n\\n\";\n\n  for (const [section, list] of Object.entries(groups)) {\n\n    if (list.length === 0) continue;\n\n    reply += `${section}\\n`;\n\n    reply += list.map(f => `• ${f}`).join(\"\\n\");\n\n    reply += \"\\n\\n\";\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -691,7 +751,8 @@
         "line": 3,
         "file": "brain/projectBrain.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function resolveFunctionName(keyword) {\n  const results = projectSearch.findFunction(keyword);\n\n  if (results.length > 0) {\n    return keyword;\n  }\n\n  const index = projectSearch.loadIndex();\n\n  for (const file of index) {\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const match = functions.find(\n      fn => fn.name.toLowerCase() === keyword.toLowerCase()\n    );\n\n    if (match) {\n      return match.name;\n    }\n  }\n\n  return keyword;\n}"
       },
       {
         "name": "answerProjectQuestion",
@@ -787,7 +848,8 @@
             "name": "explainFile",
             "line": 454
           }
-        ]
+        ],
+        "body": "function answerProjectQuestion(message) {\n\nconst keyword = extractKeyword(message);\nconsole.log(\"MESSAGE:\", message);\nconsole.log(\"KEYWORD:\", keyword);\n\n// Trace execution chain\nif (/trace/i.test(message) &&\n    !/what does|callees|where is|where.*defined|definition/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n\n  // Trace both callers and callees\n  if (/trace\\s+both/i.test(message)) {\n\n    const callers = projectSearch.findCallers(actualFunctionName);\n    const chain = projectGraph.findCallees(actualFunctionName);\n\n    const lines = [];\n\n    lines.push(`🔗 Bidirectional Trace\\n`);\n    lines.push(`${actualFunctionName}()\\n`);\n\n    // Backward trace\n    lines.push(`← Called by:`);\n\n      if (callers.length > 0) {\n        for (const caller of callers) {\n          const indent = \"  \".repeat(caller.depth + 1);\n          lines.push(\n            `${indent}← ${caller.caller}() — ${caller.file}:${caller.line}`\n          );\n        }\n      } else {\n        lines.push(`  ← No project callers detected.`);\n      }\n    // Forward trace\n    lines.push(`\\n→ Calls:`);\n\n    if (chain.length > 0) {\n      for (const item of chain) {\n        const indent = \"  \".repeat(item.depth + 1);\n\n        const location =\n          item.calleeFile && item.calleeLine\n            ? ` — ${item.calleeFile}:${item.calleeLine}`\n            : \"\";\n\n        lines.push(\n          `${indent}→ ${item.callee}()${location}`\n        );\n      }\n    } else {\n      lines.push(`  → No project function calls detected.`);\n    }\n\n    return {\n      found: true,\n      reply: lines.join(\"\\n\")\n    };\n  }\n\n  // Normal forward execution trace\n  const chain = projectGraph.traceCallees(actualFunctionName);\n\n  if (chain.length > 0) {\n    const lines = [];\n\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth);\n\n      const location =\n        item.calleeFile && item.calleeLine\n          ? ` — ${item.calleeFile}:${item.calleeLine}`\n          : \"\";\n\n      lines.push(\n        `${indent}↓ ${item.callee}()${location}`\n      );\n    }\n\n    return {\n      found: true,\n      reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\n${lines.join(\"\\n\")}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\nNo project function calls detected.`\n  };\n}\n // Where is a function defined?\n  if (/where is|where.*defined|definition/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n    const result = locateFunction(actualFunctionName);\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Who calls a function?\nif (/what calls|who calls|called by/i.test(message)) {\nconst actualFunctionName = resolveFunctionName(keyword);\nconst callers = projectSearch.findCallers(actualFunctionName);\n\n  if (callers.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalled from:\n\n${callers\n  .map(c => `• ${c.caller}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\nTotal files: ${callers.length}`\n    };\n  }\n}\n// What does a function call?\nif (/what does|callees/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const functionInfo = projectSearch.findFunction(actualFunctionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply: `❌ I couldn't find ${actualFunctionName}() in the project.`\n    };\n  }\n const callees = findCallees(actualFunctionName);\n\n  if (callees.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n${callees\n  .map(c => `• ${c.callee}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\n\nTotal calls: ${callees.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n• No other project functions detected.\n\nNote: external/library calls are not included in the project call graph.`\n  };\n}\n// Impact Analysis\nif (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = analyzeImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Dependency Tree\nif (/dependency tree|dependencies/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const tree = dependencyTree(keyword);\n\n  if (tree.found) {\n    return tree;\n  }\n\n}\n  // Full Function Analysis\n  if (/full analysis|analyze|everything about|explain function/i.test(message)) {\n\n    let report = [];\n\n    const analysis = analyzeFunction(keyword);\n    if (analysis.found) {\n      report.push(analysis.reply);\n    }\n\n    const callers = reverseCallGraph(keyword);\n    if (callers.found) {\n      report.push(\"\\n====================\\n\");\n      report.push(callers.reply);\n    }\n\n    const execution = buildExecutionGraph(keyword);\n    if (execution.found) {\n      report.push(\"\\n====================\\n\");\n      report.push(execution.reply);\n    }\n\n    const impact = analyzeFunctionImpact(keyword);\n    if (impact.found) {\n      report.push(\"\\n====================\\n\");\n      report.push(impact.reply);\n    }\n\n    if (report.length > 0) {\n      return {\n        found: true,\n        reply: report.join(\"\\n\")\n      };\n    }\n  }\n// Feature Reasoning\nif (/how does .* work|feature|system/i.test(message)) {\n\n  const result = explainFeature(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n  // Function Execution Explanation\n  if (/explain execution|execution flow of|how .* executes|explain .* execution|execution of/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n\n    const result = explainExecution(message);\n\n    if (result.found) {\n      return result;\n    }\n\n    const functionResult = explainExecution(actualFunctionName);\n\n    if (functionResult.found) {\n      return functionResult;\n    }\n  }\n// Function Reasoning\nif (/^why\\b|^explain\\b|purpose|reason/i.test(message)) {\n\n  const result = explainFunctionReason(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Recursive Execution\nif (/trace|full execution|execution trace|recursive execution/i.test(message)) {\n\n  const lines = buildRecursiveExecution(keyword);\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n\n}\n// Call Hierarchy\nif (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {\n\nconsole.log(\"CALL HIERARCHY BLOCK:\", message, keyword);\n\n  const result = buildCallHierarchy(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Execution Graph\nif (/execution graph|show execution graph/i.test(message)) {\n\n  if (keyword === \"graph\") {\n    return {\n      found: true,\n      reply:\n        \"🕸 Execution Graph\\n\\n\" +\n        \"An execution graph shows how a specific function is reached and which functions call it.\\n\\n\" +\n        \"For example, you can ask:\\n\" +\n        \"• show execution graph for buildAutoExecutionPipeline\\n\" +\n        \"• execution graph for answerProjectQuestion\\n\\n\" +\n        \"This lets SamuAI trace the execution path through the project.\"\n    };\n  }\n\n  const result = buildExecutionGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Execution Pipeline\nif (/execution pipeline|pipeline|execution flow/i.test(message)) {\n\n  const result =\nbuildAutoExecutionPipeline(keyword);\n  if (result.found) {\n    return result;\n  }\n\n}\n// Full Execution Tree\nif (/execution tree|full tree|tree/i.test(message)) {\n\n  const lines = buildExecutionTree(keyword);\n\n  return {\n    found: true,\n    reply:\n      \"🌳 Full Execution Tree\\n\\n\" +\n      lines.join(\"\\n\")\n  };\n\n}\n// Project Architecture\nif (/architecture|project architecture|show architecture/i.test(message)) {\n  return explainArchitecture();\n}\n// Project Graph\nif (/project graph|show project graph/i.test(message)) {\n\n  const graph = buildProjectGraph();\n\n  return {\n    found: true,\n    reply:\n      \"🕸 Project Graph\\n\\n\" +\n      JSON.stringify(graph, null, 2)\n  };\n\n}\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n\n  const result = reasonAboutFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst flow = explainExecution(message);\n// Execution Flow\n\nif (flow.found) {\n  return flow;\n}\n// Who uses a file?\nif (/who uses|used by|imports/i.test(message) && keyword.endsWith(\".js\")) {\n  const usedBy = projectSearch.findUsedBy(keyword);\n\n  if (usedBy.length > 0) {\n    return {\n      found: true,\n      reply:\n`📄 ${keyword}\n\nUsed by:\n\n${usedBy.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${usedBy.length}`\n    };\n  }\n}\n// List functions in a file\nif (/show all functions|list functions|functions in/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = listFunctions(keyword);\n\n  if (result.found) {\n    return result;\n   }\n\n  }\n// Explain a specific JavaScript file\nif (/explain/i.test(message) && keyword.endsWith(\".js\")) {\n  return explainFile(keyword);\n}\n// Full reasoning about a function\nif (/reason|full analysis|everything about|analyze completely/i.test(message)) {\n\n  const result = reasonAboutFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n // Analyze a specific function\nif (/explain|analyze|details about/i.test(message)) {\n\n  const result = analyzeFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Function Impact Analysis\nif (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {\n\n  const result = analyzeFunctionImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Reverse Call Graph\nif (/execution path|reverse call graph|path to|who reaches/i.test(message)) {\n\n  const result = reverseCallGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Locate a function\nif (/where is|jump to|locate|find function/i.test(message)) {\n\n  const result = locateFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst functionResult = projectSearch.findFunction(keyword);\n\nif (functionResult.length > 0) {\n\n  const file = functionResult[0];\n\n  return {\n    found: true,\n    reply:\n`I found the function \"${keyword}\".\n\n📄 File:\n${file.file}\n\nFunctions in this file:\n\n${projectSearch.loadIndex()\n  .find(f => f.file === file.file)\n  .functions\n  .map(f => \"• \" + f.name + \"()\")\n  .join(\"\\n\")}`\n    };\n\n    }\n   // List all project files\n    if (/list|all|files|project files/i.test(message)) {\n      return {\n        found: true,\n        reply:\n`Project files:\n\n${projectSearch.listFiles().map(f => \"• \" + f).join(\"\\n\")}\n\nTotal files: ${projectSearch.listFiles().length}`\n      };\n    }\n  const requireResult = projectSearch.findRequire(keyword);\n\n  if (requireResult.length > 0) {\n    return {\n      found: true,\n      reply:\n`I found \"${keyword}\" in these project files:\n\n${requireResult.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${requireResult.length}`\n    };\n  }\n\n  return {\n    found: false\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1122,7 +1184,8 @@
         "line": 3,
         "file": "brain/projectGraph.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function buildProjectGraph() {\n  const index = search.loadIndex();\n  const graph = {};\n\n  for (const file of index) {\n    graph[file.file] = {};\n\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    for (const fn of functions) {\n      graph[file.file][fn.name] = {\n        calls: fn.calls || [],\n        line: fn.line\n      };\n    }\n  }\n\n  return graph;\n}"
       },
       {
         "name": "findCallees",
@@ -1134,14 +1197,16 @@
             "name": "buildProjectGraph",
             "line": 28
           }
-        ]
+        ],
+        "body": "function findCallees(functionName, graph = null) {\n\n  if (!graph) {\n    graph = buildProjectGraph();\n  }\n\n  const results = [];\n\n  for (const file of Object.keys(graph)) {\n    const functions = graph[file];\n\n    if (functions[functionName]) {\n      for (const call of functions[functionName].calls || []) {\n\n        const callee =\n          typeof call === \"string\"\n            ? call\n            : call.name;\n\n        const line =\n          typeof call === \"string\"\n            ? null\n            : call.line;\n\n        if (!callee) continue;\n\n        if (\n          Object.values(graph).some(\n            fileFunctions => fileFunctions[callee]\n          )\n        ) {\n          results.push({\n            file,\n            caller: functionName,\n            callee,\n            line\n          });\n        }\n      }\n    }\n  }\n\n  return results;\n}"
       },
       {
         "name": "findFunctionLocation",
         "line": 69,
         "file": "brain/projectGraph.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function findFunctionLocation(graph, functionName) {\n  for (const file of Object.keys(graph)) {\n    if (graph[file][functionName]) {\n      return {\n        file,\n        line: graph[file][functionName].line\n      };\n    }\n  }\n\n  return {\n    file: null,\n    line: null\n  };\n}"
       },
       {
         "name": "traceCallees",
@@ -1161,14 +1226,16 @@
             "name": "findFunctionLocation",
             "line": 104
           }
-        ]
+        ],
+        "body": "function traceCallees("
       },
       {
         "name": "traceCallers",
-        "line": 127,
+        "line": 128,
         "file": "brain/projectGraph.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function traceCallers("
       }
     ],
     "arrowFunctions": [],
@@ -1230,7 +1297,8 @@
             "name": "analyzeDeepFunctionImpact",
             "line": 25
           }
-        ]
+        ],
+        "body": "function reasonAboutFunction(name) {\n\n  const parts = [];\n\n  const analysis = analyzeFunction(name);\n  if (analysis.found) {\n    parts.push(analysis.reply);\n  }\n\n  const trace = traceFunction(name);\n  if (trace.found) {\n    parts.push(trace.reply);\n  }\n\n  const impact = analyzeFunctionImpact(name);\n  if (impact.found) {\n    parts.push(impact.reply);\n  }\n\n  const deep = analyzeDeepFunctionImpact(name);\n  if (deep.found) {\n    parts.push(deep.reply);\n  }\n\n  if (parts.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  return {\n    found: true,\n    reply: parts.join(\"\\n\\n====================\\n\\n\")\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1287,7 +1355,8 @@
         "line": 3,
         "file": "brain/recursiveExecution.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function buildRecursiveExecution(functionName, visited = new Set(), depth = 0) {\n  if (!functionName) {\n    return [];\n  }\n\n  if (visited.has(functionName)) {\n    return [\n      `${\"  \".repeat(depth)}↺ ${functionName} (already visited)`\n    ];\n  }\n\n  visited.add(functionName);\n\n  const callers = projectSearch.findCallers(functionName);\n\n  let output = [];\n\n  output.push(\n    `${\"  \".repeat(depth)}📌 ${functionName}()`\n  );\n\n  if (callers.length === 0) {\n    output.push(\n      `${\"  \".repeat(depth + 1)}No callers found`\n    );\n\n    return output;\n  }\n\n  for (const caller of callers) {\n    output.push(\n      `${\"  \".repeat(depth + 1)}← ${caller.file} : ${caller.line}`\n    );\n\n    output.push(\n      ...buildRecursiveExecution(\n        caller.caller,\n        visited,\n        depth + 2\n      )\n    );\n  }\n\n  return output;\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1307,7 +1376,8 @@
         "line": 3,
         "file": "brain/reverseCallGraph.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function reverseCallGraph(functionName) {\n\n  const callers = projectSearch.findCallers(functionName);\n\n  if (callers.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  let reply =\n`🧭 Reverse Call Graph\n\nTarget:\n${functionName}()\n\n`;\n\n  for (const caller of callers) {\n\n    reply +=\n`📄 ${caller.file}\n   │\n   └── Line ${caller.line}\n        │\n        ▼\n     ${functionName}()\n\n`;\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1327,7 +1397,8 @@
         "line": 3,
         "file": "brain/reverseCallHierarchy.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function buildReverseCallHierarchy(functionName) {\n\n  const callers = projectSearch.findCallers(functionName);\n\n  if (callers.length === 0) {\n    return {\n      found: false\n    };\n  }\n\n  let reply =\n`🌳 Reverse Call Hierarchy\n\n${functionName}()\n\nCalled by\n\n`;\n\n  for (const caller of callers) {\n\n    reply +=\n`├── ${caller.file}\n│    ${caller.caller || \"Unknown Function\"}()\n\n`;\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1347,14 +1418,16 @@
         "line": 6,
         "file": "business/businessProfile.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function createBusiness(business) {\n  if (!business || !business.id) {\n    throw new Error(\"Business id is required\");\n  }\n\n  const businessDir = path.join(BUSINESSES_DIR, business.id);\n\n  await fs.ensureDir(businessDir);\n\n  const profile = {\n    id: business.id,\n    name: business.name || \"\",\n    category: business.category || \"\",\n    description: business.description || \"\",\n    phone: business.phone || \"\",\n    email: business.email || \"\",\n    address: business.address || \"\",\n    currency: business.currency || \"NGN\",\n    timezone: business.timezone || \"Africa/Lagos\",\n    createdAt: new Date().toISOString(),\n    updatedAt: new Date().toISOString()\n  };\n\n  const profileFile = path.join(businessDir, \"profile.json\");\n\n  await fs.writeJson(profileFile, profile, {\n    spaces: 2\n  });\n\n  return profile;\n}"
       },
       {
         "name": "getBusiness",
         "line": 38,
         "file": "business/businessProfile.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function getBusiness(businessId) {\n  if (!businessId) {\n    throw new Error(\"Business id is required\");\n  }\n\n  const profileFile = path.join(\n    BUSINESSES_DIR,\n    businessId,\n    \"profile.json\"\n  );\n\n  if (!(await fs.pathExists(profileFile))) {\n    return null;\n  }\n\n  return fs.readJson(profileFile);\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1378,7 +1451,8 @@
         "line": 6,
         "file": "business/customerManager.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function getCustomersFile(businessId) {\n  return path.join(\n    BUSINESSES_DIR,\n    businessId,\n    \"customers.json\"\n  );\n}"
       },
       {
         "name": "getCustomers",
@@ -1390,7 +1464,8 @@
             "name": "getCustomersFile",
             "line": 19
           }
-        ]
+        ],
+        "body": "async function getCustomers(businessId) {\n  if (!businessId) {\n    throw new Error(\"Business id is required\");\n  }\n\n  const file = getCustomersFile(businessId);\n\n  if (!(await fs.pathExists(file))) {\n    return [];\n  }\n\n  return fs.readJson(file);\n}"
       },
       {
         "name": "saveCustomers",
@@ -1402,7 +1477,8 @@
             "name": "getCustomersFile",
             "line": 37
           }
-        ]
+        ],
+        "body": "async function saveCustomers(businessId, customers) {\n  const businessDir = path.join(\n    BUSINESSES_DIR,\n    businessId\n  );\n\n  await fs.ensureDir(businessDir);\n\n  await fs.writeJson(\n    getCustomersFile(businessId),\n    customers,\n    { spaces: 2 }\n  );\n}"
       },
       {
         "name": "addCustomer",
@@ -1418,7 +1494,8 @@
             "name": "saveCustomers",
             "line": 74
           }
-        ]
+        ],
+        "body": "async function addCustomer(businessId, customer) {\n  if (!businessId) {\n    throw new Error(\"Business id is required\");\n  }\n\n  if (!customer || !customer.id) {\n    throw new Error(\"Customer id is required\");\n  }\n\n  const customers = await getCustomers(businessId);\n\n  const existing = customers.find(\n    item => item.id === customer.id\n  );\n\n  if (existing) {\n    return existing;\n  }\n\n  const newCustomer = {\n    id: customer.id,\n    name: customer.name || \"\",\n    phone: customer.phone || \"\",\n    email: customer.email || \"\",\n    notes: customer.notes || \"\",\n    createdAt: new Date().toISOString(),\n    updatedAt: new Date().toISOString()\n  };\n\n  customers.push(newCustomer);\n\n  await saveCustomers(\n    businessId,\n    customers\n  );\n\n  return newCustomer;\n}"
       },
       {
         "name": "getCustomer",
@@ -1430,7 +1507,8 @@
             "name": "getCustomers",
             "line": 83
           }
-        ]
+        ],
+        "body": "async function getCustomer(businessId, customerId) {\n  const customers = await getCustomers(businessId);\n\n  return (\n    customers.find(\n      customer => customer.id === customerId\n    ) || null\n  );\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1497,28 +1575,32 @@
         "line": 5,
         "file": "memory.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function remember(message) {\n  let profile = {};\n\n  try {\n    if (await fs.pathExists(FILE)) {\n      profile = await fs.readJson(FILE);\n    }\n  } catch {\n    profile = {};\n  }\n\n  const text = message.toLowerCase().trim();\n\n  // Basic facts\n  if (text.startsWith(\"my name is \")) {\n    profile.name = message.substring(11).trim();\n  }\n\n  if (text.startsWith(\"my favorite color is \")) {\n    profile.favoriteColor = message.substring(21).trim();\n  }\n\n  if (text.startsWith(\"i live in \")) {\n    profile.city = message.substring(10).trim();\n  }\n\n  if (text.startsWith(\"i work as \")) {\n    profile.job = message.substring(10).trim();\n  }\n\n  if (text.startsWith(\"i am learning \")) {\n    profile.learning = message.substring(14).trim();\n  }\n\n  if (text.startsWith(\"i'm learning \")) {\n    profile.learning = message.substring(14).trim();\n  }\n\n  if (text.startsWith(\"my goal is \")) {\n    profile.goals ??= [];\n    profile.goals.push(message.substring(11).trim());\n  }\n\n  if (text.startsWith(\"i am building \")) {\n    profile.projects ??= [];\n    profile.projects.push(message.substring(14).trim());\n  }\n\n  if (text.startsWith(\"my favorite language is \")) {\n    profile.favoriteLanguage = message.substring(24).trim();\n  }\n\n  if (text.startsWith(\"remember that \")) {\n    profile.notes ??= [];\n    profile.notes.push(message.substring(14).trim());\n  }\n\n  if (profile.goals) {\n    profile.goals = [...new Set(profile.goals)];\n  }\n\n  if (profile.projects) {\n    profile.projects = [...new Set(profile.projects)];\n  }\n\n  if (profile.notes) {\n    profile.notes = [...new Set(profile.notes)];\n  }\n\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n\n  return profile;\n}"
       },
       {
         "name": "mergeMemory",
         "line": 80,
         "file": "memory.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function mergeMemory(newMemory) {\n  let profile = {};\n\n  try {\n    if (await fs.pathExists(FILE)) {\n      profile = await fs.readJson(FILE);\n    }\n  } catch {\n    profile = {};\n  }\n\n    for (const [key, value] of Object.entries(newMemory)) {\n  if (key === \"goal\") {\n    profile.goals ??= [];\n\n    if (!profile.goals.some(g => g.toLowerCase() === value.toLowerCase())) {\n      profile.goals.push(value);\n    }\n\n  } else if (key === \"project\") {\n    profile.projects ??= [];\n\n    if (!profile.projects.includes(value)) {\n      profile.projects.push(value);\n    }\n\n  } else if (key === \"note\") {\n    profile.notes ??= [];\n\n    if (!profile.notes.includes(value)) {\n      profile.notes.push(value);\n    }\n\n  } else {\n    profile[key] = value;\n  }\n}\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n\n  return profile;\n}"
       },
       {
         "name": "getProfile",
         "line": 123,
         "file": "memory.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function getProfile() {\n  try {\n    if (await fs.pathExists(FILE)) {\n      return await fs.readJson(FILE);\n    }\n  } catch {}\n\n  return {};\n}"
       },
       {
         "name": "forget",
         "line": 132,
         "file": "memory.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function forget(key, value = null) {\n  let profile = {};\n\n  try {\n    if (await fs.pathExists(FILE)) {\n      profile = await fs.readJson(FILE);\n    }\n  } catch {\n    return;\n  }\n\n  if (value && Array.isArray(profile[key])) {\n    profile[key] = profile[key].filter(\n      item => item !== value\n    );\n\n    if (profile[key].length === 0) {\n      delete profile[key];\n    }\n\n  } else {\n    delete profile[key];\n  }\n\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1547,7 +1629,8 @@
             "name": "chatGroq",
             "line": 25
           }
-        ]
+        ],
+        "body": "async function extractMemory(message) {\n \nlet reply;\n\ntry {\n  reply = await chat([\n    {\n      role: \"system\",\n      content: memoryPrompt\n    },\n    {\n      role: \"user\",\n      content: message\n    }\n  ]);\n} catch (err) {\n  if (err.response?.status === 429) {\n    console.log(\"Memory extractor: falling back to Groq...\");\n    reply = await chatGroq([\n      {\n        role: \"system\",\n        content: memoryPrompt\n      },\n      {\n        role: \"user\",\n        content: message\n      }\n    ]);\n  } else {\n    throw err;\n  }\n}  \n\n try {\n    return JSON.parse(reply);\n  } catch {\n    return {};\n  }\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1606,14 +1689,16 @@
         "line": 2,
         "file": "public/app.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function send() {\n  const input = document.getElementById(\"message\");\n  const chat = document.getElementById(\"chat\");\n\n  const message = input.value.trim();\n  if (!message) return;\n\n  chat.innerHTML += `<div class=\"message user\">${message}</div>`;\n  input.value = \"\";\n\n  chat.innerHTML += `<div class=\"message ai\" id=\"typing\">SamuAI Chatbot is typing...</div>`;\n  chat.scrollTop = chat.scrollHeight;\n\n  try {\n    const response = await fetch(\"/chat\", {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify({ message })\n    });\n\n      const data = await response.json();\n\n      console.log(data.reply);\nalert(data.reply);\n\n      const typing = document.getElementById(\"typing\");\n      if (typing) typing.remove();\n\n      chat.innerHTML += `<div class=\"message ai\">${data.reply.replace(/\\n/g, \"<br>\")}</div>`;\n      \nchat.scrollTop = chat.scrollHeight;\n\n  } catch (err) {\n    const typing = document.getElementById(\"typing\");\n    if (typing) typing.remove();\n\n    chat.innerHTML += `<div class=\"message ai\">Error contacting SamuAI Chatbot.</div>`;\n    console.error(err);\n  }\n}"
       },
       {
         "name": "uploadFile",
         "line": 44,
         "file": "public/app.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function uploadFile() {\n  const fileInput = document.getElementById(\"fileInput\");\n\n  if (!fileInput.files.length) {\n    alert(\"Please choose a file first.\");\n    return;\n  }\n\n  const formData = new FormData();\n  formData.append(\"file\", fileInput.files[0]);\n\n  try {\n    const response = await fetch(\"/upload\", {\n      method: \"POST\",\n      body: formData\n    });\n\n    const data = await response.json();\n\n    if (!response.ok) {\n      alert(data.reply || \"Upload failed.\");\n      return;\n    }\n\n    const chat = document.getElementById(\"chat\");\n\n    chat.innerHTML += `\n      <div class=\"message ai\">\n        <strong>File uploaded:</strong> ${data.filename}\n      </div>\n    `;\n\n    chat.scrollTop = chat.scrollHeight;\n  } catch (err) {\n    console.error(err);\n    alert(\"Couldn't connect to the server.\");\n  }\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1628,14 +1713,16 @@
         "line": 12,
         "file": "public/marked.min.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "\"use strict\";var H=Object.defineProperty;var be=Object.getOwnPropertyDescriptor;var Te=Object.getOwnPropertyNames;var we=Object.prototype.hasOwnProperty;var ye=(l,e)=>{for(var t in e)H(l,t,{get:e[t],enumerable:!0})},Re=(l,e,t,n)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let s of Te(e))!we.call(l,s)&&s!==t&&H(l,s,{get:()=>e[s],enumerable:!(n=be(e,s))||n.enumerable});return l};var Se=l=>Re(H({},\"__esModule\",{value:!0}),l);var kt={};ye(kt,{Hooks:()=>L,Lexer:()=>x,Marked:()=>E,Parser:()=>b,Renderer:()=>$,TextRenderer:()=>_,Tokenizer:()=>S,defaults:()=>w,getDefaults:()=>z,lexer:()=>ht,marked:()=>k,options:()=>it,parse:()=>pt,parseInline:()=>ct,parser:()=>ut,setOptions:()=>ot,use:()=>lt,walkTokens:()=>at});module.exports=Se(kt);function z(){return{async:!1,breaks:!1,extensions:null,gfm:!0,hooks:null,pedantic:!1,renderer:null,silent:!1,tokenizer:null,walkTokens:null}}var w=z();function N(l){w=l}var I={exec:()=>null};function h(l,e=\"\"){let t=typeof l==\"string\"?l:l.source,n={replace:(s,i)=>{let r=typeof i==\"string\"?i:i.source;return r=r.replace(m.caret,\"$1\"),t=t.replace(s,r),n},getRegex:()=>new RegExp(t,e)};return n}var m={codeRemoveIndent:/^(?: {1,4}| {0,3}\\t)/gm,outputLinkReplace:/\\\\([\\[\\]])/g,indentCodeCompensation:/^(\\s+)(?:```)/,beginningSpace:/^\\s+/,endingHash:/#$/,startingSpaceChar:/^ /,endingSpaceChar:/ $/,nonSpaceChar:/[^ ]/,newLineCharGlobal:/\\n/g,tabCharGlobal:/\\t/g,multipleSpaceGlobal:/\\s+/g,blankLine:/^[ \\t]*$/,doubleBlankLine:/\\n[ \\t]*\\n[ \\t]*$/,blockquoteStart:/^ {0,3}>/,blockquoteSetextReplace:/\\n {0,3}((?:=+|-+) *)(?=\\n|$)/g,blockquoteSetextReplace2:/^ {0,3}>[ \\t]?/gm,listReplaceTabs:/^\\t+/,listReplaceNesting:/^ {1,4}(?=( {4})*[^ ])/g,listIsTask:/^\\[[ xX]\\] /,listReplaceTask:/^\\[[ xX]\\] +/,anyLine:/\\n.*\\n/,hrefBrackets:/^<(.*)>$/,tableDelimiter:/[:|]/,tableAlignChars:/^\\||\\| *$/g,tableRowBlankLine:/\\n[ \\t]*$/,tableAlignRight:/^ *-+: *$/,tableAlignCenter:/^ *:-+: *$/,tableAlignLeft:/^ *:-+ *$/,startATag:/^<a /i,endATag:/^<\\/a>/i,startPreScriptTag:/^<(pre|code|kbd|script)(\\s|>)/i,endPreScriptTag:/^<\\/(pre|code|kbd|script)(\\s|>)/i,startAngleBracket:/^</,endAngleBracket:/>$/,pedanticHrefTitle:/^([^'\"]*[^\\s])\\s+(['\"])(.*)\\2/,unicodeAlphaNumeric:/[\\p{L}\\p{N}]/u,escapeTest:/[&<>\"']/,escapeReplace:/[&<>\"']/g,escapeTestNoEncode:/[<>\"']|&(?!(#\\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\\w+);)/,escapeReplaceNoEncode:/[<>\"']|&(?!(#\\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\\w+);)/g,unescapeTest:/&(#(?:\\d+)|(?:#x[0-9A-Fa-f]+)|(?:\\w+));?/ig,caret:/(^|[^\\[])\\^/g,percentDecode:/%25/g,findPipe:/\\|/g,splitPipe:/ \\|/,slashPipe:/\\\\\\|/g,carriageReturn:/\\r\\n|\\r/g,spaceLine:/^ +$/gm,notSpaceStart:/^\\S*/,endingNewline:/\\n$/,listItemRegex:l=>new RegExp(`^( {0,3}${l})((?:[\t ][^\\\\n]*)?(?:\\\\n|$))`),nextBulletRegex:l=>new RegExp(`^ {0,${Math.min(3,l-1)}}(?:[*+-]|\\\\d{1,9}[.)])((?:[ \t][^\\\\n]*)?(?:\\\\n|$))`),hrRegex:l=>new RegExp(`^ {0,${Math.min(3,l-1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\\\* *){3,})(?:\\\\n+|$)`),fencesBeginRegex:l=>new RegExp(`^ {0,${Math.min(3,l-1)}}(?:\\`\\`\\`|~~~)`),headingBeginRegex:l=>new RegExp(`^ {0,${Math.min(3,l-1)}}#`),htmlBeginRegex:l=>new RegExp(`^ {0,${Math.min(3,l-1)}}<(?:[a-z].*>|!--)`,\"i\")},$e=/^(?:[ \\t]*(?:\\n|$))+/,_e=/^((?: {4}| {0,3}\\t)[^\\n]+(?:\\n(?:[ \\t]*(?:\\n|$))*)?)+/,Le=/^ {0,3}(`{3,}(?=[^`\\n]*(?:\\n|$))|~{3,})([^\\n]*)(?:\\n|$)(?:|([\\s\\S]*?)(?:\\n|$))(?: {0,3}\\1[~`]* *(?=\\n|$)|$)/,O=/^ {0,3}((?:-[\\t ]*){3,}|(?:_[ \\t]*){3,}|(?:\\*[ \\t]*){3,})(?:\\n+|$)/,ze=/^ {0,3}(#{1,6})(?=\\s|$)(.*)(?:\\n+|$)/,F=/(?:[*+-]|\\d{1,9}[.)])/,ie=/^(?!bull |blockCode|fences|blockquote|heading|html|table)((?:.|\\n(?!\\s*?\\n|bull |blockCode|fences|blockquote|heading|html|table))+?)\\n {0,3}(=+|-+) *(?:\\n+|$)/,oe=h(ie).replace(/bull/g,F).replace(/blockCode/g,/(?: {4}| {0,3}\\t)/).replace(/fences/g,/ {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g,/ {0,3}>/).replace(/heading/g,/ {0,3}#{1,6}/).replace(/html/g,/ {0,3}<[^\\n>]+>\\n/).replace(/\\|table/g,\"\").getRegex(),Me=h(ie).replace(/bull/g,F).replace(/blockCode/g,/(?: {4}| {0,3}\\t)/).replace(/fences/g,/ {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g,/ {0,3}>/).replace(/heading/g,/ {0,3}#{1,6}/).replace(/html/g,/ {0,3}<[^\\n>]+>\\n/).replace(/table/g,/ {0,3}\\|?(?:[:\\- ]*\\|)+[\\:\\- ]*\\n/).getRegex(),Q=/^([^\\n]+(?:\\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\\n)[^\\n]+)*)/,Pe=/^[^\\n]+/,U=/(?!\\s*\\])(?:\\\\.|[^\\[\\]\\\\])+/,Ae=h(/^ {0,3}\\[(label)\\]: *(?:\\n[ \\t]*)?([^<\\s][^\\s]*|<.*?>)(?:(?: +(?:\\n[ \\t]*)?| *\\n[ \\t]*)(title))? *(?:\\n+|$)/).replace(\"label\",U).replace(\"title\",/(?:\"(?:\\\\\"?|[^\"\\\\])*\"|'[^'\\n]*(?:\\n[^'\\n]+)*\\n?'|\\([^()]*\\))/).getRegex(),Ee=h(/^( {0,3}bull)([ \\t][^\\n]+?)?(?:\\n|$)/).replace(/bull/g,F).getRegex(),v=\"address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul\",K=/<!--(?:-?>|[\\s\\S]*?(?:-->|$))/,Ce=h(\"^ {0,3}(?:<(script|pre|style|textarea)[\\\\s>][\\\\s\\\\S]*?(?:</\\\\1>[^\\\\n]*\\\\n+|$)|comment[^\\\\n]*(\\\\n+|$)|<\\\\?[\\\\s\\\\S]*?(?:\\\\?>\\\\n*|$)|<![A-Z][\\\\s\\\\S]*?(?:>\\\\n*|$)|<!\\\\[CDATA\\\\[[\\\\s\\\\S]*?(?:\\\\]\\\\]>\\\\n*|$)|</?(tag)(?: +|\\\\n|/?>)[\\\\s\\\\S]*?(?:(?:\\\\n[ \t]*)+\\\\n|$)|<(?!script|pre|style|textarea)([a-z][\\\\w-]*)(?:attribute)*? */?>(?=[ \\\\t]*(?:\\\\n|$))[\\\\s\\\\S]*?(?:(?:\\\\n[ \t]*)+\\\\n|$)|</(?!script|pre|style|textarea)[a-z][\\\\w-]*\\\\s*>(?=[ \\\\t]*(?:\\\\n|$))[\\\\s\\\\S]*?(?:(?:\\\\n[ \t]*)+\\\\n|$))\",\"i\").replace(\"comment\",K).replace(\"tag\",v).replace(\"attribute\",/ +[a-zA-Z:_][\\w.:-]*(?: *= *\"[^\"\\n]*\"| *= *'[^'\\n]*'| *= *[^\\s\"'=<>`]+)?/).getRegex(),le=h(Q).replace(\"hr\",O).replace(\"heading\",\" {0,3}#{1,6}(?:\\\\s|$)\").replace(\"|lheading\",\"\").replace(\"|table\",\"\").replace(\"blockquote\",\" {0,3}>\").replace(\"fences\",\" {0,3}(?:`{3,}(?=[^`\\\\n]*\\\\n)|~{3,})[^\\\\n]*\\\\n\").replace(\"list\",\" {0,3}(?:[*+-]|1[.)]) \").replace(\"html\",\"</?(?:tag)(?: +|\\\\n|/?>)|<(?:script|pre|style|textarea|!--)\").replace(\"tag\",v).getRegex(),Ie=h(/^( {0,3}> ?(paragraph|[^\\n]*)(?:\\n|$))+/).replace(\"paragraph\",le).getRegex(),X={blockquote:Ie,code:_e,def:Ae,fences:Le,heading:ze,hr:O,html:Ce,lheading:oe,list:Ee,newline:$e,paragraph:le,table:I,text:Pe},re=h(\"^ *([^\\\\n ].*)\\\\n {0,3}((?:\\\\| *)?:?-+:? *(?:\\\\| *:?-+:? *)*(?:\\\\| *)?)(?:\\\\n((?:(?! *\\\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\\\n|$))*)\\\\n*|$)\").replace(\"hr\",O).replace(\"heading\",\" {0,3}#{1,6}(?:\\\\s|$)\").replace(\"blockquote\",\" {0,3}>\").replace(\"code\",\"(?: {4}| {0,3}\t)[^\\\\n]\").replace(\"fences\",\" {0,3}(?:`{3,}(?=[^`\\\\n]*\\\\n)|~{3,})[^\\\\n]*\\\\n\").replace(\"list\",\" {0,3}(?:[*+-]|1[.)]) \").replace(\"html\",\"</?(?:tag)(?: +|\\\\n|/?>)|<(?:script|pre|style|textarea|!--)\").replace(\"tag\",v).getRegex(),Oe={...X,lheading:Me,table:re,paragraph:h(Q).replace(\"hr\",O).replace(\"heading\",\" {0,3}#{1,6}(?:\\\\s|$)\").replace(\"|lheading\",\"\").replace(\"table\",re).replace(\"blockquote\",\" {0,3}>\").replace(\"fences\",\" {0,3}(?:`{3,}(?=[^`\\\\n]*\\\\n)|~{3,})[^\\\\n]*\\\\n\").replace(\"list\",\" {0,3}(?:[*+-]|1[.)]) \").replace(\"html\",\"</?(?:tag)(?: +|\\\\n|/?>)|<(?:script|pre|style|textarea|!--)\").replace(\"tag\",v).getRegex()},Be={...X,html:h(`^ *(?:comment *(?:\\\\n|\\\\s*$)|<(tag)[\\\\s\\\\S]+?</\\\\1> *(?:\\\\n{2,}|\\\\s*$)|<tag(?:\"[^\"]*\"|'[^']*'|\\\\s[^'\"/>\\\\s]*)*?/?> *(?:\\\\n{2,}|\\\\s*$))`).replace(\"comment\",K).replace(/tag/g,\"(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\\\b)\\\\w+(?!:|[^\\\\w\\\\s@]*@)\\\\b\").getRegex(),def:/^ *\\[([^\\]]+)\\]: *<?([^\\s>]+)>?(?: +([\"(][^\\n]+[\")]))? *(?:\\n+|$)/,heading:/^(#{1,6})(.*)(?:\\n+|$)/,fences:I,lheading:/^(.+?)\\n {0,3}(=+|-+) *(?:\\n+|$)/,paragraph:h(Q).replace(\"hr\",O).replace(\"heading\",` *#{1,6} *[^\n]`).replace(\"lheading\",oe).replace(\"|table\",\"\").replace(\"blockquote\",\" {0,3}>\").replace(\"|fences\",\"\").replace(\"|list\",\"\").replace(\"|html\",\"\").replace(\"|tag\",\"\").getRegex()},qe=/^\\\\([!\"#$%&'()*+,\\-./:;<=>?@\\[\\]\\\\^_`{|}~])/,ve=/^(`+)([^`]|[^`][\\s\\S]*?[^`])\\1(?!`)/,ae=/^( {2,}|\\\\)\\n(?!\\s*$)/,De=/^(`+|[^`])(?:(?= {2,}\\n)|[\\s\\S]*?(?:(?=[\\\\<!\\[`*_]|\\b_|$)|[^ ](?= {2,}\\n)))/,D=/[\\p{P}\\p{S}]/u,W=/[\\s\\p{P}\\p{S}]/u,ce=/[^\\s\\p{P}\\p{S}]/u,Ze=h(/^((?![*_])punctSpace)/,\"u\").replace(/punctSpace/g,W).getRegex(),pe=/(?!~)[\\p{P}\\p{S}]/u,Ge=/(?!~)[\\s\\p{P}\\p{S}]/u,He=/(?:[^\\s\\p{P}\\p{S}]|~)/u,Ne=/\\[[^[\\]]*?\\]\\((?:\\\\.|[^\\\\\\(\\)]|\\((?:\\\\.|[^\\\\\\(\\)])*\\))*\\)|`[^`]*?`|<[^<>]*?>/g,ue=/^(?:\\*+(?:((?!\\*)punct)|[^\\s*]))|^_+(?:((?!_)punct)|([^\\s_]))/,je=h(ue,\"u\").replace(/punct/g,D).getRegex(),Fe=h(ue,\"u\").replace(/punct/g,pe).getRegex(),he=\"^[^_*]*?__[^_*]*?\\\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\\\*)punct(\\\\*+)(?=[\\\\s]|$)|notPunctSpace(\\\\*+)(?!\\\\*)(?=punctSpace|$)|(?!\\\\*)punctSpace(\\\\*+)(?=notPunctSpace)|[\\\\s](\\\\*+)(?!\\\\*)(?=punct)|(?!\\\\*)punct(\\\\*+)(?!\\\\*)(?=punct)|notPunctSpace(\\\\*+)(?=notPunctSpace)\",Qe=h(he,\"gu\").replace(/notPunctSpace/g,ce).replace(/punctSpace/g,W).replace(/punct/g,D).getRegex(),Ue=h(he,\"gu\").replace(/notPunctSpace/g,He).replace(/punctSpace/g,Ge).replace(/punct/g,pe).getRegex(),Ke=h(\"^[^_*]*?\\\\*\\\\*[^_*]*?_[^_*]*?(?=\\\\*\\\\*)|[^_]+(?=[^_])|(?!_)punct(_+)(?=[\\\\s]|$)|notPunctSpace(_+)(?!_)(?=punctSpace|$)|(?!_)punctSpace(_+)(?=notPunctSpace)|[\\\\s](_+)(?!_)(?=punct)|(?!_)punct(_+)(?!_)(?=punct)\",\"gu\").replace(/notPunctSpace/g,ce).replace(/punctSpace/g,W).replace(/punct/g,D).getRegex(),Xe=h(/\\\\(punct)/,\"gu\").replace(/punct/g,D).getRegex(),We=h(/^<(scheme:[^\\s\\x00-\\x1f<>]*|email)>/).replace(\"scheme\",/[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace(\"email\",/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex(),Je=h(K).replace(\"(?:-->|$)\",\"-->\").getRegex(),Ve=h(\"^comment|^</[a-zA-Z][\\\\w:-]*\\\\s*>|^<[a-zA-Z][\\\\w-]*(?:attribute)*?\\\\s*/?>|^<\\\\?[\\\\s\\\\S]*?\\\\?>|^<![a-zA-Z]+\\\\s[\\\\s\\\\S]*?>|^<!\\\\[CDATA\\\\[[\\\\s\\\\S]*?\\\\]\\\\]>\").replace(\"comment\",Je).replace(\"attribute\",/\\s+[a-zA-Z:_][\\w.:-]*(?:\\s*=\\s*\"[^\"]*\"|\\s*=\\s*'[^']*'|\\s*=\\s*[^\\s\"'=<>`]+)?/).getRegex(),q=/(?:\\[(?:\\\\.|[^\\[\\]\\\\])*\\]|\\\\.|`[^`]*`|[^\\[\\]\\\\`])*?/,Ye=h(/^!?\\[(label)\\]\\(\\s*(href)(?:(?:[ \\t]*(?:\\n[ \\t]*)?)(title))?\\s*\\)/).replace(\"label\",q).replace(\"href\",/<(?:\\\\.|[^\\n<>\\\\])+>|[^ \\t\\n\\x00-\\x1f]*/).replace(\"title\",/\"(?:\\\\\"?|[^\"\\\\])*\"|'(?:\\\\'?|[^'\\\\])*'|\\((?:\\\\\\)?|[^)\\\\])*\\)/).getRegex(),ke=h(/^!?\\[(label)\\]\\[(ref)\\]/).replace(\"label\",q).replace(\"ref\",U).getRegex(),ge=h(/^!?\\[(ref)\\](?:\\[\\])?/).replace(\"ref\",U).getRegex(),et=h(\"reflink|nolink(?!\\\\()\",\"g\").replace(\"reflink\",ke).replace(\"nolink\",ge).getRegex(),J={_backpedal:I,anyPunctuation:Xe,autolink:We,blockSkip:Ne,br:ae,code:ve,del:I,emStrongLDelim:je,emStrongRDelimAst:Qe,emStrongRDelimUnd:Ke,escape:qe,link:Ye,nolink:ge,punctuation:Ze,reflink:ke,reflinkSearch:et,tag:Ve,text:De,url:I},tt={...J,link:h(/^!?\\[(label)\\]\\((.*?)\\)/).replace(\"label\",q).getRegex(),reflink:h(/^!?\\[(label)\\]\\s*\\[([^\\]]*)\\]/).replace(\"label\",q).getRegex()},j={...J,emStrongRDelimAst:Ue,emStrongLDelim:Fe,url:h(/^((?:ftp|https?):\\/\\/|www\\.)(?:[a-zA-Z0-9\\-]+\\.?)+[^\\s<]*|^email/,\"i\").replace(\"email\",/[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/).getRegex(),_backpedal:/(?:[^?!.,:;*_'\"~()&]+|\\([^)]*\\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'\"~)]+(?!$))+/,del:/^(~~?)(?=[^\\s~])((?:\\\\.|[^\\\\])*?(?:\\\\.|[^\\s~\\\\]))\\1(?=[^~]|$)/,text:/^([`~]+|[^`~])(?:(?= {2,}\\n)|(?=[a-zA-Z0-9.!#$%&'*+\\/=?_`{\\|}~-]+@)|[\\s\\S]*?(?:(?=[\\\\<!\\[`*~_]|\\b_|https?:\\/\\/|ftp:\\/\\/|www\\.|$)|[^ ](?= {2,}\\n)|[^a-zA-Z0-9.!#$%&'*+\\/=?_`{\\|}~-](?=[a-zA-Z0-9.!#$%&'*+\\/=?_`{\\|}~-]+@)))/},nt={...j,br:h(ae).replace(\"{2,}\",\"*\").getRegex(),text:h(j.text).replace(\"\\\\b_\",\"\\\\b_| {2,}\\\\n\").replace(/\\{2,\\}/g,\"*\").getRegex()},B={normal:X,gfm:Oe,pedantic:Be},P={normal:J,gfm:j,breaks:nt,pedantic:tt};var st={\"&\":\"&amp;\",\"<\":\"&lt;\",\">\":\"&gt;\",'\"':\"&quot;\",\"'\":\"&#39;\"},fe=l=>st[l];function R(l,e){if(e){if(m.escapeTest.test(l))return l.replace(m.escapeReplace,fe)}else if(m.escapeTestNoEncode.test(l))return l.replace(m.escapeReplaceNoEncode,fe);return l}function V(l){try{l=encodeURI(l).replace(m.percentDecode,\"%\")}catch{return null}return l}function Y(l,e){let t=l.replace(m.findPipe,(i,r,o)=>{let a=!1,c=r;for(;--c>=0&&o[c]===\"\\\\\";)a=!a;return a?\"|\":\" |\"}),n=t.split(m.splitPipe),s=0;if(n[0].trim()||n.shift(),n.length>0&&!n.at(-1)?.trim()&&n.pop(),e)if(n.length>e)n.splice(e);else for(;n.length<e;)n.push(\"\");for(;s<n.length;s++)n[s]=n[s].trim().replace(m.slashPipe,\"|\");return n}function A(l,e,t){let n=l.length;if(n===0)return\"\";let s=0;for(;s<n;){let i=l.charAt(n-s-1);if(i===e&&!t)s++;else if(i!==e&&t)s++;else break}return l.slice(0,n-s)}function de(l,e){if(l.indexOf(e[1])===-1)return-1;let t=0;for(let n=0;n<l.length;n++)if(l[n]===\"\\\\\")n++;else if(l[n]===e[0])t++;else if(l[n]===e[1]&&(t--,t<0))return n;return t>0?-2:-1}function me(l,e,t,n,s){let i=e.href,r=e.title||null,o=l[1].replace(s.other.outputLinkReplace,\"$1\");n.state.inLink=!0;let a={type:l[0].charAt(0)===\"!\"?\"image\":\"link\",raw:t,href:i,title:r,text:o,tokens:n.inlineTokens(o)};return n.state.inLink=!1,a}function rt(l,e,t){let n=l.match(t.other.indentCodeCompensation);if(n===null)return e;let s=n[1];return e.split(`\n`).map(i=>{let r=i.match(t.other.beginningSpace);if(r===null)return i;let[o]=r;return o.length>=s.length?i.slice(s.length):i}).join(`\n`)}var S=class{options;rules;lexer;constructor(e){this.options=e||w}space(e){let t=this.rules.block.newline.exec(e);if(t&&t[0].length>0)return{type:\"space\",raw:t[0]}}code(e){let t=this.rules.block.code.exec(e);if(t){let n=t[0].replace(this.rules.other.codeRemoveIndent,\"\");return{type:\"code\",raw:t[0],codeBlockStyle:\"indented\",text:this.options.pedantic?n:A(n,`\n`)}}}fences(e){let t=this.rules.block.fences.exec(e);if(t){let n=t[0],s=rt(n,t[3]||\"\",this.rules);return{type:\"code\",raw:n,lang:t[2]?t[2].trim().replace(this.rules.inline.anyPunctuation,\"$1\"):t[2],text:s}}}heading(e){let t=this.rules.block.heading.exec(e);if(t){let n=t[2].trim();if(this.rules.other.endingHash.test(n)){let s=A(n,\"#\");(this.options.pedantic||!s||this.rules.other.endingSpaceChar.test(s))&&(n=s.trim())}return{type:\"heading\",raw:t[0],depth:t[1].length,text:n,tokens:this.lexer.inline(n)}}}hr(e){let t=this.rules.block.hr.exec(e);if(t)return{type:\"hr\",raw:A(t[0],`\n`)}}blockquote(e){let t=this.rules.block.blockquote.exec(e);if(t){let n=A(t[0],`\n`).split(`\n`),s=\"\",i=\"\",r=[];for(;n.length>0;){let o=!1,a=[],c;for(c=0;c<n.length;c++)if(this.rules.other.blockquoteStart.test(n[c]))a.push(n[c]),o=!0;else if(!o)a.push(n[c]);else break;n=n.slice(c);let p=a.join(`\n`),u=p.replace(this.rules.other.blockquoteSetextReplace,`\n    $1`).replace(this.rules.other.blockquoteSetextReplace2,\"\");s=s?`${s}\n${p}`:p,i=i?`${i}\n${u}`:u;let d=this.lexer.state.top;if(this.lexer.state.top=!0,this.lexer.blockTokens(u,r,!0),this.lexer.state.top=d,n.length===0)break;let g=r.at(-1);if(g?.type===\"code\")break;if(g?.type===\"blockquote\"){let T=g,f=T.raw+`\n`+n.join(`\n`),y=this.blockquote(f);r[r.length-1]=y,s=s.substring(0,s.length-T.raw.length)+y.raw,i=i.substring(0,i.length-T.text.length)+y.text;break}else if(g?.type===\"list\"){let T=g,f=T.raw+`\n`+n.join(`\n`),y=this.list(f);r[r.length-1]=y,s=s.substring(0,s.length-g.raw.length)+y.raw,i=i.substring(0,i.length-T.raw.length)+y.raw,n=f.substring(r.at(-1).raw.length).split(`\n`);continue}}return{type:\"blockquote\",raw:s,tokens:r,text:i}}}list(e){let t=this.rules.block.list.exec(e);if(t){let n=t[1].trim(),s=n.length>1,i={type:\"list\",raw:\"\",ordered:s,start:s?+n.slice(0,-1):\"\",loose:!1,items:[]};n=s?`\\\\d{1,9}\\\\${n.slice(-1)}`:`\\\\${n}`,this.options.pedantic&&(n=s?n:\"[*+-]\");let r=this.rules.other.listItemRegex(n),o=!1;for(;e;){let c=!1,p=\"\",u=\"\";if(!(t=r.exec(e))||this.rules.block.hr.test(e))break;p=t[0],e=e.substring(p.length);let d=t[2].split(`\n`,1)[0].replace(this.rules.other.listReplaceTabs,Z=>\" \".repeat(3*Z.length)),g=e.split(`\n`,1)[0],T=!d.trim(),f=0;if(this.options.pedantic?(f=2,u=d.trimStart()):T?f=t[1].length+1:(f=t[2].search(this.rules.other.nonSpaceChar),f=f>4?1:f,u=d.slice(f),f+=t[1].length),T&&this.rules.other.blankLine.test(g)&&(p+=g+`\n`,e=e.substring(g.length+1),c=!0),!c){let Z=this.rules.other.nextBulletRegex(f),te=this.rules.other.hrRegex(f),ne=this.rules.other.fencesBeginRegex(f),se=this.rules.other.headingBeginRegex(f),xe=this.rules.other.htmlBeginRegex(f);for(;e;){let G=e.split(`\n`,1)[0],C;if(g=G,this.options.pedantic?(g=g.replace(this.rules.other.listReplaceNesting,\"  \"),C=g):C=g.replace(this.rules.other.tabCharGlobal,\"    \"),ne.test(g)||se.test(g)||xe.test(g)||Z.test(g)||te.test(g))break;if(C.search(this.rules.other.nonSpaceChar)>=f||!g.trim())u+=`\n`+C.slice(f);else{if(T||d.replace(this.rules.other.tabCharGlobal,\"    \").search(this.rules.other.nonSpaceChar)>=4||ne.test(d)||se.test(d)||te.test(d))break;u+=`\n`+g}!T&&!g.trim()&&(T=!0),p+=G+`\n`,e=e.substring(G.length+1),d=C.slice(f)}}i.loose||(o?i.loose=!0:this.rules.other.doubleBlankLine.test(p)&&(o=!0));let y=null,ee;this.options.gfm&&(y=this.rules.other.listIsTask.exec(u),y&&(ee=y[0]!==\"[ ] \",u=u.replace(this.rules.other.listReplaceTask,\"\"))),i.items.push({type:\"list_item\",raw:p,task:!!y,checked:ee,loose:!1,text:u,tokens:[]}),i.raw+=p}let a=i.items.at(-1);if(a)a.raw=a.raw.trimEnd(),a.text=a.text.trimEnd();else return;i.raw=i.raw.trimEnd();for(let c=0;c<i.items.length;c++)if(this.lexer.state.top=!1,i.items[c].tokens=this.lexer.blockTokens(i.items[c].text,[]),!i.loose){let p=i.items[c].tokens.filter(d=>d.type===\"space\"),u=p.length>0&&p.some(d=>this.rules.other.anyLine.test(d.raw));i.loose=u}if(i.loose)for(let c=0;c<i.items.length;c++)i.items[c].loose=!0;return i}}html(e){let t=this.rules.block.html.exec(e);if(t)return{type:\"html\",block:!0,raw:t[0],pre:t[1]===\"pre\"||t[1]===\"script\"||t[1]===\"style\",text:t[0]}}def(e){let t=this.rules.block.def.exec(e);if(t){let n=t[1].toLowerCase().replace(this.rules.other.multipleSpaceGlobal,\" \"),s=t[2]?t[2].replace(this.rules.other.hrefBrackets,\"$1\").replace(this.rules.inline.anyPunctuation,\"$1\"):\"\",i=t[3]?t[3].substring(1,t[3].length-1).replace(this.rules.inline.anyPunctuation,\"$1\"):t[3];return{type:\"def\",tag:n,raw:t[0],href:s,title:i}}}table(e){let t=this.rules.block.table.exec(e);if(!t||!this.rules.other.tableDelimiter.test(t[2]))return;let n=Y(t[1]),s=t[2].replace(this.rules.other.tableAlignChars,\"\").split(\"|\"),i=t[3]?.trim()?t[3].replace(this.rules.other.tableRowBlankLine,\"\").split(`\n`):[],r={type:\"table\",raw:t[0],header:[],align:[],rows:[]};if(n.length===s.length){for(let o of s)this.rules.other.tableAlignRight.test(o)?r.align.push(\"right\"):this.rules.other.tableAlignCenter.test(o)?r.align.push(\"center\"):this.rules.other.tableAlignLeft.test(o)?r.align.push(\"left\"):r.align.push(null);for(let o=0;o<n.length;o++)r.header.push({text:n[o],tokens:this.lexer.inline(n[o]),header:!0,align:r.align[o]});for(let o of i)r.rows.push(Y(o,r.header.length).map((a,c)=>({text:a,tokens:this.lexer.inline(a),header:!1,align:r.align[c]})));return r}}lheading(e){let t=this.rules.block.lheading.exec(e);if(t)return{type:\"heading\",raw:t[0],depth:t[2].charAt(0)===\"=\"?1:2,text:t[1],tokens:this.lexer.inline(t[1])}}paragraph(e){let t=this.rules.block.paragraph.exec(e);if(t){let n=t[1].charAt(t[1].length-1)===`\n`?t[1].slice(0,-1):t[1];return{type:\"paragraph\",raw:t[0],text:n,tokens:this.lexer.inline(n)}}}text(e){let t=this.rules.block.text.exec(e);if(t)return{type:\"text\",raw:t[0],text:t[0],tokens:this.lexer.inline(t[0])}}escape(e){let t=this.rules.inline.escape.exec(e);if(t)return{type:\"escape\",raw:t[0],text:t[1]}}tag(e){let t=this.rules.inline.tag.exec(e);if(t)return!this.lexer.state.inLink&&this.rules.other.startATag.test(t[0])?this.lexer.state.inLink=!0:this.lexer.state.inLink&&this.rules.other.endATag.test(t[0])&&(this.lexer.state.inLink=!1),!this.lexer.state.inRawBlock&&this.rules.other.startPreScriptTag.test(t[0])?this.lexer.state.inRawBlock=!0:this.lexer.state.inRawBlock&&this.rules.other.endPreScriptTag.test(t[0])&&(this.lexer.state.inRawBlock=!1),{type:\"html\",raw:t[0],inLink:this.lexer.state.inLink,inRawBlock:this.lexer.state.inRawBlock,block:!1,text:t[0]}}link(e){let t=this.rules.inline.link.exec(e);if(t){let n=t[2].trim();if(!this.options.pedantic&&this.rules.other.startAngleBracket.test(n)){if(!this.rules.other.endAngleBracket.test(n))return;let r=A(n.slice(0,-1),\"\\\\\");if((n.length-r.length)%2===0)return}else{let r=de(t[2],\"()\");if(r===-2)return;if(r>-1){let a=(t[0].indexOf(\"!\")===0?5:4)+t[1].length+r;t[2]=t[2].substring(0,r),t[0]=t[0].substring(0,a).trim(),t[3]=\"\"}}let s=t[2],i=\"\";if(this.options.pedantic){let r=this.rules.other.pedanticHrefTitle.exec(s);r&&(s=r[1],i=r[3])}else i=t[3]?t[3].slice(1,-1):\"\";return s=s.trim(),this.rules.other.startAngleBracket.test(s)&&(this.options.pedantic&&!this.rules.other.endAngleBracket.test(n)?s=s.slice(1):s=s.slice(1,-1)),me(t,{href:s&&s.replace(this.rules.inline.anyPunctuation,\"$1\"),title:i&&i.replace(this.rules.inline.anyPunctuation,\"$1\")},t[0],this.lexer,this.rules)}}reflink(e,t){let n;if((n=this.rules.inline.reflink.exec(e))||(n=this.rules.inline.nolink.exec(e))){let s=(n[2]||n[1]).replace(this.rules.other.multipleSpaceGlobal,\" \"),i=t[s.toLowerCase()];if(!i){let r=n[0].charAt(0);return{type:\"text\",raw:r,text:r}}return me(n,i,n[0],this.lexer,this.rules)}}emStrong(e,t,n=\"\"){let s=this.rules.inline.emStrongLDelim.exec(e);if(!s||s[3]&&n.match(this.rules.other.unicodeAlphaNumeric))return;if(!(s[1]||s[2]||\"\")||!n||this.rules.inline.punctuation.exec(n)){let r=[...s[0]].length-1,o,a,c=r,p=0,u=s[0][0]===\"*\"?this.rules.inline.emStrongRDelimAst:this.rules.inline.emStrongRDelimUnd;for(u.lastIndex=0,t=t.slice(-1*e.length+r);(s=u.exec(t))!=null;){if(o=s[1]||s[2]||s[3]||s[4]||s[5]||s[6],!o)continue;if(a=[...o].length,s[3]||s[4]){c+=a;continue}else if((s[5]||s[6])&&r%3&&!((r+a)%3)){p+=a;continue}if(c-=a,c>0)continue;a=Math.min(a,a+c+p);let d=[...s[0]][0].length,g=e.slice(0,r+s.index+d+a);if(Math.min(r,a)%2){let f=g.slice(1,-1);return{type:\"em\",raw:g,text:f,tokens:this.lexer.inlineTokens(f)}}let T=g.slice(2,-2);return{type:\"strong\",raw:g,text:T,tokens:this.lexer.inlineTokens(T)}}}}codespan(e){let t=this.rules.inline.code.exec(e);if(t){let n=t[2].replace(this.rules.other.newLineCharGlobal,\" \"),s=this.rules.other.nonSpaceChar.test(n),i=this.rules.other.startingSpaceChar.test(n)&&this.rules.other.endingSpaceChar.test(n);return s&&i&&(n=n.substring(1,n.length-1)),{type:\"codespan\",raw:t[0],text:n}}}br(e){let t=this.rules.inline.br.exec(e);if(t)return{type:\"br\",raw:t[0]}}del(e){let t=this.rules.inline.del.exec(e);if(t)return{type:\"del\",raw:t[0],text:t[2],tokens:this.lexer.inlineTokens(t[2])}}autolink(e){let t=this.rules.inline.autolink.exec(e);if(t){let n,s;return t[2]===\"@\"?(n=t[1],s=\"mailto:\"+n):(n=t[1],s=n),{type:\"link\",raw:t[0],text:n,href:s,tokens:[{type:\"text\",raw:n,text:n}]}}}url(e){let t;if(t=this.rules.inline.url.exec(e)){let n,s;if(t[2]===\"@\")n=t[0],s=\"mailto:\"+n;else{let i;do i=t[0],t[0]=this.rules.inline._backpedal.exec(t[0])?.[0]??\"\";while(i!==t[0]);n=t[0],t[1]===\"www.\"?s=\"http://\"+t[0]:s=t[0]}return{type:\"link\",raw:t[0],text:n,href:s,tokens:[{type:\"text\",raw:n,text:n}]}}}inlineText(e){let t=this.rules.inline.text.exec(e);if(t){let n=this.lexer.state.inRawBlock;return{type:\"text\",raw:t[0],text:t[0],escaped:n}}}};var x=class l{tokens;options;state;tokenizer;inlineQueue;constructor(e){this.tokens=[],this.tokens.links=Object.create(null),this.options=e||w,this.options.tokenizer=this.options.tokenizer||new S,this.tokenizer=this.options.tokenizer,this.tokenizer.options=this.options,this.tokenizer.lexer=this,this.inlineQueue=[],this.state={inLink:!1,inRawBlock:!1,top:!0};let t={other:m,block:B.normal,inline:P.normal};this.options.pedantic?(t.block=B.pedantic,t.inline=P.pedantic):this.options.gfm&&(t.block=B.gfm,this.options.breaks?t.inline=P.breaks:t.inline=P.gfm),this.tokenizer.rules=t}static get rules(){return{block:B,inline:P}}static lex(e,t){return new l(t).lex(e)}static lexInline(e,t){return new l(t).inlineTokens(e)}lex(e){e=e.replace(m.carriageReturn,`\n`),this.blockTokens(e,this.tokens);for(let t=0;t<this.inlineQueue.length;t++){let n=this.inlineQueue[t];this.inlineTokens(n.src,n.tokens)}return this.inlineQueue=[],this.tokens}blockTokens(e,t=[],n=!1){for(this.options.pedantic&&(e=e.replace(m.tabCharGlobal,\"    \").replace(m.spaceLine,\"\"));e;){let s;if(this.options.extensions?.block?.some(r=>(s=r.call({lexer:this},e,t))?(e=e.substring(s.raw.length),t.push(s),!0):!1))continue;if(s=this.tokenizer.space(e)){e=e.substring(s.raw.length);let r=t.at(-1);s.raw.length===1&&r!==void 0?r.raw+=`\n`:t.push(s);continue}if(s=this.tokenizer.code(e)){e=e.substring(s.raw.length);let r=t.at(-1);r?.type===\"paragraph\"||r?.type===\"text\"?(r.raw+=`\n`+s.raw,r.text+=`\n`+s.text,this.inlineQueue.at(-1).src=r.text):t.push(s);continue}if(s=this.tokenizer.fences(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.heading(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.hr(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.blockquote(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.list(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.html(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.def(e)){e=e.substring(s.raw.length);let r=t.at(-1);r?.type===\"paragraph\"||r?.type===\"text\"?(r.raw+=`\n`+s.raw,r.text+=`\n`+s.raw,this.inlineQueue.at(-1).src=r.text):this.tokens.links[s.tag]||(this.tokens.links[s.tag]={href:s.href,title:s.title});continue}if(s=this.tokenizer.table(e)){e=e.substring(s.raw.length),t.push(s);continue}if(s=this.tokenizer.lheading(e)){e=e.substring(s.raw.length),t.push(s);continue}let i=e;if(this.options.extensions?.startBlock){let r=1/0,o=e.slice(1),a;this.options.extensions.startBlock.forEach(c=>{a=c.call({lexer:this},o),typeof a==\"number\"&&a>=0&&(r=Math.min(r,a))}),r<1/0&&r>=0&&(i=e.substring(0,r+1))}if(this.state.top&&(s=this.tokenizer.paragraph(i))){let r=t.at(-1);n&&r?.type===\"paragraph\"?(r.raw+=`\n`+s.raw,r.text+=`\n`+s.text,this.inlineQueue.pop(),this.inlineQueue.at(-1).src=r.text):t.push(s),n=i.length!==e.length,e=e.substring(s.raw.length);continue}if(s=this.tokenizer.text(e)){e=e.substring(s.raw.length);let r=t.at(-1);r?.type===\"text\"?(r.raw+=`\n`+s.raw,r.text+=`\n`+s.text,this.inlineQueue.pop(),this.inlineQueue.at(-1).src=r.text):t.push(s);continue}if(e){let r=\"Infinite loop on byte: \"+e.charCodeAt(0);if(this.options.silent){console.error(r);break}else throw new Error(r)}}return this.state.top=!0,t}inline(e,t=[]){return this.inlineQueue.push({src:e,tokens:t}),t}inlineTokens(e,t=[]){let n=e,s=null;if(this.tokens.links){let o=Object.keys(this.tokens.links);if(o.length>0)for(;(s=this.tokenizer.rules.inline.reflinkSearch.exec(n))!=null;)o.includes(s[0].slice(s[0].lastIndexOf(\"[\")+1,-1))&&(n=n.slice(0,s.index)+\"[\"+\"a\".repeat(s[0].length-2)+\"]\"+n.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex))}for(;(s=this.tokenizer.rules.inline.anyPunctuation.exec(n))!=null;)n=n.slice(0,s.index)+\"++\"+n.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);for(;(s=this.tokenizer.rules.inline.blockSkip.exec(n))!=null;)n=n.slice(0,s.index)+\"[\"+\"a\".repeat(s[0].length-2)+\"]\"+n.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);let i=!1,r=\"\";for(;e;){i||(r=\"\"),i=!1;let o;if(this.options.extensions?.inline?.some(c=>(o=c.call({lexer:this},e,t))?(e=e.substring(o.raw.length),t.push(o),!0):!1))continue;if(o=this.tokenizer.escape(e)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.tag(e)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.link(e)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.reflink(e,this.tokens.links)){e=e.substring(o.raw.length);let c=t.at(-1);o.type===\"text\"&&c?.type===\"text\"?(c.raw+=o.raw,c.text+=o.text):t.push(o);continue}if(o=this.tokenizer.emStrong(e,n,r)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.codespan(e)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.br(e)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.del(e)){e=e.substring(o.raw.length),t.push(o);continue}if(o=this.tokenizer.autolink(e)){e=e.substring(o.raw.length),t.push(o);continue}if(!this.state.inLink&&(o=this.tokenizer.url(e))){e=e.substring(o.raw.length),t.push(o);continue}let a=e;if(this.options.extensions?.startInline){let c=1/0,p=e.slice(1),u;this.options.extensions.startInline.forEach(d=>{u=d.call({lexer:this},p),typeof u==\"number\"&&u>=0&&(c=Math.min(c,u))}),c<1/0&&c>=0&&(a=e.substring(0,c+1))}if(o=this.tokenizer.inlineText(a)){e=e.substring(o.raw.length),o.raw.slice(-1)!==\"_\"&&(r=o.raw.slice(-1)),i=!0;let c=t.at(-1);c?.type===\"text\"?(c.raw+=o.raw,c.text+=o.text):t.push(o);continue}if(e){let c=\"Infinite loop on byte: \"+e.charCodeAt(0);if(this.options.silent){console.error(c);break}else throw new Error(c)}}return t}};var $=class{options;parser;constructor(e){this.options=e||w}space(e){return\"\"}code({text:e,lang:t,escaped:n}){let s=(t||\"\").match(m.notSpaceStart)?.[0],i=e.replace(m.endingNewline,\"\")+`\n`;return s?'<pre><code class=\"language-'+R(s)+'\">'+(n?i:R(i,!0))+`</code></pre>\n`:\"<pre><code>\"+(n?i:R(i,!0))+`</code></pre>\n`}blockquote({tokens:e}){return`<blockquote>\n${this.parser.parse(e)}</blockquote>\n`}html({text:e}){return e}heading({tokens:e,depth:t}){return`<h${t}>${this.parser.parseInline(e)}</h${t}>\n`}hr(e){return`<hr>\n`}list(e){let t=e.ordered,n=e.start,s=\"\";for(let o=0;o<e.items.length;o++){let a=e.items[o];s+=this.listitem(a)}let i=t?\"ol\":\"ul\",r=t&&n!==1?' start=\"'+n+'\"':\"\";return\"<\"+i+r+`>\n`+s+\"</\"+i+`>\n`}listitem(e){let t=\"\";if(e.task){let n=this.checkbox({checked:!!e.checked});e.loose?e.tokens[0]?.type===\"paragraph\"?(e.tokens[0].text=n+\" \"+e.tokens[0].text,e.tokens[0].tokens&&e.tokens[0].tokens.length>0&&e.tokens[0].tokens[0].type===\"text\"&&(e.tokens[0].tokens[0].text=n+\" \"+R(e.tokens[0].tokens[0].text),e.tokens[0].tokens[0].escaped=!0)):e.tokens.unshift({type:\"text\",raw:n+\" \",text:n+\" \",escaped:!0}):t+=n+\" \"}return t+=this.parser.parse(e.tokens,!!e.loose),`<li>${t}</li>\n`}checkbox({checked:e}){return\"<input \"+(e?'checked=\"\" ':\"\")+'disabled=\"\" type=\"checkbox\">'}paragraph({tokens:e}){return`<p>${this.parser.parseInline(e)}</p>\n`}table(e){let t=\"\",n=\"\";for(let i=0;i<e.header.length;i++)n+=this.tablecell(e.header[i]);t+=this.tablerow({text:n});let s=\"\";for(let i=0;i<e.rows.length;i++){let r=e.rows[i];n=\"\";for(let o=0;o<r.length;o++)n+=this.tablecell(r[o]);s+=this.tablerow({text:n})}return s&&(s=`<tbody>${s}</tbody>`),`<table>\n<thead>\n`+t+`</thead>\n`+s+`</table>\n`}tablerow({text:e}){return`<tr>\n${e}</tr>\n`}tablecell(e){let t=this.parser.parseInline(e.tokens),n=e.header?\"th\":\"td\";return(e.align?`<${n} align=\"${e.align}\">`:`<${n}>`)+t+`</${n}>\n`}strong({tokens:e}){return`<strong>${this.parser.parseInline(e)}</strong>`}em({tokens:e}){return`<em>${this.parser.parseInline(e)}</em>`}codespan({text:e}){return`<code>${R(e,!0)}</code>`}br(e){return\"<br>\"}del({tokens:e}){return`<del>${this.parser.parseInline(e)}</del>`}link({href:e,title:t,tokens:n}){let s=this.parser.parseInline(n),i=V(e);if(i===null)return s;e=i;let r='<a href=\"'+e+'\"';return t&&(r+=' title=\"'+R(t)+'\"'),r+=\">\"+s+\"</a>\",r}image({href:e,title:t,text:n,tokens:s}){s&&(n=this.parser.parseInline(s,this.parser.textRenderer));let i=V(e);if(i===null)return R(n);e=i;let r=`<img src=\"${e}\" alt=\"${n}\"`;return t&&(r+=` title=\"${R(t)}\"`),r+=\">\",r}text(e){return\"tokens\"in e&&e.tokens?this.parser.parseInline(e.tokens):\"escaped\"in e&&e.escaped?e.text:R(e.text)}};var _=class{strong({text:e}){return e}em({text:e}){return e}codespan({text:e}){return e}del({text:e}){return e}html({text:e}){return e}text({text:e}){return e}link({text:e}){return\"\"+e}image({text:e}){return\"\"+e}br(){return\"\"}};var b=class l{options;renderer;textRenderer;constructor(e){this.options=e||w,this.options.renderer=this.options.renderer||new $,this.renderer=this.options.renderer,this.renderer.options=this.options,this.renderer.parser=this,this.textRenderer=new _}static parse(e,t){return new l(t).parse(e)}static parseInline(e,t){return new l(t).parseInline(e)}parse(e,t=!0){let n=\"\";for(let s=0;s<e.length;s++){let i=e[s];if(this.options.extensions?.renderers?.[i.type]){let o=i,a=this.options.extensions.renderers[o.type].call({parser:this},o);if(a!==!1||![\"space\",\"hr\",\"heading\",\"code\",\"table\",\"blockquote\",\"list\",\"html\",\"paragraph\",\"text\"].includes(o.type)){n+=a||\"\";continue}}let r=i;switch(r.type){case\"space\":{n+=this.renderer.space(r);continue}case\"hr\":{n+=this.renderer.hr(r);continue}case\"heading\":{n+=this.renderer.heading(r);continue}case\"code\":{n+=this.renderer.code(r);continue}case\"table\":{n+=this.renderer.table(r);continue}case\"blockquote\":{n+=this.renderer.blockquote(r);continue}case\"list\":{n+=this.renderer.list(r);continue}case\"html\":{n+=this.renderer.html(r);continue}case\"paragraph\":{n+=this.renderer.paragraph(r);continue}case\"text\":{let o=r,a=this.renderer.text(o);for(;s+1<e.length&&e[s+1].type===\"text\";)o=e[++s],a+=`\n`+this.renderer.text(o);t?n+=this.renderer.paragraph({type:\"paragraph\",raw:a,text:a,tokens:[{type:\"text\",raw:a,text:a,escaped:!0}]}):n+=a;continue}default:{let o='Token with \"'+r.type+'\" type was not found.';if(this.options.silent)return console.error(o),\"\";throw new Error(o)}}}return n}parseInline(e,t=this.renderer){let n=\"\";for(let s=0;s<e.length;s++){let i=e[s];if(this.options.extensions?.renderers?.[i.type]){let o=this.options.extensions.renderers[i.type].call({parser:this},i);if(o!==!1||![\"escape\",\"html\",\"link\",\"image\",\"strong\",\"em\",\"codespan\",\"br\",\"del\",\"text\"].includes(i.type)){n+=o||\"\";continue}}let r=i;switch(r.type){case\"escape\":{n+=t.text(r);break}case\"html\":{n+=t.html(r);break}case\"link\":{n+=t.link(r);break}case\"image\":{n+=t.image(r);break}case\"strong\":{n+=t.strong(r);break}case\"em\":{n+=t.em(r);break}case\"codespan\":{n+=t.codespan(r);break}case\"br\":{n+=t.br(r);break}case\"del\":{n+=t.del(r);break}case\"text\":{n+=t.text(r);break}default:{let o='Token with \"'+r.type+'\" type was not found.';if(this.options.silent)return console.error(o),\"\";throw new Error(o)}}}return n}};var L=class{options;block;constructor(e){this.options=e||w}static passThroughHooks=new Set([\"preprocess\",\"postprocess\",\"processAllTokens\"]);preprocess(e){return e}postprocess(e){return e}processAllTokens(e){return e}provideLexer(){return this.block?x.lex:x.lexInline}provideParser(){return this.block?b.parse:b.parseInline}};var E=class{defaults=z();options=this.setOptions;parse=this.parseMarkdown(!0);parseInline=this.parseMarkdown(!1);Parser=b;Renderer=$;TextRenderer=_;Lexer=x;Tokenizer=S;Hooks=L;constructor(...e){this.use(...e)}walkTokens(e,t){let n=[];for(let s of e)switch(n=n.concat(t.call(this,s)),s.type){case\"table\":{let i=s;for(let r of i.header)n=n.concat(this.walkTokens(r.tokens,t));for(let r of i.rows)for(let o of r)n=n.concat(this.walkTokens(o.tokens,t));break}case\"list\":{let i=s;n=n.concat(this.walkTokens(i.items,t));break}default:{let i=s;this.defaults.extensions?.childTokens?.[i.type]?this.defaults.extensions.childTokens[i.type].forEach(r=>{let o=i[r].flat(1/0);n=n.concat(this.walkTokens(o,t))}):i.tokens&&(n=n.concat(this.walkTokens(i.tokens,t)))}}return n}use(...e){let t=this.defaults.extensions||{renderers:{},childTokens:{}};return e.forEach(n=>{let s={...n};if(s.async=this.defaults.async||s.async||!1,n.extensions&&(n.extensions.forEach(i=>{if(!i.name)throw new Error(\"extension name required\");if(\"renderer\"in i){let r=t.renderers[i.name];r?t.renderers[i.name]=function(...o){let a=i.renderer.apply(this,o);return a===!1&&(a=r.apply(this,o)),a}:t.renderers[i.name]=i.renderer}if(\"tokenizer\"in i){if(!i.level||i.level!==\"block\"&&i.level!==\"inline\")throw new Error(\"extension level must be 'block' or 'inline'\");let r=t[i.level];r?r.unshift(i.tokenizer):t[i.level]=[i.tokenizer],i.start&&(i.level===\"block\"?t.startBlock?t.startBlock.push(i.start):t.startBlock=[i.start]:i.level===\"inline\"&&(t.startInline?t.startInline.push(i.start):t.startInline=[i.start]))}\"childTokens\"in i&&i.childTokens&&(t.childTokens[i.name]=i.childTokens)}),s.extensions=t),n.renderer){let i=this.defaults.renderer||new $(this.defaults);for(let r in n.renderer){if(!(r in i))throw new Error(`renderer '${r}' does not exist`);if([\"options\",\"parser\"].includes(r))continue;let o=r,a=n.renderer[o],c=i[o];i[o]=(...p)=>{let u=a.apply(i,p);return u===!1&&(u=c.apply(i,p)),u||\"\"}}s.renderer=i}if(n.tokenizer){let i=this.defaults.tokenizer||new S(this.defaults);for(let r in n.tokenizer){if(!(r in i))throw new Error(`tokenizer '${r}' does not exist`);if([\"options\",\"rules\",\"lexer\"].includes(r))continue;let o=r,a=n.tokenizer[o],c=i[o];i[o]=(...p)=>{let u=a.apply(i,p);return u===!1&&(u=c.apply(i,p)),u}}s.tokenizer=i}if(n.hooks){let i=this.defaults.hooks||new L;for(let r in n.hooks){if(!(r in i))throw new Error(`hook '${r}' does not exist`);if([\"options\",\"block\"].includes(r))continue;let o=r,a=n.hooks[o],c=i[o];L.passThroughHooks.has(r)?i[o]=p=>{if(this.defaults.async)return Promise.resolve(a.call(i,p)).then(d=>c.call(i,d));let u=a.call(i,p);return c.call(i,u)}:i[o]=(...p)=>{let u=a.apply(i,p);return u===!1&&(u=c.apply(i,p)),u}}s.hooks=i}if(n.walkTokens){let i=this.defaults.walkTokens,r=n.walkTokens;s.walkTokens=function(o){let a=[];return a.push(r.call(this,o)),i&&(a=a.concat(i.call(this,o))),a}}this.defaults={...this.defaults,...s}}),this}setOptions(e){return this.defaults={...this.defaults,...e},this}lexer(e,t){return x.lex(e,t??this.defaults)}parser(e,t){return b.parse(e,t??this.defaults)}parseMarkdown(e){return(n,s)=>{let i={...s},r={...this.defaults,...i},o=this.onError(!!r.silent,!!r.async);if(this.defaults.async===!0&&i.async===!1)return o(new Error(\"marked(): The async option was set to true by an extension. Remove async: false from the parse options object to return a Promise.\"));if(typeof n>\"u\"||n===null)return o(new Error(\"marked(): input parameter is undefined or null\"));if(typeof n!=\"string\")return o(new Error(\"marked(): input parameter is of type \"+Object.prototype.toString.call(n)+\", string expected\"));r.hooks&&(r.hooks.options=r,r.hooks.block=e);let a=r.hooks?r.hooks.provideLexer():e?x.lex:x.lexInline,c=r.hooks?r.hooks.provideParser():e?b.parse:b.parseInline;if(r.async)return Promise.resolve(r.hooks?r.hooks.preprocess(n):n).then(p=>a(p,r)).then(p=>r.hooks?r.hooks.processAllTokens(p):p).then(p=>r.walkTokens?Promise.all(this.walkTokens(p,r.walkTokens)).then(()=>p):p).then(p=>c(p,r)).then(p=>r.hooks?r.hooks.postprocess(p):p).catch(o);try{r.hooks&&(n=r.hooks.preprocess(n));let p=a(n,r);r.hooks&&(p=r.hooks.processAllTokens(p)),r.walkTokens&&this.walkTokens(p,r.walkTokens);let u=c(p,r);return r.hooks&&(u=r.hooks.postprocess(u)),u}catch(p){return o(p)}}}onError(e,t){return n=>{if(n.message+=`\nPlease report this to https://github.com/markedjs/marked.`,e){let s=\"<p>An error occurred:</p><pre>\"+R(n.message+\"\",!0)+\"</pre>\";return t?Promise.resolve(s):s}if(t)return Promise.reject(n);throw n}}};var M=new E;function k(l,e){return M.parse(l,e)}k.options=k.setOptions=function(l){return M.setOptions(l),k.defaults=M.defaults,N(k.defaults),k};k.getDefaults=z;k.defaults=w;k.use=function(...l){return M.use(...l),k.defaults=M.defaults,N(k.defaults),k};k.walkTokens=function(l,e){return M.walkTokens(l,e)};k.parseInline=M.parseInline;k.Parser=b;k.parser=b.parse;k.Renderer=$;k.TextRenderer=_;k.Lexer=x;k.lexer=x.lex;k.Tokenizer=S;k.Hooks=L;k.parse=k;var it=k.options,ot=k.setOptions,lt=k.use,at=k.walkTokens,ct=k.parseInline,pt=k,ut=b.parse,ht=x.lex;\n\nif(__exports != exports)module.exports = exports;return module.exports}));"
       },
       {
         "name": "l.replace callback",
         "line": 13,
         "file": "public/marked.min.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "]`).replace(\"lheading\",oe).replace(\"|table\",\"\").replace(\"blockquote\",\" {0,3}>\").replace(\"|fences\",\"\").replace(\"|list\",\"\").replace(\"|html\",\"\").replace(\"|tag\",\"\").getRegex()},qe=/^\\\\([!\"#$%&'()*+,\\-./:;<=>?@\\[\\]\\\\^_`{|}~])/,ve=/^(`+)([^`]|[^`][\\s\\S]*?[^`])\\1(?!`)/,ae=/^( {2,}|\\\\)\\n(?!\\s*$)/,De=/^(`+|[^`])(?:(?= {2,}\\n)|[\\s\\S]*?(?:(?=[\\\\<!\\[`*_]|\\b_|$)|[^ ](?= {2,}\\n)))/,D=/[\\p{P}\\p{S}]/u,W=/[\\s\\p{P}\\p{S}]/u,ce=/[^\\s\\p{P}\\p{S}]/u,Ze=h(/^((?![*_])punctSpace)/,\"u\").replace(/punctSpace/g,W).getRegex(),pe=/(?!~)[\\p{P}\\p{S}]/u,Ge=/(?!~)[\\s\\p{P}\\p{S}]/u,He=/(?:[^\\s\\p{P}\\p{S}]|~)/u,Ne=/\\[[^[\\]]*?\\]\\((?:\\\\.|[^\\\\\\(\\)]|\\((?:\\\\.|[^\\\\\\(\\)])*\\))*\\)|`[^`]*?`|<[^<>]*?>/g,ue=/^(?:\\*+(?:((?!\\*)punct)|[^\\s*]))|^_+(?:((?!_)punct)|([^\\s_]))/,je=h(ue,\"u\").replace(/punct/g,D).getRegex(),Fe=h(ue,\"u\").replace(/punct/g,pe).getRegex(),he=\"^[^_*]*?__[^_*]*?\\\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\\\*)punct(\\\\*+)(?=[\\\\s]|$)|notPunctSpace(\\\\*+)(?!\\\\*)(?=punctSpace|$)|(?!\\\\*)punctSpace(\\\\*+)(?=notPunctSpace)|[\\\\s](\\\\*+)(?!\\\\*)(?=punct)|(?!\\\\*)punct(\\\\*+)(?!\\\\*)(?=punct)|notPunctSpace(\\\\*+)(?=notPunctSpace)\",Qe=h(he,\"gu\").replace(/notPunctSpace/g,ce).replace(/punctSpace/g,W).replace(/punct/g,D).getRegex(),Ue=h(he,\"gu\").replace(/notPunctSpace/g,He).replace(/punctSpace/g,Ge).replace(/punct/g,pe).getRegex(),Ke=h(\"^[^_*]*?\\\\*\\\\*[^_*]*?_[^_*]*?(?=\\\\*\\\\*)|[^_]+(?=[^_])|(?!_)punct(_+)(?=[\\\\s]|$)|notPunctSpace(_+)(?!_)(?=punctSpace|$)|(?!_)punctSpace(_+)(?=notPunctSpace)|[\\\\s](_+)(?!_)(?=punct)|(?!_)punct(_+)(?!_)(?=punct)\",\"gu\").replace(/notPunctSpace/g,ce).replace(/punctSpace/g,W).replace(/punct/g,D).getRegex(),Xe=h(/\\\\(punct)/,\"gu\").replace(/punct/g,D).getRegex(),We=h(/^<(scheme:[^\\s\\x00-\\x1f<>]*|email)>/).replace(\"scheme\",/[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace(\"email\",/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex(),Je=h(K).replace(\"(?:-->|$)\",\"-->\").getRegex(),Ve=h(\"^comment|^</[a-zA-Z][\\\\w:-]*\\\\s*>|^<[a-zA-Z][\\\\w-]*(?:attribute)*?\\\\s*/?>|^<\\\\?[\\\\s\\\\S]*?\\\\?>|^<![a-zA-Z]+\\\\s[\\\\s\\\\S]*?>|^<!\\\\[CDATA\\\\[[\\\\s\\\\S]*?\\\\]\\\\]>\").replace(\"comment\",Je).replace(\"attribute\",/\\s+[a-zA-Z:_][\\w.:-]*(?:\\s*=\\s*\"[^\"]*\"|\\s*=\\s*'[^']*'|\\s*=\\s*[^\\s\"'=<>`]+)?/).getRegex(),q=/(?:\\[(?:\\\\.|[^\\[\\]\\\\])*\\]|\\\\.|`[^`]*`|[^\\[\\]\\\\`])*?/,Ye=h(/^!?\\[(label)\\]\\(\\s*(href)(?:(?:[ \\t]*(?:\\n[ \\t]*)?)(title))?\\s*\\)/).replace(\"label\",q).replace(\"href\",/<(?:\\\\.|[^\\n<>\\\\])+>|[^ \\t\\n\\x00-\\x1f]*/).replace(\"title\",/\"(?:\\\\\"?|[^\"\\\\])*\"|'(?:\\\\'?|[^'\\\\])*'|\\((?:\\\\\\)?|[^)\\\\])*\\)/).getRegex(),ke=h(/^!?\\[(label)\\]\\[(ref)\\]/).replace(\"label\",q).replace(\"ref\",U).getRegex(),ge=h(/^!?\\[(ref)\\](?:\\[\\])?/).replace(\"ref\",U).getRegex(),et=h(\"reflink|nolink(?!\\\\()\",\"g\").replace(\"reflink\",ke).replace(\"nolink\",ge).getRegex(),J={_backpedal:I,anyPunctuation:Xe,autolink:We,blockSkip:Ne,br:ae,code:ve,del:I,emStrongLDelim:je,emStrongRDelimAst:Qe,emStrongRDelimUnd:Ke,escape:qe,link:Ye,nolink:ge,punctuation:Ze,reflink:ke,reflinkSearch:et,tag:Ve,text:De,url:I},tt={...J,link:h(/^!?\\[(label)\\]\\((.*?)\\)/).replace(\"label\",q).getRegex(),reflink:h(/^!?\\[(label)\\]\\s*\\[([^\\]]*)\\]/).replace(\"label\",q).getRegex()},j={...J,emStrongRDelimAst:Ue,emStrongLDelim:Fe,url:h(/^((?:ftp|https?):\\/\\/|www\\.)(?:[a-zA-Z0-9\\-]+\\.?)+[^\\s<]*|^email/,\"i\").replace(\"email\",/[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/).getRegex(),_backpedal:/(?:[^?!.,:;*_'\"~()&]+|\\([^)]*\\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'\"~)]+(?!$))+/,del:/^(~~?)(?=[^\\s~])((?:\\\\.|[^\\\\])*?(?:\\\\.|[^\\s~\\\\]))\\1(?=[^~]|$)/,text:/^([`~]+|[^`~])(?:(?= {2,}\\n)|(?=[a-zA-Z0-9.!#$%&'*+\\/=?_`{\\|}~-]+@)|[\\s\\S]*?(?:(?=[\\\\<!\\[`*~_]|\\b_|https?:\\/\\/|ftp:\\/\\/|www\\.|$)|[^ ](?= {2,}\\n)|[^a-zA-Z0-9.!#$%&'*+\\/=?_`{\\|}~-](?=[a-zA-Z0-9.!#$%&'*+\\/=?_`{\\|}~-]+@)))/},nt={...j,br:h(ae).replace(\"{2,}\",\"*\").getRegex(),text:h(j.text).replace(\"\\\\b_\",\"\\\\b_| {2,}\\\\n\").replace(/\\{2,\\}/g,\"*\").getRegex()},B={normal:X,gfm:Oe,pedantic:Be},P={normal:J,gfm:j,breaks:nt,pedantic:tt};var st={\"&\":\"&amp;\",\"<\":\"&lt;\",\">\":\"&gt;\",'\"':\"&quot;\",\"'\":\"&#39;\"},fe=l=>st[l];function R(l,e){if(e){if(m.escapeTest.test(l))return l.replace(m.escapeReplace,fe)}else if(m.escapeTestNoEncode.test(l))return l.replace(m.escapeReplaceNoEncode,fe);return l}function V(l){try{l=encodeURI(l).replace(m.percentDecode,\"%\")}catch{return null}return l}function Y(l,e){let t=l.replace(m.findPipe,(i,r,o)=>{let a=!1,c=r;for(;--c>=0&&o[c]===\"\\\\\";)a=!a;return a?\"|\":\" |\"}),n=t.split(m.splitPipe),s=0;if(n[0].trim()||n.shift(),n.length>0&&!n.at(-1)?.trim()&&n.pop(),e)if(n.length>e)n.splice(e);else for(;n.length<e;)n.push(\"\");for(;s<n.length;s++)n[s]=n[s].trim().replace(m.slashPipe,\"|\");return n}function A(l,e,t){let n=l.length;if(n===0)return\"\";let s=0;for(;s<n;){let i=l.charAt(n-s-1);if(i===e&&!t)s++;else if(i!==e&&t)s++;else break}return l.slice(0,n-s)}function de(l,e){if(l.indexOf(e[1])===-1)return-1;let t=0;for(let n=0;n<l.length;n++)if(l[n]===\"\\\\\")n++;else if(l[n]===e[0])t++;else if(l[n]===e[1]&&(t--,t<0))return n;return t>0?-2:-1}function me(l,e,t,n,s){let i=e.href,r=e.title||null,o=l[1].replace(s.other.outputLinkReplace,\"$1\");n.state.inLink=!0;let a={type:l[0].charAt(0)===\"!\"?\"image\":\"link\",raw:t,href:i,title:r,text:o,tokens:n.inlineTokens(o)};return n.state.inLink=!1,a}function rt(l,e,t){let n=l.match(t.other.indentCodeCompensation);if(n===null)return e;let s=n[1];return e.split(`"
       }
     ],
     "arrowFunctions": [],
@@ -1650,21 +1737,24 @@
         "line": 16,
         "file": "routes/chat.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function loadMemory() {\n  try {\n    history = await fs.readJson(MEMORY_FILE);\n  } catch {\n    history = [\n      {\n        role: \"system\",\n        content: \"You are SamuAI Chatbot, a friendly and helpful AI assistant.\"\n      }\n    ];\n  }\n}"
       },
       {
         "name": "saveMemory",
         "line": 29,
         "file": "routes/chat.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function saveMemory() {\n  await fs.writeJson(MEMORY_FILE, history, {\n    spaces: 2\n  });\n}"
       },
       {
         "name": "loadProfile",
         "line": 35,
         "file": "routes/chat.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function loadProfile() {\n  try {\n    profile = await fs.readJson(PROFILE_FILE);\n  } catch {\n    profile = {};\n  }\n}"
       },
       {
         "name": "POST route callback",
@@ -1704,7 +1794,8 @@
             "name": "loadProfile",
             "line": 123
           }
-        ]
+        ],
+        "body": "router.post(\"/\", async (req, res) => {\n  try {\n    const message = (req.body.message || \"\").trim();\n\n    if (!message) {\n      return res.status(400).json({\n        reply: \"Please enter a message.\"\n      });\n    }\nawait remember(message);\n\nconst factsFound = extractFacts(message);\n\nif (Object.keys(factsFound).length > 0) {\n  await mergeMemory(factsFound);\n}\nconst profile = await getProfile();\n\n\n\n    history.push({\n      role: \"user\",\n      content: message\n    });\n\n    let facts = \"\";\n\n    if (profile.name)\n      facts += `User's name is ${profile.name}.\\n`;\n\n    if (profile.favoriteColor)\n      facts += `User's favorite color is ${profile.favoriteColor}.\\n`;\n\n    if (profile.city)\n      facts += `User lives in ${profile.city}.\\n`;\n\n    if (profile.job)\n      facts += `User works as ${profile.job}.\\n`;\n\n    if (profile.learning)\n      facts += `User is learning ${profile.learning}.\\n`;\n\n    const messages = [\n      {\n        role: \"system\",\n        content:\n          \"You are SamuAI Chatbot, a friendly AI assistant.\\n\\nKnown facts:\\n\" +\n          facts\n      },\n      ...history.filter(msg => msg.role !== \"system\")\n    ];\n\n    const reply = await chat(messages);\n\n    history.push({\n      role: \"assistant\",\n      content: reply\n    });\n\n    if (history.length > 51) {\n      history = [history[0], ...history.slice(-50)];\n    }\n\n    await saveMemory();\n\n    res.json({\n      reply\n    });\n\n  } catch (err) {\n    console.error(err);\n\n    res.status(500).json({\n      reply: \"Sorry, I couldn't contact the AI.\"\n    });\n  }\n});"
       }
     ],
     "arrowFunctions": [],
@@ -1789,35 +1880,40 @@
         "line": 29,
         "file": "server.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function loadMemory() {\n  try {\n    history = await fs.readJson(MEMORY_FILE);\n  } catch {\n    history = [\n      {\n        role: \"system\",\n        content: \"You are SamuAI Chatbot, a friendly and helpful AI assistant.\"\n      }\n    ];\n  }\n}"
       },
       {
         "name": "saveMemory",
         "line": 42,
         "file": "server.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function saveMemory() {\n  await fs.writeJson(MEMORY_FILE, history, {\n    spaces: 2\n  });\n}"
       },
       {
         "name": "loadProfile",
         "line": 48,
         "file": "server.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function loadProfile() {\n  try {\n    profile = await fs.readJson(PROFILE_FILE);\n  } catch {\n    profile = {};\n  }\n}"
       },
       {
         "name": "saveProfile",
         "line": 56,
         "file": "server.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function saveProfile() {\n  await fs.writeJson(PROFILE_FILE, profile, {\n    spaces: 2\n  });\n}"
       },
       {
         "name": "GET route callback",
         "line": 62,
         "file": "server.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "app.get(\"/\", (req, res) => {\n  res.sendFile(__dirname + \"/public/index.html\");\n});"
       },
       {
         "name": "POST /chat callback",
@@ -1849,21 +1945,24 @@
             "name": "loadMemory",
             "line": 224
           }
-        ]
+        ],
+        "body": "app.post(\"/chat\", async (req, res) => {\nconsole.log(\">>>>>>>> REQUEST FROM BROWSER <<<<<<<<\");\nconsole.log(req.headers[\"user-agent\"]);\nconsole.log(req.body);\n  try {\n    const message = (req.body.message || \"\").trim();\n    if (!message) {\n      return res.status(400).json({\n        reply: \"Please enter a message.\"\n      });\n    }\n\n    // Automatically remember important facts\n    await remember(message);\n\n    // Reload profile after saving\n    await loadProfile();\n\n// Project Brain\nconst projectQuestion =\n/function|trace|call|caller|chain|impact|dependency|used by|where|find|file|code|project|memory|brain|server|route|remember|execution|pipeline|startup/i.test(message);\n\nif (projectQuestion) {\n\n  console.log(\"MESSAGE:\", message);\n\nconst result = answerProjectQuestion(message);\n\nconsole.log(\"FOUND =\", result.found);\n\nif (result.found) {\n  console.log(\"ENTERED PROJECT BRAIN\");\n\n  return res.json({\n    reply: \"🔥 PROJECT BRAIN ACTIVE 🔥\\n\\n\" + result.reply\n  });\n}\n\n}\nhistory.push({\n      role: \"user\",\n      content: message\n    });\n\n    let facts = \"\";\n\n    if (profile.name) {\n      facts += `User's name is ${profile.name}.\\n`;\n    }\n\n    if (profile.favoriteColor) {\n      facts += `User's favorite color is ${profile.favoriteColor}.\\n`;\n    }\n\n    if (profile.city) {\n      facts += `User lives in ${profile.city}.\\n`;\n    }\n\n    if (profile.job) {\n      facts += `User works as ${profile.job}.\\n`;\n    }\n\n    if (profile.learning) {\n      facts += `User is learning ${profile.learning}.\\n`;\n    }    // Use Tavily for internet searches\n    let searchContext = \"\";\n\n    const needsSearch =\n      /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(message);\n\n    if (needsSearch) {\n      try {\n        const result = await search(message);\n\n        console.log(\"===== TAVILY SEARCH =====\");\n        console.log(result);\n        console.log(\"=========================\");\n\n        searchContext = `\nLIVE WEB SEARCH RESULTS\n\nSummary:\n${result.answer || \"No summary available.\"}\n\nTop Results:\n\n${(result.results || [])\n  .slice(0, 2)\n  .map(\n    (item, index) => `${index + 1}. ${item.title}\nSource: ${item.url}`\n  )\n  .join(\"\\n\\n\")}`;\n\n      } catch (e) {\n        console.error(\"Tavily search failed:\", e.response?.data || e.message);\n      }\n    }\n\n    const messages = [\n      {\n        role: \"system\",\n        content:\n          \"You are SamuAI Chatbot, a friendly and helpful AI assistant.\\n\\nRemember these facts about the user:\\n\" +\n         facts.slice(0, 300) +\n         searchContext.slice(0, 800)\n      },\n\n      ...history.filter(msg => msg.role !== \"system\").slice(-1)\n\n    ];    const response = await axios.post(\n      \"https://openrouter.ai/api/v1/chat/completions\",\n     {\n      model: \"openrouter/free\",\n      messages: messages,\n      max_tokens: 200\n     },\n\n      {\n        headers: {\n          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,\n          \"Content-Type\": \"application/json\",\n          \"HTTP-Referer\": \"http://localhost:3000\",\n          \"X-Title\": \"SamuAI Chatbot\"\n        }\n      }\n    );\n\n    const reply = response.data.choices[0].message.content;\n\n    history.push({\n      role: \"assistant\",\n      content: reply\n    });\n\n    if (history.length > 51) {\n      history = [\n        history[0],\n        ...history.slice(-50)\n      ];\n    }\n\n    await saveMemory();\n\n    res.json({\n      reply\n    });\n\n  } catch (err) {\n    console.error(err.response?.data || err.message);\n\n    res.status(500).json({\n      reply: \"Sorry, I couldn't contact the AI.\"\n    });\n  }\n});"
       },
       {
         "name": "then callback",
         "line": 226,
         "file": "server.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "]).then(() => {\n  app.listen(PORT, () => {\n    console.log(`SamuAI Chatbot is running on port ${PORT}`);\n  });\n});"
       },
       {
         "name": "app.listen callback",
         "line": 227,
         "file": "server.js",
         "type": "callback",
-        "calls": []
+        "calls": [],
+        "body": "  app.listen(PORT, () => {\n    console.log(`SamuAI Chatbot is running on port ${PORT}`);\n  });"
       }
     ],
     "arrowFunctions": [],
@@ -1966,7 +2065,8 @@
         "line": 5,
         "file": "services/ai.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function openRouterAvailable() {\n  return Date.now() >= openRouterBlockedUntil;\n}"
       },
       {
         "name": "chat",
@@ -1978,7 +2078,8 @@
             "name": "openRouterAvailable",
             "line": 11
           }
-        ]
+        ],
+        "body": "async function chat(messages) {\n  try {\n    if (!openRouterAvailable()) {\n      const err = new Error(\"OpenRouter is temporarily blocked.\");\n      err.response = { status: 429 };\n      throw err;\n    }\n\n    console.log(\"Sending request to OpenRouter...\");\n\n    const response = await axios.post(\n      \"https://openrouter.ai/api/v1/chat/completions\",\n{\n  model: \"openai/gpt-3.5-turbo\",\n  messages: messages,\nmax_tokens: 128\n},\n      {\n        timeout: 30000,\n        headers: {\n          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,\n          \"Content-Type\": \"application/json\",\n          \"HTTP-Referer\": process.env.SITE_URL || \"http://localhost:3000\",\n          \"X-Title\": \"SamuAI Chatbot\"\n        }\n      }\n    );\n\n    console.log(\"OpenRouter replied.\");\n    return response.data.choices[0].message.content;\n\n  } catch (err) {\n    console.log(\"========== OPENROUTER ERROR ==========\");\n\n    if (err.response?.status === 429) {\n      openRouterBlockedUntil = Date.now() + 30 * 60 * 1000;\n      console.log(\"OpenRouter disabled for 30 minutes.\");\n    }\n\n   if (\n  err.code === \"ECONNRESET\" ||\n  err.code === \"ETIMEDOUT\" ||\n  err.code === \"ENOTFOUND\"\n) {\n  err.response = { status: 429 };\n}\n\n   if (err.response) {\n      console.log(\"Status:\", err.response.status);\n      console.log(err.response.data);\n    } else {\n      console.log(err.message);\n    }\n\n    throw err;\n  }\n}"
       }
     ],
     "arrowFunctions": [],
@@ -2005,14 +2106,16 @@
         "line": 7,
         "file": "services/embeddings.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function loadVectors() {\n  try {\n    return await fs.readJson(VECTOR_FILE);\n  } catch {\n    return [];\n  }\n}"
       },
       {
         "name": "saveVectors",
         "line": 15,
         "file": "services/embeddings.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function saveVectors(vectors) {\n  await fs.outputJson(VECTOR_FILE, vectors, {\n    spaces: 2\n  });\n}"
       }
     ],
     "arrowFunctions": [],
@@ -2036,7 +2139,8 @@
         "line": 7,
         "file": "services/groq.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function chatGroq(messages) {\n  try {\n    const response = await client.chat.completions.create({\n      model: \"llama-3.3-70b-versatile\",\n      messages\n    });\n\n    return response.choices[0].message.content;\n  } catch (err) {\n    console.log(\"========== GROQ ERROR ==========\");\n\n    if (err.status) {\n      console.log(\"Status:\", err.status);\n    }\n\n    console.log(err.message);\n\n    throw err;\n  }\n}"
       }
     ],
     "arrowFunctions": [],
@@ -2056,7 +2160,8 @@
         "line": 3,
         "file": "services/search.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "async function search(query) {\n  const response = await axios.post(\n    \"https://api.tavily.com/search\",\n    {\n      query,\n      search_depth: \"basic\",\n      include_answer: true,\n      max_results: 5\n    },\n    {\n      headers: {\n        Authorization: `Bearer ${process.env.TAVILY_API_KEY}`,\n        \"Content-Type\": \"application/json\"\n      }\n    }\n  );\n\n  return response.data;\n}"
       }
     ],
     "arrowFunctions": [],
@@ -2111,7 +2216,8 @@
         "line": 3,
         "file": "utils/smartMemory.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function extractFacts(message) {\n  const doc = nlp(message);\n\n  return {\n    people: doc.people().out(\"array\"),\n    places: doc.places().out(\"array\"),\n    organizations: doc.organizations().out(\"array\"),\n    topics: doc.nouns().out(\"array\")\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -2136,14 +2242,16 @@
             "name": "send",
             "line": 14
           }
-        ]
+        ],
+        "body": "function verifyWebhook(req, res) {\n  const mode = req.query[\"hub.mode\"];\n  const token = req.query[\"hub.verify_token\"];\n  const challenge = req.query[\"hub.challenge\"];\n\n  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;\n\n  if (\n    mode === \"subscribe\" &&\n    token &&\n    verifyToken &&\n    token === verifyToken\n  ) {\n    return res.status(200).send(challenge);\n  }\n\n  return res.sendStatus(403);\n}"
       },
       {
         "name": "handleWebhook",
         "line": 20,
         "file": "whatsapp/webhook.js",
         "type": "function",
-        "calls": []
+        "calls": [],
+        "body": "function handleWebhook(req, res) {\n  console.log(\"WhatsApp webhook received:\");\n  console.log(JSON.stringify(req.body, null, 2));\n\n  return res.sendStatus(200);\n}"
       }
     ],
     "arrowFunctions": [],

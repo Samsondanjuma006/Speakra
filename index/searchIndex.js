@@ -8,36 +8,31 @@ function loadIndex() {
 }
 function findFunction(name) {
   const index = loadIndex();
-
   const results = [];
 
   for (const file of index) {
-
     const normal = file.functions.find(f => f.name === name);
 
-if (normal) {
-  results.push({
-    file: file.file,
-    line: normal.line,
-    type: "function",
-    requires: file.requires
-  });
-}
+    if (normal) {
+      results.push({
+        ...normal,
+        requires: file.requires
+      });
+    }
+
     const arrow = file.arrowFunctions.find(f => f.name === name);
 
-if (arrow) {
-  results.push({
-    file: file.file,
-    line: arrow.line,
-    type: "arrow",
-    requires: file.requires
-  });
-}
-
+    if (arrow) {
+      results.push({
+        ...arrow,
+        requires: file.requires
+      });
+    }
   }
 
   return results;
 }
+
 function findRequire(moduleName) {
   const index = loadIndex();
 

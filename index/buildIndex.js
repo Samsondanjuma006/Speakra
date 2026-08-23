@@ -236,6 +236,53 @@ for (const match of matches) {
 }
 
 });
+
+/*
+ * Attach source bodies to indexed functions.
+ *
+ * This is intentionally a separate pass from call detection so that
+ * the existing call-line tracking remains unchanged.
+ */
+function attachFunctionBodies(list) {
+  for (const fn of list) {
+    const start = fn.line - 1;
+
+    if (start < 0 || start >= lines.length) continue;
+
+    const bodyLines = [];
+    let depth = 0;
+    let started = false;
+
+    for (let i = start; i < lines.length; i++) {
+      const code = stripStrings(stripComments(lines[i]));
+
+      bodyLines.push(lines[i]);
+
+      for (const ch of code) {
+        if (ch === "{") {
+          depth++;
+          started = true;
+        } else if (ch === "}") {
+          depth--;
+        }
+      }
+
+      if (started && depth <= 0) {
+        break;
+      }
+
+      if (!started && i === start) {
+        break;
+      }
+    }
+
+    fn.body = bodyLines.join("\n");
+  }
+}
+
+attachFunctionBodies(functions);
+attachFunctionBodies(arrowFunctions);
+
 const requires = [
   ...text.matchAll(/require\(["'](.+?)["']\)/g)
 ].map(match => {

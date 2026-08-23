@@ -59,6 +59,36 @@ const keyword = extractKeyword(message);
 console.log("MESSAGE:", message);
 console.log("KEYWORD:", keyword);
 
+// Recursive caller trace
+if (/trace\s+callers/i.test(message)) {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const chain = projectGraph.traceCallers(actualFunctionName);
+
+  const lines = [];
+
+  lines.push(`🔙 Caller Trace\n`);
+  lines.push(`${actualFunctionName}()\n`);
+  lines.push("← Called by:");
+
+  if (chain.length > 0) {
+    for (const item of chain) {
+      const indent = "  ".repeat(item.depth + 1);
+
+      lines.push(
+        `${indent}← ${item.caller}() — ${item.file}:${item.line}`
+      );
+    }
+  } else {
+    lines.push("  ← No project callers detected.");
+  }
+
+  return {
+    found: true,
+    reply: lines.join("\n")
+  };
+}
+
+
 // Trace execution chain
 if (/trace/i.test(message) &&
     !/what does|callees|where is|where.*defined|definition/i.test(message)) {
@@ -68,8 +98,8 @@ if (/trace/i.test(message) &&
   // Trace both callers and callees
   if (/trace\s+both/i.test(message)) {
 
-    const callers = projectSearch.findCallers(actualFunctionName);
-    const chain = projectGraph.findCallees(actualFunctionName);
+    const callers = projectGraph.traceCallers(actualFunctionName);
+    const chain = projectGraph.traceCallees(actualFunctionName);
 
     const lines = [];
 
