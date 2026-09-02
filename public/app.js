@@ -1,4 +1,3 @@
-alert("APP.JS LOADED");
 async function send() {
   const input = document.getElementById("message");
   const chat = document.getElementById("chat");
@@ -24,7 +23,6 @@ async function send() {
       const data = await response.json();
 
       console.log(data.reply);
-alert(data.reply);
 
       const typing = document.getElementById("typing");
       if (typing) typing.remove();
