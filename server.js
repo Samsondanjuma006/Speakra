@@ -33,7 +33,7 @@ async function loadMemory() {
     history = [
       {
         role: "system",
-        content: "You are SamuAI Chatbot, a friendly and helpful AI assistant."
+        content: "You are Speakra, a friendly and helpful AI assistant."
       }
     ];
   }
@@ -166,7 +166,7 @@ Source: ${item.url}`
       {
         role: "system",
         content:
-          "You are SamuAI Chatbot, a friendly and helpful AI assistant.\n\nRemember these facts about the user:\n" +
+          "You are Speakra, a friendly and helpful AI assistant.\n\nRemember these facts about the user:\n" +
          facts.slice(0, 300) +
          searchContext.slice(0, 800)
       },
@@ -186,7 +186,7 @@ Source: ${item.url}`
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "http://localhost:3000",
-          "X-Title": "SamuAI Chatbot"
+          "X-Title": "Speakra"
         }
       }
     );
@@ -225,6 +225,6 @@ Promise.all([
   loadProfile()
 ]).then(() => {
   app.listen(PORT, () => {
-    console.log(`SamuAI Chatbot is running on port ${PORT}`);
+    console.log(`Speakra is running on port ${PORT}`);
   });
 });

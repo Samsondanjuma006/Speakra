@@ -8,7 +8,7 @@ async function send() {
   chat.innerHTML += `<div class="message user">${message}</div>`;
   input.value = "";
 
-  chat.innerHTML += `<div class="message ai" id="typing">SamuAI Chatbot is typing...</div>`;
+  chat.innerHTML += `<div class="message ai" id="typing">Speakra is typing...</div>`;
   chat.scrollTop = chat.scrollHeight;
 
   try {
@@ -35,7 +35,7 @@ chat.scrollTop = chat.scrollHeight;
     const typing = document.getElementById("typing");
     if (typing) typing.remove();
 
-    chat.innerHTML += `<div class="message ai">Error contacting SamuAI Chatbot.</div>`;
+    chat.innerHTML += `<div class="message ai">Error contacting Speakra.</div>`;
     console.error(err);
   }
 }
