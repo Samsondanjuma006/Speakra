@@ -216,20 +216,20 @@
         "file": "brain/callHierarchy.js",
         "type": "function",
         "calls": [],
-        "body": "function buildTree(index, fnName, depth = 0, visited = new Set()) {\n\n  const indent = \"│   \".repeat(depth);\n\n  if (visited.has(fnName)) {\n    return indent + \"└── \" + fnName + \"() (recursive)\\n\";\n  }\n\n  visited.add(fnName);\n\n  let output = \"\";\n\n  for (const file of index) {\n\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const fn = functions.find(f => f.name === fnName);\n\n    if (!fn) continue;\n\n    if (!fn.calls || fn.calls.length === 0) {\n      return \"\";\n    }\n\n    for (const call of fn.calls) {\n\n      output += indent + \"├── \" + call + \"()\\n\";\n\n      output += buildTree(\n        index,\n        call,\n        depth + 1,\n        new Set(visited)\n      );\n\n    }\n\n    break;\n\n  }\n\n  return output;\n\n}"
+        "body": "function buildTree(index, fnName, depth = 0, visited = new Set()) {\n  const indent = \"│   \".repeat(depth);\n\n  if (visited.has(fnName)) {\n    return indent + \"└── \" + fnName + \"() (recursive)\\n\";\n  }\n\n  visited.add(fnName);\n\n  let output = \"\";\n\n  for (const file of index) {\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const fn = functions.find(f => f.name === fnName);\n\n    if (!fn) continue;\n\n    if (!fn.calls || fn.calls.length === 0) {\n      return \"\";\n    }\n\n    for (const call of fn.calls) {\n      const calledFunction =\n        typeof call === \"string\"\n          ? call\n          : call && call.name;\n\n      if (!calledFunction) continue;\n\n      output += indent + \"├── \" + calledFunction + \"()\\n\";\n\n      output += buildTree(\n        index,\n        calledFunction,\n        depth + 1,\n        new Set(visited)\n      );\n    }\n\n    break;\n  }\n\n  return output;\n}"
       },
       {
         "name": "buildCallHierarchy",
-        "line": 51,
+        "line": 52,
         "file": "brain/callHierarchy.js",
         "type": "function",
         "calls": [
           {
             "name": "buildTree",
-            "line": 72
+            "line": 70
           }
         ],
-        "body": "function buildCallHierarchy(functionName) {\n\n  const index = projectSearch.loadIndex();\n\n  for (const file of index) {\n\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const fn = functions.find(f => f.name === functionName);\n\n    if (!fn) continue;\n\n    return {\n      found: true,\n      reply:\n`🌳 Call Hierarchy\n\n${functionName}()\n${buildTree(index, functionName)}`\n    };\n\n  }\n\n  return {\n    found: false\n  };\n\n}"
+        "body": "function buildCallHierarchy(functionName) {\n  const index = projectSearch.loadIndex();\n\n  for (const file of index) {\n    const functions = [\n      ...(file.functions || []),\n      ...(file.arrowFunctions || [])\n    ];\n\n    const fn = functions.find(f => f.name === functionName);\n\n    if (!fn) continue;\n\n    return {\n      found: true,\n      reply:\n        `🌳 Call Hierarchy\\n\\n` +\n        `${functionName}()\\n` +\n        buildTree(index, functionName)\n    };\n  }\n\n  return {\n    found: false\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -244,7 +244,7 @@
         "caller": "buildCallHierarchy",
         "callee": "buildTree",
         "file": "brain/callHierarchy.js",
-        "line": 72
+        "line": 70
       }
     ]
   },
@@ -327,7 +327,7 @@
         "file": "brain/dependencyTree.js",
         "type": "function",
         "calls": [],
-        "body": "function dependencyTree(fileName) {\n\n  const index = projectSearch.loadIndex();\n\n  const file = index.find(f => f.file.endsWith(fileName));\n\n  if (!file) {\n    return {\n      found: false\n    };\n  }\n\n  let reply = `🌳 Dependency Tree\\n\\n${file.file}\\n`;\n\n  if (file.requires.length === 0) {\n    reply += \"\\n(No dependencies)\";\n  } else {\n\n    for (const dep of file.requires) {\n      reply += `├── ${dep}\\n`;\n    }\n\n  }\n\n  return {\n    found: true,\n    reply\n  };\n\n}"
+        "body": "function dependencyTree(fileName) {\n  const index = projectSearch.loadIndex();\n\n  const file = index.find(f =>\n    f.file === fileName ||\n    f.file.endsWith(\"/\" + fileName)\n  );\n\n  if (!file) {\n    return {\n      found: false\n    };\n  }\n\n  let reply = `🌳 Dependency Tree\\n\\n${file.file}\\n`;\n\n  if (!file.requires || file.requires.length === 0) {\n    reply += \"\\n(No dependencies)\";\n  } else {\n    for (const dep of file.requires) {\n      reply += `├── ${dep.module} — line ${dep.line}\\n`;\n    }\n  }\n\n  return {\n    found: true,\n    reply\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -784,104 +784,108 @@
       },
       {
         "name": "answerProjectQuestion",
-        "line": 56,
+        "line": 57,
         "file": "brain/projectBrain.js",
         "type": "function",
         "calls": [
           {
+            "name": "detectProjectIntent",
+            "line": 62
+          },
+          {
             "name": "resolveFunctionName",
-            "line": 64
-          },
-          {
-            "name": "buildExecutionGraph",
-            "line": 65
-          },
-          {
-            "name": "traceCallers",
-            "line": 75
-          },
-          {
-            "name": "traceCallees",
-            "line": 112
-          },
-          {
-            "name": "locateFunction",
-            "line": 201
+            "line": 71
           },
           {
             "name": "findCallees",
-            "line": 238
+            "line": 110
           },
           {
-            "name": "analyzeImpact",
-            "line": 271
-          },
-          {
-            "name": "dependencyTree",
-            "line": 281
-          },
-          {
-            "name": "reasonAboutFunction",
-            "line": 290
-          },
-          {
-            "name": "explainFeature",
-            "line": 300
-          },
-          {
-            "name": "explainExecution",
-            "line": 311
-          },
-          {
-            "name": "explainFunctionReason",
-            "line": 326
-          },
-          {
-            "name": "buildRecursiveExecution",
-            "line": 336
-          },
-          {
-            "name": "buildCallHierarchy",
-            "line": 349
-          },
-          {
-            "name": "buildAutoExecutionPipeline",
-            "line": 384
-          },
-          {
-            "name": "buildExecutionTree",
-            "line": 393
-          },
-          {
-            "name": "explainArchitecture",
-            "line": 405
-          },
-          {
-            "name": "buildProjectGraph",
-            "line": 410
-          },
-          {
-            "name": "analyzeFunctionImpact",
-            "line": 436
-          },
-          {
-            "name": "listFunctions",
-            "line": 471
+            "name": "locateFunction",
+            "line": 138
           },
           {
             "name": "explainFile",
-            "line": 480
+            "line": 146
+          },
+          {
+            "name": "listFunctions",
+            "line": 167
+          },
+          {
+            "name": "explainArchitecture",
+            "line": 175
+          },
+          {
+            "name": "buildProjectGraph",
+            "line": 179
+          },
+          {
+            "name": "analyzeImpact",
+            "line": 194
+          },
+          {
+            "name": "analyzeFunctionImpact",
+            "line": 200
+          },
+          {
+            "name": "dependencyTree",
+            "line": 207
+          },
+          {
+            "name": "reasonAboutFunction",
+            "line": 215
           },
           {
             "name": "analyzeFunction",
-            "line": 485
+            "line": 221
+          },
+          {
+            "name": "explainExecution",
+            "line": 230
+          },
+          {
+            "name": "explainFeature",
+            "line": 244
+          },
+          {
+            "name": "buildCallHierarchy",
+            "line": 252
+          },
+          {
+            "name": "buildExecutionGraph",
+            "line": 260
+          },
+          {
+            "name": "buildAutoExecutionPipeline",
+            "line": 268
+          },
+          {
+            "name": "buildExecutionTree",
+            "line": 276
           },
           {
             "name": "reverseCallGraph",
-            "line": 495
+            "line": 287
+          },
+          {
+            "name": "traceCallers",
+            "line": 319
+          },
+          {
+            "name": "traceCallees",
+            "line": 356
+          },
+          {
+            "name": "explainFunctionReason",
+            "line": 570
+          },
+          {
+            "name": "buildRecursiveExecution",
+            "line": 580
           }
         ],
-        "body": "function answerProjectQuestion(message) {\n\nconst keyword = extractKeyword(message);\nconsole.log(\"MESSAGE:\", message);\nconsole.log(\"KEYWORD:\", keyword);\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = buildExecutionGraph(actualFunctionName);\n\n  if (result.found) {\n    return result;\n  }\n}\n\n// Recursive caller trace\nif (/trace\\s+callers/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const chain = projectGraph.traceCallers(actualFunctionName);\n\n  const lines = [];\n\n  lines.push(`🔙 Caller Trace\\n`);\n  lines.push(`${actualFunctionName}()\\n`);\n  lines.push(\"← Called by:\");\n\n  if (chain.length > 0) {\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth + 1);\n\n      lines.push(\n        `${indent}← ${item.caller}() — ${item.file}:${item.line}`\n      );\n    }\n  } else {\n    lines.push(\"  ← No project callers detected.\");\n  }\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n}\n\n\n// Trace execution chain\nif (/trace/i.test(message) &&\n    !/what does|callees|where is|where.*defined|definition/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n\n  // Trace both callers and callees\n  if (/trace\\s+both/i.test(message)) {\n\n    const callers = projectGraph.traceCallers(actualFunctionName);\n    const chain = projectGraph.traceCallees(actualFunctionName);\n\n    const lines = [];\n\n    lines.push(`🔗 Bidirectional Trace\\n`);\n    lines.push(`${actualFunctionName}()\\n`);\n\n    // Backward trace\n    lines.push(`← Called by:`);\n\n      if (callers.length > 0) {\n        for (const caller of callers) {\n          const indent = \"  \".repeat(caller.depth + 1);\n          lines.push(\n            `${indent}← ${caller.caller}() — ${caller.file}:${caller.line}`\n          );\n        }\n      } else {\n        lines.push(`  ← No project callers detected.`);\n      }\n    // Forward trace\n    lines.push(`\\n→ Calls:`);\n\n    if (chain.length > 0) {\n      for (const item of chain) {\n        const indent = \"  \".repeat(item.depth + 1);\n\n        const location =\n          item.calleeFile && item.calleeLine\n            ? ` — ${item.calleeFile}:${item.calleeLine}`\n            : \"\";\n\n        lines.push(\n          `${indent}→ ${item.callee}()${location}`\n        );\n      }\n    } else {\n      lines.push(`  → No project function calls detected.`);\n    }\n\n    return {\n      found: true,\n      reply: lines.join(\"\\n\")\n    };\n  }\n\n  // Normal forward execution trace\n  const chain = projectGraph.traceCallees(actualFunctionName);\n\n  if (chain.length > 0) {\n    const lines = [];\n\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth);\n\n      const location =\n        item.calleeFile && item.calleeLine\n          ? ` — ${item.calleeFile}:${item.calleeLine}`\n          : \"\";\n\n      lines.push(\n        `${indent}↓ ${item.callee}()${location}`\n      );\n    }\n\n    return {\n      found: true,\n      reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\n${lines.join(\"\\n\")}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\nNo project function calls detected.`\n  };\n}\n // Where is a function defined?\n  if (/where is|where.*defined|definition/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n    const result = locateFunction(actualFunctionName);\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Who calls a function?\nif (/what calls|who calls|called by/i.test(message)) {\nconst actualFunctionName = resolveFunctionName(keyword);\nconst callers = projectSearch.findCallers(actualFunctionName);\n\n  if (callers.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalled from:\n\n${callers\n  .map(c => `• ${c.caller}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\nTotal files: ${callers.length}`\n    };\n  }\n}\n// What does a function call?\nif (/what does|callees/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const functionInfo = projectSearch.findFunction(actualFunctionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply: `❌ I couldn't find ${actualFunctionName}() in the project.`\n    };\n  }\n const callees = findCallees(actualFunctionName);\n\n  if (callees.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n${callees\n  .map(c => `• ${c.callee}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\n\nTotal calls: ${callees.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n• No other project functions detected.\n\nNote: external/library calls are not included in the project call graph.`\n  };\n}\n// Impact Analysis\nif (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = analyzeImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Dependency Tree\nif (/dependency tree|dependencies/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const tree = dependencyTree(keyword);\n\n  if (tree.found) {\n    return tree;\n  }\n\n}\n  // Full Function Analysis\n  if (/full analysis|analyze|everything about|explain function/i.test(message)) {\n    const result = reasonAboutFunction(keyword);\n\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Feature Reasoning\nif (/how does .* work|feature|system/i.test(message)) {\n\n  const result = explainFeature(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n  // Function Execution Explanation\n  if (/explain execution|execution flow of|how .* executes|explain .* execution|execution of/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n\n    const result = explainExecution(message);\n\n    if (result.found) {\n      return result;\n    }\n\n    const functionResult = explainExecution(actualFunctionName);\n\n    if (functionResult.found) {\n      return functionResult;\n    }\n  }\n// Function Reasoning\n  if (/^why\\b|^explain\\b|purpose/i.test(message)) {\n\n  const result = explainFunctionReason(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Recursive Execution\nif (/trace|full execution|execution trace|recursive execution/i.test(message)) {\n\n  const lines = buildRecursiveExecution(keyword);\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n\n}\n// Call Hierarchy\nif (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {\n\nconsole.log(\"CALL HIERARCHY BLOCK:\", message, keyword);\n\n  const result = buildCallHierarchy(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Execution Graph\nif (/execution graph|show execution graph/i.test(message)) {\n\n  if (keyword === \"graph\") {\n    return {\n      found: true,\n      reply:\n        \"🕸 Execution Graph\\n\\n\" +\n        \"An execution graph shows how a specific function is reached and which functions call it.\\n\\n\" +\n        \"For example, you can ask:\\n\" +\n        \"• show execution graph for buildAutoExecutionPipeline\\n\" +\n        \"• execution graph for answerProjectQuestion\\n\\n\" +\n        \"This lets SamuAI trace the execution path through the project.\"\n    };\n  }\n\n  const result = buildExecutionGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Execution Pipeline\nif (/execution pipeline|pipeline|execution flow/i.test(message)) {\n\n  const result =\nbuildAutoExecutionPipeline(keyword);\n  if (result.found) {\n    return result;\n  }\n\n}\n// Full Execution Tree\nif (/execution tree|full tree|tree/i.test(message)) {\n\n  const lines = buildExecutionTree(keyword);\n\n  return {\n    found: true,\n    reply:\n      \"🌳 Full Execution Tree\\n\\n\" +\n      lines.join(\"\\n\")\n  };\n\n}\n// Project Architecture\nif (/architecture|project architecture|show architecture/i.test(message)) {\n  return explainArchitecture();\n}\n// Project Graph\nif (/project graph|show project graph/i.test(message)) {\n\n  const graph = buildProjectGraph();\n\n  return {\n    found: true,\n    reply:\n      \"🕸 Project Graph\\n\\n\" +\n      JSON.stringify(graph, null, 2)\n  };\n\n}\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = buildExecutionGraph(actualFunctionName);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Function Impact Analysis\nif (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {\n\n  const result = analyzeFunctionImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst flow = explainExecution(message);\n// Execution Flow\n\nif (flow.found) {\n  return flow;\n}\n// Who uses a file?\nif (/who uses|used by|imports/i.test(message) && keyword.endsWith(\".js\")) {\n  const usedBy = projectSearch.findUsedBy(keyword);\n\n  if (usedBy.length > 0) {\n    return {\n      found: true,\n      reply:\n`📄 ${keyword}\n\nUsed by:\n\n${usedBy.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${usedBy.length}`\n    };\n  }\n}\n// List functions in a file\nif (/show all functions|list functions|functions in/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = listFunctions(keyword);\n\n  if (result.found) {\n    return result;\n   }\n\n  }\n// Explain a specific JavaScript file\nif (/explain/i.test(message) && keyword.endsWith(\".js\")) {\n  return explainFile(keyword);\n}\n // Analyze a specific function\nif (/explain|analyze|details about/i.test(message)) {\n\n  const result = analyzeFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Reverse Call Graph\nif (/execution path|reverse call graph|path to|who reaches/i.test(message)) {\n\n  const result = reverseCallGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Locate a function\nif (/where is|jump to|locate|find function/i.test(message)) {\n\n  const result = locateFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst functionResult = projectSearch.findFunction(keyword);\n\nif (functionResult.length > 0) {\n\n  const file = functionResult[0];\n\n  return {\n    found: true,\n    reply:\n`I found the function \"${keyword}\".\n\n📄 File:\n${file.file}\n\nFunctions in this file:\n\n${projectSearch.loadIndex()\n  .find(f => f.file === file.file)\n  .functions\n  .map(f => \"• \" + f.name + \"()\")\n  .join(\"\\n\")}`\n    };\n\n    }\n   // List all project files\n    if (/list|all|files|project files/i.test(message)) {\n      return {\n        found: true,\n        reply:\n`Project files:\n\n${projectSearch.listFiles().map(f => \"• \" + f).join(\"\\n\")}\n\nTotal files: ${projectSearch.listFiles().length}`\n      };\n    }\n  const requireResult = projectSearch.findRequire(keyword);\n\n  if (requireResult.length > 0) {\n    return {\n      found: true,\n      reply:\n`I found \"${keyword}\" in these project files:\n\n${requireResult.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${requireResult.length}`\n    };\n  }\n\n  return {\n    found: false\n  };\n}"
+        "body": "function answerProjectQuestion(message) {\n\nconst keyword = extractKeyword(message);\nconsole.log(\"MESSAGE:\", message);\nconsole.log(\"KEYWORD:\", keyword);\nconst intent = detectProjectIntent(message);\nconsole.log(\"INTENT:\", intent);\n\n/*\n * Project Brain 2.0\n * The intent detector handles the clearest project questions first.\n * Existing Project Brain analyzers remain available below.\n */\nif (intent === \"CALLERS\") {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const callers = projectSearch.findCallers(actualFunctionName);\n\n  if (callers.length > 0) {\n    return {\n      found: true,\n      reply:\n        `🔍 ${actualFunctionName}()\\n` +\n        `Called from:\\n` +\n        callers\n          .map(\n            c =>\n              `• ${c.caller}()\\n  File: ${c.file}\\n  Line: ${c.line}`\n          )\n          .join(\"\\n\\n\") +\n        `\\n\\nTotal callers: ${callers.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n      `🔍 ${actualFunctionName}()\\n` +\n      `No project callers detected.`\n  };\n}\n\nif (intent === \"CALLEES\") {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const functionInfo = projectSearch.findFunction(actualFunctionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply:\n        `❌ I couldn't find ${actualFunctionName}() in the project.`\n    };\n  }\n\n  const callees = findCallees(actualFunctionName);\n\n  if (callees.length > 0) {\n    return {\n      found: true,\n      reply:\n        `🔍 ${actualFunctionName}()\\n` +\n        `Calls:\\n` +\n        callees\n          .map(\n            c =>\n              `• ${c.callee}()\\n  File: ${c.file}\\n  Line: ${c.line}`\n          )\n          .join(\"\\n\\n\") +\n        `\\n\\nTotal calls: ${callees.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n      `🔍 ${actualFunctionName}()\\n` +\n      `No other project functions detected.`\n  };\n}\n\nif (intent === \"DEFINITION\") {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = locateFunction(actualFunctionName);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"FILE_EXPLANATION\" && keyword.endsWith(\".js\")) {\n  const result = explainFile(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"FILE_USAGE\" && keyword.endsWith(\".js\")) {\n  const usedBy = projectSearch.findUsedBy(keyword);\n\n  return {\n    found: true,\n    reply:\n      `📄 ${keyword}\\n` +\n      (usedBy.length > 0\n        ? `Used by:\\n${usedBy.map(f => \"• \" + f.file).join(\"\\n\")}\\n\\nTotal files: ${usedBy.length}`\n        : \"No project files detected using this file.\")\n  };\n}\n\nif (intent === \"FUNCTION_LIST\" && keyword.endsWith(\".js\")) {\n  const result = listFunctions(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"ARCHITECTURE\") {\n  return explainArchitecture();\n}\n\nif (intent === \"PROJECT_GRAPH\") {\n  const graph = buildProjectGraph();\n\n  return {\n    found: true,\n    reply:\n      \"🕸 Project Graph\\n\\n\" +\n      JSON.stringify(graph, null, 2)\n  };\n}\n\n\n/* Project Brain 2.0 - remaining intents */\n\nif (intent === \"IMPACT\") {\n  if (keyword.endsWith(\".js\")) {\n    const result = analyzeImpact(keyword);\n    if (result.found) {\n      return result;\n    }\n  }\n\n  const result = analyzeFunctionImpact(keyword);\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"DEPENDENCIES\" && keyword.endsWith(\".js\")) {\n  const result = dependencyTree(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"FUNCTION_ANALYSIS\") {\n  const result = reasonAboutFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n  const analysis = analyzeFunction(keyword);\n\n  if (analysis.found) {\n    return analysis;\n  }\n}\n\nif (intent === \"EXECUTION\") {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = explainExecution(message);\n\n  if (result.found) {\n    return result;\n  }\n\n  const functionResult = explainExecution(actualFunctionName);\n\n  if (functionResult.found) {\n    return functionResult;\n  }\n}\n\nif (intent === \"FEATURE\") {\n  const result = explainFeature(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"CALL_HIERARCHY\") {\n  const result = buildCallHierarchy(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"EXECUTION_GRAPH\") {\n  const result = buildExecutionGraph(resolveFunctionName(keyword));\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"EXECUTION_PIPELINE\") {\n  const result = buildAutoExecutionPipeline(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"EXECUTION_TREE\") {\n  const lines = buildExecutionTree(keyword);\n\n  return {\n    found: true,\n    reply:\n      \"🌳 Full Execution Tree\\n\\n\" +\n      lines.join(\"\\n\")\n  };\n}\n\nif (intent === \"REVERSE_CALL_GRAPH\") {\n  const result = reverseCallGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n}\n\nif (intent === \"LIST_FILES\") {\n  const files = projectSearch.listFiles();\n\n  return {\n    found: true,\n    reply:\n      `Project files:\\n` +\n      files.map(f => \"• \" + f).join(\"\\n\") +\n      `\\n\\nTotal files: ${files.length}`\n  };\n}\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = buildExecutionGraph(actualFunctionName);\n\n  if (result.found) {\n    return result;\n  }\n}\n\n// Recursive caller trace\nif (/trace\\s+callers/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const chain = projectGraph.traceCallers(actualFunctionName);\n\n  const lines = [];\n\n  lines.push(`🔙 Caller Trace\\n`);\n  lines.push(`${actualFunctionName}()\\n`);\n  lines.push(\"← Called by:\");\n\n  if (chain.length > 0) {\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth + 1);\n\n      lines.push(\n        `${indent}← ${item.caller}() — ${item.file}:${item.line}`\n      );\n    }\n  } else {\n    lines.push(\"  ← No project callers detected.\");\n  }\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n}\n\n\n// Trace execution chain\nif (/trace/i.test(message) &&\n    !/what does|callees|where is|where.*defined|definition/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n\n  // Trace both callers and callees\n  if (/trace\\s+both/i.test(message)) {\n\n    const callers = projectGraph.traceCallers(actualFunctionName);\n    const chain = projectGraph.traceCallees(actualFunctionName);\n\n    const lines = [];\n\n    lines.push(`🔗 Bidirectional Trace\\n`);\n    lines.push(`${actualFunctionName}()\\n`);\n\n    // Backward trace\n    lines.push(`← Called by:`);\n\n      if (callers.length > 0) {\n        for (const caller of callers) {\n          const indent = \"  \".repeat(caller.depth + 1);\n          lines.push(\n            `${indent}← ${caller.caller}() — ${caller.file}:${caller.line}`\n          );\n        }\n      } else {\n        lines.push(`  ← No project callers detected.`);\n      }\n    // Forward trace\n    lines.push(`\\n→ Calls:`);\n\n    if (chain.length > 0) {\n      for (const item of chain) {\n        const indent = \"  \".repeat(item.depth + 1);\n\n        const location =\n          item.calleeFile && item.calleeLine\n            ? ` — ${item.calleeFile}:${item.calleeLine}`\n            : \"\";\n\n        lines.push(\n          `${indent}→ ${item.callee}()${location}`\n        );\n      }\n    } else {\n      lines.push(`  → No project function calls detected.`);\n    }\n\n    return {\n      found: true,\n      reply: lines.join(\"\\n\")\n    };\n  }\n\n  // Normal forward execution trace\n  const chain = projectGraph.traceCallees(actualFunctionName);\n\n  if (chain.length > 0) {\n    const lines = [];\n\n    for (const item of chain) {\n      const indent = \"  \".repeat(item.depth);\n\n      const location =\n        item.calleeFile && item.calleeLine\n          ? ` — ${item.calleeFile}:${item.calleeLine}`\n          : \"\";\n\n      lines.push(\n        `${indent}↓ ${item.callee}()${location}`\n      );\n    }\n\n    return {\n      found: true,\n      reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\n${lines.join(\"\\n\")}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔗 Execution Trace\n\n${actualFunctionName}()\n\nNo project function calls detected.`\n  };\n}\n // Where is a function defined?\n  if (/where is|where.*defined|definition/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n    const result = locateFunction(actualFunctionName);\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Who calls a function?\nif (/what calls|who calls|called by/i.test(message)) {\nconst actualFunctionName = resolveFunctionName(keyword);\nconst callers = projectSearch.findCallers(actualFunctionName);\n\n  if (callers.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalled from:\n\n${callers\n  .map(c => `• ${c.caller}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\nTotal files: ${callers.length}`\n    };\n  }\n}\n// What does a function call?\nif (/what does|callees/i.test(message)) {\n  const actualFunctionName = resolveFunctionName(keyword);\n  const functionInfo = projectSearch.findFunction(actualFunctionName);\n\n  if (functionInfo.length === 0) {\n    return {\n      found: false,\n      reply: `❌ I couldn't find ${actualFunctionName}() in the project.`\n    };\n  }\n const callees = findCallees(actualFunctionName);\n\n  if (callees.length > 0) {\n    return {\n      found: true,\n      reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n${callees\n  .map(c => `• ${c.callee}()\\n  File: ${c.file}\\n  Line: ${c.line}`)\n  .join(\"\\n\\n\")}\n\nTotal calls: ${callees.length}`\n    };\n  }\n\n  return {\n    found: true,\n    reply:\n`🔍 ${actualFunctionName}()\n\nCalls:\n\n• No other project functions detected.\n\nNote: external/library calls are not included in the project call graph.`\n  };\n}\n// Impact Analysis\nif (/what breaks|impact|delete|remove/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = analyzeImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Dependency Tree\nif (/dependency tree|dependencies/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const tree = dependencyTree(keyword);\n\n  if (tree.found) {\n    return tree;\n  }\n\n}\n  // Full Function Analysis\n  if (/full analysis|analyze|everything about|explain function/i.test(message)) {\n    const result = reasonAboutFunction(keyword);\n\n    if (result.found) {\n      return result;\n    }\n  }\n\n// Feature Reasoning\nif (/how does .* work|feature|system/i.test(message)) {\n\n  const result = explainFeature(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n  // Function Execution Explanation\n  if (/explain execution|execution flow of|how .* executes|explain .* execution|execution of/i.test(message)) {\n    const actualFunctionName = resolveFunctionName(keyword);\n\n    const result = explainExecution(message);\n\n    if (result.found) {\n      return result;\n    }\n\n    const functionResult = explainExecution(actualFunctionName);\n\n    if (functionResult.found) {\n      return functionResult;\n    }\n  }\n// Function Reasoning\n  if (/^why\\b|^explain\\b|purpose/i.test(message)) {\n\n  const result = explainFunctionReason(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Recursive Execution\nif (/trace|full execution|execution trace|recursive execution/i.test(message)) {\n\n  const lines = buildRecursiveExecution(keyword);\n\n  return {\n    found: true,\n    reply: lines.join(\"\\n\")\n  };\n\n}\n// Call Hierarchy\nif (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {\n\nconsole.log(\"CALL HIERARCHY BLOCK:\", message, keyword);\n\n  const result = buildCallHierarchy(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Execution Graph\nif (/execution graph|show execution graph/i.test(message)) {\n\n  if (keyword === \"graph\") {\n    return {\n      found: true,\n      reply:\n        \"🕸 Execution Graph\\n\\n\" +\n        \"An execution graph shows how a specific function is reached and which functions call it.\\n\\n\" +\n        \"For example, you can ask:\\n\" +\n        \"• show execution graph for buildAutoExecutionPipeline\\n\" +\n        \"• execution graph for answerProjectQuestion\\n\\n\" +\n        \"This lets SamuAI trace the execution path through the project.\"\n    };\n  }\n\n  const result = buildExecutionGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Execution Pipeline\nif (/execution pipeline|pipeline|execution flow/i.test(message)) {\n\n  const result =\nbuildAutoExecutionPipeline(keyword);\n  if (result.found) {\n    return result;\n  }\n\n}\n// Full Execution Tree\nif (/execution tree|full tree|tree/i.test(message)) {\n\n  const lines = buildExecutionTree(keyword);\n\n  return {\n    found: true,\n    reply:\n      \"🌳 Full Execution Tree\\n\\n\" +\n      lines.join(\"\\n\")\n  };\n\n}\n// Project Architecture\nif (/architecture|project architecture|show architecture/i.test(message)) {\n  return explainArchitecture();\n}\n// Project Graph\nif (/project graph|show project graph/i.test(message)) {\n\n  const graph = buildProjectGraph();\n\n  return {\n    found: true,\n    reply:\n      \"🕸 Project Graph\\n\\n\" +\n      JSON.stringify(graph, null, 2)\n  };\n\n}\n\n// Execution path to a specific function\nif (/execution path|flow to|path to/i.test(message)) {\n\n  const actualFunctionName = resolveFunctionName(keyword);\n  const result = buildExecutionGraph(actualFunctionName);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\n// Function / File Impact Analysis\nif (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {\n\n  // File impact\n  if (keyword.endsWith(\".js\")) {\n    const result = analyzeImpact(keyword);\n\n    if (result.found) {\n      return result;\n    }\n  }\n\n  // Function impact\n  const result = analyzeFunctionImpact(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst flow = explainExecution(message);\n// Execution Flow\n\nif (flow.found) {\n  return flow;\n}\n// Who uses a file?\nif (/who uses|used by|imports/i.test(message) && keyword.endsWith(\".js\")) {\n  const usedBy = projectSearch.findUsedBy(keyword);\n\n  if (usedBy.length > 0) {\n    return {\n      found: true,\n      reply:\n`📄 ${keyword}\n\nUsed by:\n\n${usedBy.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${usedBy.length}`\n    };\n  }\n}\n// List functions in a file\nif (/show all functions|list functions|functions in/i.test(message) && keyword.endsWith(\".js\")) {\n\n  const result = listFunctions(keyword);\n\n  if (result.found) {\n    return result;\n   }\n\n  }\n// Explain a specific JavaScript file\nif (/explain/i.test(message) && keyword.endsWith(\".js\")) {\n  return explainFile(keyword);\n}\n // Analyze a specific function\nif (/explain|analyze|details about/i.test(message)) {\n\n  const result = analyzeFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Reverse Call Graph\nif (/execution path|reverse call graph|path to|who reaches/i.test(message)) {\n\n  const result = reverseCallGraph(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n// Locate a function\nif (/where is|jump to|locate|find function/i.test(message)) {\n\n  const result = locateFunction(keyword);\n\n  if (result.found) {\n    return result;\n  }\n\n}\n\nconst functionResult = projectSearch.findFunction(keyword);\n\nif (functionResult.length > 0) {\n\n  const file = functionResult[0];\n\n  return {\n    found: true,\n    reply:\n`I found the function \"${keyword}\".\n\n📄 File:\n${file.file}\n\nFunctions in this file:\n\n${projectSearch.loadIndex()\n  .find(f => f.file === file.file)\n  .functions\n  .map(f => \"• \" + f.name + \"()\")\n  .join(\"\\n\")}`\n    };\n\n    }\n   // List all project files\n    if (/list|all|files|project files/i.test(message)) {\n      return {\n        found: true,\n        reply:\n`Project files:\n\n${projectSearch.listFiles().map(f => \"• \" + f).join(\"\\n\")}\n\nTotal files: ${projectSearch.listFiles().length}`\n      };\n    }\n  const requireResult = projectSearch.findRequire(keyword);\n\n  if (requireResult.length > 0) {\n    return {\n      found: true,\n      reply:\n`I found \"${keyword}\" in these project files:\n\n${requireResult.map(f => \"• \" + f.file).join(\"\\n\")}\n\nTotal files: ${requireResult.length}`\n    };\n  }\n\n  return {\n    found: false\n  };\n}"
       }
     ],
     "arrowFunctions": [],
@@ -915,43 +919,43 @@
         "line": 33
       },
       {
-        "module": "./dependencyTree",
+        "module": "./projectIntent",
         "line": 34
       },
       {
-        "module": "./impactAnalyzer",
+        "module": "./dependencyTree",
         "line": 35
       },
       {
-        "module": "./functionExplorer",
+        "module": "./impactAnalyzer",
         "line": 36
       },
       {
-        "module": "./functionLocator",
+        "module": "./functionExplorer",
         "line": 37
       },
       {
-        "module": "./functionAnalysis",
+        "module": "./functionLocator",
         "line": 38
       },
       {
-        "module": "./functionImpact",
+        "module": "./functionAnalysis",
         "line": 39
       },
       {
-        "module": "./projectReasoner",
+        "module": "./functionImpact",
         "line": 40
       },
       {
-        "module": "./reverseCallGraph",
+        "module": "./projectReasoner",
         "line": 41
       },
       {
-        "module": "./executionGraph",
+        "module": "./reverseCallGraph",
         "line": 42
       },
       {
-        "module": "./projectGraph",
+        "module": "./executionGraph",
         "line": 43
       },
       {
@@ -959,108 +963,136 @@
         "line": 44
       },
       {
-        "module": "./dependencyTracer",
+        "module": "./projectGraph",
         "line": 45
       },
       {
-        "module": "./callHierarchy",
+        "module": "./dependencyTracer",
         "line": 46
       },
       {
-        "module": "./reverseCallHierarchy",
+        "module": "./callHierarchy",
         "line": 47
       },
       {
-        "module": "./functionReason",
+        "module": "./reverseCallHierarchy",
         "line": 48
       },
       {
-        "module": "./featureReason",
-        "line": 50
+        "module": "./functionReason",
+        "line": 49
       },
       {
-        "module": "./executionPipeline",
+        "module": "./featureReason",
         "line": 51
       },
       {
-        "module": "./autoExecutionPipeline",
+        "module": "./executionPipeline",
         "line": 52
       },
       {
-        "module": "./recursiveExecution",
+        "module": "./autoExecutionPipeline",
         "line": 53
       },
       {
-        "module": "./fullExecutionTree",
+        "module": "./recursiveExecution",
         "line": 54
+      },
+      {
+        "module": "./fullExecutionTree",
+        "line": 55
       }
     ],
     "calls": [
       {
         "caller": "answerProjectQuestion",
-        "callee": "resolveFunctionName",
+        "callee": "detectProjectIntent",
         "file": "brain/projectBrain.js",
-        "line": 64
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "buildExecutionGraph",
-        "file": "brain/projectBrain.js",
-        "line": 65
+        "line": 62
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 74
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "traceCallers",
-        "file": "brain/projectBrain.js",
-        "line": 75
+        "line": 71
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 106
+        "line": 99
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "traceCallers",
+        "callee": "findCallees",
         "file": "brain/projectBrain.js",
-        "line": 111
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "traceCallees",
-        "file": "brain/projectBrain.js",
-        "line": 112
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "traceCallees",
-        "file": "brain/projectBrain.js",
-        "line": 159
+        "line": 110
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 200
+        "line": 137
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "locateFunction",
         "file": "brain/projectBrain.js",
-        "line": 201
+        "line": 138
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "resolveFunctionName",
+        "callee": "explainFile",
         "file": "brain/projectBrain.js",
-        "line": 209
+        "line": 146
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "listFunctions",
+        "file": "brain/projectBrain.js",
+        "line": 167
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainArchitecture",
+        "file": "brain/projectBrain.js",
+        "line": 175
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildProjectGraph",
+        "file": "brain/projectBrain.js",
+        "line": 179
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeImpact",
+        "file": "brain/projectBrain.js",
+        "line": 194
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeFunctionImpact",
+        "file": "brain/projectBrain.js",
+        "line": 200
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "dependencyTree",
+        "file": "brain/projectBrain.js",
+        "line": 207
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "reasonAboutFunction",
+        "file": "brain/projectBrain.js",
+        "line": 215
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeFunction",
+        "file": "brain/projectBrain.js",
+        "line": 221
       },
       {
         "caller": "answerProjectQuestion",
@@ -1070,153 +1102,285 @@
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "findCallees",
+        "callee": "explainExecution",
         "file": "brain/projectBrain.js",
-        "line": 238
+        "line": 230
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "analyzeImpact",
+        "callee": "explainExecution",
         "file": "brain/projectBrain.js",
-        "line": 271
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "dependencyTree",
-        "file": "brain/projectBrain.js",
-        "line": 281
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "reasonAboutFunction",
-        "file": "brain/projectBrain.js",
-        "line": 290
+        "line": 236
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "explainFeature",
         "file": "brain/projectBrain.js",
-        "line": 300
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "resolveFunctionName",
-        "file": "brain/projectBrain.js",
-        "line": 309
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainExecution",
-        "file": "brain/projectBrain.js",
-        "line": 311
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainExecution",
-        "file": "brain/projectBrain.js",
-        "line": 317
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainFunctionReason",
-        "file": "brain/projectBrain.js",
-        "line": 326
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "buildRecursiveExecution",
-        "file": "brain/projectBrain.js",
-        "line": 336
+        "line": 244
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildCallHierarchy",
         "file": "brain/projectBrain.js",
-        "line": 349
+        "line": 252
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "buildExecutionGraph",
         "file": "brain/projectBrain.js",
-        "line": 372
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "buildAutoExecutionPipeline",
-        "file": "brain/projectBrain.js",
-        "line": 384
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "buildExecutionTree",
-        "file": "brain/projectBrain.js",
-        "line": 393
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainArchitecture",
-        "file": "brain/projectBrain.js",
-        "line": 405
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "buildProjectGraph",
-        "file": "brain/projectBrain.js",
-        "line": 410
+        "line": 260
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "resolveFunctionName",
         "file": "brain/projectBrain.js",
-        "line": 424
+        "line": 260
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "buildExecutionGraph",
+        "callee": "buildAutoExecutionPipeline",
         "file": "brain/projectBrain.js",
-        "line": 425
+        "line": 268
       },
       {
         "caller": "answerProjectQuestion",
-        "callee": "analyzeFunctionImpact",
+        "callee": "buildExecutionTree",
         "file": "brain/projectBrain.js",
-        "line": 436
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainExecution",
-        "file": "brain/projectBrain.js",
-        "line": 444
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "listFunctions",
-        "file": "brain/projectBrain.js",
-        "line": 471
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "explainFile",
-        "file": "brain/projectBrain.js",
-        "line": 480
-      },
-      {
-        "caller": "answerProjectQuestion",
-        "callee": "analyzeFunction",
-        "file": "brain/projectBrain.js",
-        "line": 485
+        "line": 276
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "reverseCallGraph",
         "file": "brain/projectBrain.js",
-        "line": 495
+        "line": 287
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 308
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildExecutionGraph",
+        "file": "brain/projectBrain.js",
+        "line": 309
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 318
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "traceCallers",
+        "file": "brain/projectBrain.js",
+        "line": 319
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 350
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "traceCallers",
+        "file": "brain/projectBrain.js",
+        "line": 355
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "traceCallees",
+        "file": "brain/projectBrain.js",
+        "line": 356
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "traceCallees",
+        "file": "brain/projectBrain.js",
+        "line": 403
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 444
       },
       {
         "caller": "answerProjectQuestion",
         "callee": "locateFunction",
         "file": "brain/projectBrain.js",
-        "line": 505
+        "line": 445
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 453
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 473
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "findCallees",
+        "file": "brain/projectBrain.js",
+        "line": 482
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeImpact",
+        "file": "brain/projectBrain.js",
+        "line": 515
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "dependencyTree",
+        "file": "brain/projectBrain.js",
+        "line": 525
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "reasonAboutFunction",
+        "file": "brain/projectBrain.js",
+        "line": 534
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainFeature",
+        "file": "brain/projectBrain.js",
+        "line": 544
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 553
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainExecution",
+        "file": "brain/projectBrain.js",
+        "line": 555
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainExecution",
+        "file": "brain/projectBrain.js",
+        "line": 561
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainFunctionReason",
+        "file": "brain/projectBrain.js",
+        "line": 570
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildRecursiveExecution",
+        "file": "brain/projectBrain.js",
+        "line": 580
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildCallHierarchy",
+        "file": "brain/projectBrain.js",
+        "line": 593
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildExecutionGraph",
+        "file": "brain/projectBrain.js",
+        "line": 616
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildAutoExecutionPipeline",
+        "file": "brain/projectBrain.js",
+        "line": 628
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildExecutionTree",
+        "file": "brain/projectBrain.js",
+        "line": 637
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainArchitecture",
+        "file": "brain/projectBrain.js",
+        "line": 649
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildProjectGraph",
+        "file": "brain/projectBrain.js",
+        "line": 654
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "resolveFunctionName",
+        "file": "brain/projectBrain.js",
+        "line": 668
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "buildExecutionGraph",
+        "file": "brain/projectBrain.js",
+        "line": 669
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeImpact",
+        "file": "brain/projectBrain.js",
+        "line": 682
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeFunctionImpact",
+        "file": "brain/projectBrain.js",
+        "line": 690
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainExecution",
+        "file": "brain/projectBrain.js",
+        "line": 698
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "listFunctions",
+        "file": "brain/projectBrain.js",
+        "line": 725
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "explainFile",
+        "file": "brain/projectBrain.js",
+        "line": 734
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "analyzeFunction",
+        "file": "brain/projectBrain.js",
+        "line": 739
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "reverseCallGraph",
+        "file": "brain/projectBrain.js",
+        "line": 749
+      },
+      {
+        "caller": "answerProjectQuestion",
+        "callee": "locateFunction",
+        "file": "brain/projectBrain.js",
+        "line": 759
       }
     ]
   },
@@ -1315,6 +1479,22 @@
         "line": 104
       }
     ]
+  },
+  {
+    "file": "brain/projectIntent.js",
+    "functions": [
+      {
+        "name": "detectProjectIntent",
+        "line": 1,
+        "file": "brain/projectIntent.js",
+        "type": "function",
+        "calls": [],
+        "body": "function detectProjectIntent(message) {\n  const text = message.trim().toLowerCase();\n\n  if (!text) return \"UNKNOWN\";\n\n  if (/\\b(who calls|what calls|called by|callers of|trace callers|caller chain)\\b/i.test(text)) {\n    return \"CALLERS\";\n  }\n\n  if (/\\b(what does .* call|what .* calls|callees|calls made by)\\b/i.test(text)) {\n    return \"CALLEES\";\n  }\n\n  if (/\\b(where is .* defined|where .* defined|definition of|find function|locate function|jump to)\\b/i.test(text)) {\n    return \"DEFINITION\";\n  }\n\n  if (/\\b(execution path|flow to|path to|trace both|trace execution|execution trace)\\b/i.test(text)) {\n    return \"TRACE\";\n  }\n\n  if (/\\b(what breaks|what affects|impact|remove|delete|what happens if.*change|impact of)\\b/i.test(text)) {\n    return \"IMPACT\";\n  }\n\n  if (/\\b(dependency tree|dependencies|depends on|dependency)\\b/i.test(text)) {\n    return \"DEPENDENCIES\";\n  }\n\n  if (/\\b(who uses|used by|imports|imported by)\\b/i.test(text)) {\n    return \"FILE_USAGE\";\n  }\n\n  if (/\\b(show all functions|list functions|functions in)\\b/i.test(text)) {\n    return \"FUNCTION_LIST\";\n  }\n\n  if (\n    /\\b(explain|describe)\\b.*(?:\\bfile\\b|\\b[a-z0-9_$.-]+\\.js\\b)/i.test(\n      text\n    )\n  ) {\n    return \"FILE_EXPLANATION\";\n  }\n\n  if (/\\b(full analysis|analyze function|analyse function|details about|everything about|explain function)\\b/i.test(text)) {\n    return \"FUNCTION_ANALYSIS\";\n  }\n\n  if (/\\b(explain execution|execution flow|how .* executes|execution of)\\b/i.test(text)) {\n    return \"EXECUTION\";\n  }\n\n  if (/\\b(how does .* work|feature|system)\\b/i.test(text)) {\n    return \"FEATURE\";\n  }\n\n  if (/\\b(call hierarchy|hierarchy)\\b/i.test(text)) {\n    return \"CALL_HIERARCHY\";\n  }\n\n  if (/\\b(execution graph|show execution graph)\\b/i.test(text)) {\n    return \"EXECUTION_GRAPH\";\n  }\n\n  if (/\\b(execution pipeline|pipeline)\\b/i.test(text)) {\n    return \"EXECUTION_PIPELINE\";\n  }\n\n  if (/\\b(execution tree|full tree|tree)\\b/i.test(text)) {\n    return \"EXECUTION_TREE\";\n  }\n\n  if (/\\b(architecture|project architecture|show architecture)\\b/i.test(text)) {\n    return \"ARCHITECTURE\";\n  }\n\n  if (/\\b(project graph|show project graph)\\b/i.test(text)) {\n    return \"PROJECT_GRAPH\";\n  }\n\n  if (/\\b(reverse call graph|who reaches)\\b/i.test(text)) {\n    return \"REVERSE_CALL_GRAPH\";\n  }\n\n  if (/\\b(list all files|list all project files|list project files|show project files|show all project files|list files)\\b/i.test(text)) {\n    return \"LIST_FILES\";\n  }\n\n  return \"UNKNOWN\";\n}"
+      }
+    ],
+    "arrowFunctions": [],
+    "requires": [],
+    "calls": []
   },
   {
     "file": "brain/projectReasoner.js",
@@ -1615,36 +1795,142 @@
     "file": "memory.js",
     "functions": [
       {
-        "name": "remember",
-        "line": 5,
+        "name": "readProfile",
+        "line": 33,
         "file": "memory.js",
         "type": "function",
         "calls": [],
-        "body": "async function remember(message) {\n  let profile = {};\n\n  try {\n    if (await fs.pathExists(FILE)) {\n      profile = await fs.readJson(FILE);\n    }\n  } catch {\n    profile = {};\n  }\n\n  const text = message.toLowerCase().trim();\n\n  // Basic facts\n  if (text.startsWith(\"my name is \")) {\n    profile.name = message.substring(11).trim();\n  }\n\n  if (text.startsWith(\"my favorite color is \")) {\n    profile.favoriteColor = message.substring(21).trim();\n  }\n\n  if (text.startsWith(\"i live in \")) {\n    profile.city = message.substring(10).trim();\n  }\n\n  if (text.startsWith(\"i work as \")) {\n    profile.job = message.substring(10).trim();\n  }\n\n  if (text.startsWith(\"i am learning \")) {\n    profile.learning = message.substring(14).trim();\n  }\n\n  if (text.startsWith(\"i'm learning \")) {\n    profile.learning = message.substring(14).trim();\n  }\n\n  if (text.startsWith(\"my goal is \")) {\n    profile.goals ??= [];\n    profile.goals.push(message.substring(11).trim());\n  }\n\n  if (text.startsWith(\"i am building \")) {\n    profile.projects ??= [];\n    profile.projects.push(message.substring(14).trim());\n  }\n\n  if (text.startsWith(\"my favorite language is \")) {\n    profile.favoriteLanguage = message.substring(24).trim();\n  }\n\n  if (text.startsWith(\"remember that \")) {\n    profile.notes ??= [];\n    profile.notes.push(message.substring(14).trim());\n  }\n\n  if (profile.goals) {\n    profile.goals = [...new Set(profile.goals)];\n  }\n\n  if (profile.projects) {\n    profile.projects = [...new Set(profile.projects)];\n  }\n\n  if (profile.notes) {\n    profile.notes = [...new Set(profile.notes)];\n  }\n\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n\n  return profile;\n}"
+        "body": "async function readProfile() {\n  try {\n    if (await fs.pathExists(FILE)) {\n      const profile = await fs.readJson(FILE);\n\n      if (profile && typeof profile === \"object\" && !Array.isArray(profile)) {\n        return profile;\n      }\n    }\n  } catch (err) {\n    console.error(\"Memory: could not read profile:\", err.message);\n  }\n\n  return {};\n}"
+      },
+      {
+        "name": "writeProfile",
+        "line": 49,
+        "file": "memory.js",
+        "type": "function",
+        "calls": [],
+        "body": "async function writeProfile(profile) {\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n}"
+      },
+      {
+        "name": "cleanText",
+        "line": 55,
+        "file": "memory.js",
+        "type": "function",
+        "calls": [],
+        "body": "function cleanText(value) {\n  if (value === undefined || value === null) {\n    return \"\";\n  }\n\n  return String(value)\n    .trim()\n    .replace(/\\s+/g, \" \");\n}"
+      },
+      {
+        "name": "addUnique",
+        "line": 65,
+        "file": "memory.js",
+        "type": "function",
+        "calls": [
+          {
+            "name": "cleanText",
+            "line": 66
+          }
+        ],
+        "body": "function addUnique(array, value) {\n  const cleaned = cleanText(value);\n\n  if (!cleaned) {\n    return array;\n  }\n\n  const exists = array.some(\n    item => cleanText(item).toLowerCase() === cleaned.toLowerCase()\n  );\n\n  if (!exists) {\n    array.push(cleaned);\n  }\n\n  return array;\n}"
+      },
+      {
+        "name": "removeMatching",
+        "line": 83,
+        "file": "memory.js",
+        "type": "function",
+        "calls": [
+          {
+            "name": "cleanText",
+            "line": 84
+          }
+        ],
+        "body": "function removeMatching(array, value) {\n  const target = cleanText(value).toLowerCase();\n\n  return array.filter(\n    item => cleanText(item).toLowerCase() !== target\n  );\n}"
+      },
+      {
+        "name": "remember",
+        "line": 94,
+        "file": "memory.js",
+        "type": "function",
+        "calls": [
+          {
+            "name": "readProfile",
+            "line": 95
+          },
+          {
+            "name": "cleanText",
+            "line": 97
+          },
+          {
+            "name": "addUnique",
+            "line": 194
+          },
+          {
+            "name": "writeProfile",
+            "line": 269
+          }
+        ],
+        "body": "async function remember(message) {\n  const profile = await readProfile();\n\n  const original = cleanText(message);\n  const text = original.toLowerCase();\n\n  if (!original) {\n    return profile;\n  }\n\n  /*\n   * Name\n   */\n  if (text.startsWith(\"my name is \")) {\n    const value = cleanText(original.substring(\"my name is \".length));\n\n    if (value) {\n      profile.name = value;\n    }\n  }\n\n  /*\n   * Favorite color\n   */\n  if (text.startsWith(\"my favorite color is \")) {\n    const value = cleanText(\n      original.substring(\"my favorite color is \".length)\n    );\n\n    if (value) {\n      profile.favoriteColor = value;\n    }\n  }\n\n  /*\n   * City / location\n   */\n  if (text.startsWith(\"my favorite food is \")) {\n    const value = cleanText(\n      original.substring(\"my favorite food is \".length)\n    );\n    if (value) profile.favoriteFood = value;\n  }\n\n  if (text.startsWith(\"i live in \")) {\n    const value = cleanText(\n      original.substring(\"i live in \".length)\n    );\n\n    if (value) {\n      profile.city = value;\n    }\n  }\n\n  /*\n   * Job\n   */\n  if (text.startsWith(\"i work as \")) {\n    const value = cleanText(\n      original.substring(\"i work as \".length)\n    );\n\n    if (value) {\n      profile.job = value;\n    }\n  }\n\n  /*\n   * Learning\n   */\n  if (text.startsWith(\"i am learning \")) {\n    const value = cleanText(\n      original.substring(\"i am learning \".length)\n    );\n\n    if (value) {\n      profile.learning = value;\n    }\n  }\n\n  if (text.startsWith(\"i'm learning \")) {\n    const value = cleanText(\n      original.substring(\"i'm learning \".length)\n    );\n\n    if (value) {\n      profile.learning = value;\n    }\n  }\n\n  /*\n   * Goal\n   */\n  if (text.startsWith(\"my goal is \")) {\n    const value = cleanText(\n      original.substring(\"my goal is \".length)\n    );\n\n    if (value) {\n      profile.goals ??= [];\n      addUnique(profile.goals, value);\n    }\n  }\n\n  /*\n   * Project\n   */\n  if (text.startsWith(\"i am building \")) {\n    const value = cleanText(\n      original.substring(\"i am building \".length)\n    );\n\n    if (value) {\n      profile.projects ??= [];\n      addUnique(profile.projects, value);\n    }\n  }\n\n  if (text.startsWith(\"i'm building \")) {\n    const value = cleanText(\n      original.substring(\"i'm building \".length)\n    );\n\n    if (value) {\n      profile.projects ??= [];\n      addUnique(profile.projects, value);\n    }\n  }\n\n  /*\n   * Favorite programming language\n   */\n  if (text.startsWith(\"my favorite language is \")) {\n    const value = cleanText(\n      original.substring(\"my favorite language is \".length)\n    );\n\n    if (value) {\n      profile.favoriteLanguage = value;\n    }\n  }\n\n  /*\n   * Explicit note\n   */\n  if (text.startsWith(\"remember that \")) {\n    const value = cleanText(\n      original.substring(\"remember that \".length)\n    );\n\n    if (value) {\n      profile.notes ??= [];\n      addUnique(profile.notes, value);\n    }\n  }\n\n  /*\n   * Make sure array fields are clean and deduplicated.\n   */\n  for (const field of ARRAY_FIELDS) {\n    if (Array.isArray(profile[field])) {\n      const cleaned = [];\n\n      for (const item of profile[field]) {\n        addUnique(cleaned, item);\n      }\n\n      if (cleaned.length > 0) {\n        profile[field] = cleaned;\n      } else {\n        delete profile[field];\n      }\n    }\n  }\n\n  await writeProfile(profile);\n\n  return profile;\n}"
       },
       {
         "name": "mergeMemory",
-        "line": 80,
+        "line": 281,
         "file": "memory.js",
         "type": "function",
-        "calls": [],
-        "body": "async function mergeMemory(newMemory) {\n  let profile = {};\n\n  try {\n    if (await fs.pathExists(FILE)) {\n      profile = await fs.readJson(FILE);\n    }\n  } catch {\n    profile = {};\n  }\n\n    for (const [key, value] of Object.entries(newMemory)) {\n  if (key === \"goal\") {\n    profile.goals ??= [];\n\n    if (!profile.goals.some(g => g.toLowerCase() === value.toLowerCase())) {\n      profile.goals.push(value);\n    }\n\n  } else if (key === \"project\") {\n    profile.projects ??= [];\n\n    if (!profile.projects.includes(value)) {\n      profile.projects.push(value);\n    }\n\n  } else if (key === \"note\") {\n    profile.notes ??= [];\n\n    if (!profile.notes.includes(value)) {\n      profile.notes.push(value);\n    }\n\n  } else {\n    profile[key] = value;\n  }\n}\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n\n  return profile;\n}"
+        "calls": [
+          {
+            "name": "readProfile",
+            "line": 282
+          },
+          {
+            "name": "cleanText",
+            "line": 293
+          },
+          {
+            "name": "addUnique",
+            "line": 307
+          },
+          {
+            "name": "writeProfile",
+            "line": 320
+          }
+        ],
+        "body": "async function mergeMemory(newMemory) {\n  const profile = await readProfile();\n\n  if (\n    !newMemory ||\n    typeof newMemory !== \"object\" ||\n    Array.isArray(newMemory)\n  ) {\n    return profile;\n  }\n\n  for (const [rawKey, rawValue] of Object.entries(newMemory)) {\n    const key = cleanText(rawKey);\n\n    if (!ALLOWED_FIELDS.has(key)) {\n      continue;\n    }\n\n    if (ARRAY_FIELDS.has(key)) {\n      profile[key] ??= [];\n\n      const values = Array.isArray(rawValue)\n        ? rawValue\n        : [rawValue];\n\n      for (const value of values) {\n        addUnique(profile[key], value);\n      }\n\n      continue;\n    }\n\n    const value = cleanText(rawValue);\n\n    if (value) {\n      profile[key] = value;\n    }\n  }\n\n  await writeProfile(profile);\n\n  return profile;\n}"
       },
       {
         "name": "getProfile",
-        "line": 123,
+        "line": 328,
         "file": "memory.js",
         "type": "function",
-        "calls": [],
-        "body": "async function getProfile() {\n  try {\n    if (await fs.pathExists(FILE)) {\n      return await fs.readJson(FILE);\n    }\n  } catch {}\n\n  return {};\n}"
+        "calls": [
+          {
+            "name": "readProfile",
+            "line": 329
+          }
+        ],
+        "body": "async function getProfile() {\n  return readProfile();\n}"
       },
       {
         "name": "forget",
-        "line": 132,
+        "line": 342,
         "file": "memory.js",
         "type": "function",
-        "calls": [],
-        "body": "async function forget(key, value = null) {\n  let profile = {};\n\n  try {\n    if (await fs.pathExists(FILE)) {\n      profile = await fs.readJson(FILE);\n    }\n  } catch {\n    return;\n  }\n\n  if (value && Array.isArray(profile[key])) {\n    profile[key] = profile[key].filter(\n      item => item !== value\n    );\n\n    if (profile[key].length === 0) {\n      delete profile[key];\n    }\n\n  } else {\n    delete profile[key];\n  }\n\n  await fs.writeJson(FILE, profile, {\n    spaces: 2\n  });\n}"
+        "calls": [
+          {
+            "name": "readProfile",
+            "line": 343
+          },
+          {
+            "name": "cleanText",
+            "line": 345
+          },
+          {
+            "name": "removeMatching",
+            "line": 353
+          },
+          {
+            "name": "writeProfile",
+            "line": 363
+          }
+        ],
+        "body": "async function forget(key, value = null) {\n  const profile = await readProfile();\n\n  const field = cleanText(key);\n\n  if (!field || !ALLOWED_FIELDS.has(field)) {\n    return profile;\n  }\n\n  if (value !== null && ARRAY_FIELDS.has(field)) {\n    if (Array.isArray(profile[field])) {\n      profile[field] = removeMatching(profile[field], value);\n\n      if (profile[field].length === 0) {\n        delete profile[field];\n      }\n    }\n  } else {\n    delete profile[field];\n  }\n\n  await writeProfile(profile);\n\n  return profile;\n}"
       }
     ],
     "arrowFunctions": [],
@@ -1654,7 +1940,212 @@
         "line": 1
       }
     ],
-    "calls": []
+    "calls": [
+      {
+        "caller": "addUnique",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 66
+      },
+      {
+        "caller": "addUnique",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 73
+      },
+      {
+        "caller": "removeMatching",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 84
+      },
+      {
+        "caller": "removeMatching",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 87
+      },
+      {
+        "caller": "remember",
+        "callee": "readProfile",
+        "file": "memory.js",
+        "line": 95
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 97
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 108
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 119
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 132
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 139
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 152
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 165
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 175
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 188
+      },
+      {
+        "caller": "remember",
+        "callee": "addUnique",
+        "file": "memory.js",
+        "line": 194
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 202
+      },
+      {
+        "caller": "remember",
+        "callee": "addUnique",
+        "file": "memory.js",
+        "line": 208
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 213
+      },
+      {
+        "caller": "remember",
+        "callee": "addUnique",
+        "file": "memory.js",
+        "line": 219
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 227
+      },
+      {
+        "caller": "remember",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 240
+      },
+      {
+        "caller": "remember",
+        "callee": "addUnique",
+        "file": "memory.js",
+        "line": 246
+      },
+      {
+        "caller": "remember",
+        "callee": "addUnique",
+        "file": "memory.js",
+        "line": 258
+      },
+      {
+        "caller": "remember",
+        "callee": "writeProfile",
+        "file": "memory.js",
+        "line": 269
+      },
+      {
+        "caller": "mergeMemory",
+        "callee": "readProfile",
+        "file": "memory.js",
+        "line": 282
+      },
+      {
+        "caller": "mergeMemory",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 293
+      },
+      {
+        "caller": "mergeMemory",
+        "callee": "addUnique",
+        "file": "memory.js",
+        "line": 307
+      },
+      {
+        "caller": "mergeMemory",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 313
+      },
+      {
+        "caller": "mergeMemory",
+        "callee": "writeProfile",
+        "file": "memory.js",
+        "line": 320
+      },
+      {
+        "caller": "getProfile",
+        "callee": "readProfile",
+        "file": "memory.js",
+        "line": 329
+      },
+      {
+        "caller": "forget",
+        "callee": "readProfile",
+        "file": "memory.js",
+        "line": 343
+      },
+      {
+        "caller": "forget",
+        "callee": "cleanText",
+        "file": "memory.js",
+        "line": 345
+      },
+      {
+        "caller": "forget",
+        "callee": "removeMatching",
+        "file": "memory.js",
+        "line": 353
+      },
+      {
+        "caller": "forget",
+        "callee": "writeProfile",
+        "file": "memory.js",
+        "line": 363
+      }
+    ]
   },
   {
     "file": "memoryExtractor.js",
@@ -1730,15 +2221,15 @@
     "functions": [
       {
         "name": "send",
-        "line": 2,
+        "line": 1,
         "file": "public/app.js",
         "type": "function",
         "calls": [],
-        "body": "async function send() {\n  const input = document.getElementById(\"message\");\n  const chat = document.getElementById(\"chat\");\n\n  const message = input.value.trim();\n  if (!message) return;\n\n  chat.innerHTML += `<div class=\"message user\">${message}</div>`;\n  input.value = \"\";\n\n  chat.innerHTML += `<div class=\"message ai\" id=\"typing\">SamuAI Chatbot is typing...</div>`;\n  chat.scrollTop = chat.scrollHeight;\n\n  try {\n    const response = await fetch(\"/chat\", {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify({ message })\n    });\n\n      const data = await response.json();\n\n      console.log(data.reply);\nalert(data.reply);\n\n      const typing = document.getElementById(\"typing\");\n      if (typing) typing.remove();\n\n      chat.innerHTML += `<div class=\"message ai\">${data.reply.replace(/\\n/g, \"<br>\")}</div>`;\n      \nchat.scrollTop = chat.scrollHeight;\n\n  } catch (err) {\n    const typing = document.getElementById(\"typing\");\n    if (typing) typing.remove();\n\n    chat.innerHTML += `<div class=\"message ai\">Error contacting SamuAI Chatbot.</div>`;\n    console.error(err);\n  }\n}"
+        "body": "async function send() {\n  const input = document.getElementById(\"message\");\n  const chat = document.getElementById(\"chat\");\n\n  const message = input.value.trim();\n  if (!message) return;\n\n  chat.innerHTML += `<div class=\"message user\">${message}</div>`;\n  input.value = \"\";\n\n  chat.innerHTML += `<div class=\"message ai\" id=\"typing\">Speakra is typing...</div>`;\n  chat.scrollTop = chat.scrollHeight;\n\n  try {\n    const response = await fetch(\"/chat\", {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify({ message })\n    });\n\n      const data = await response.json();\n\n      console.log(data.reply);\n\n      const typing = document.getElementById(\"typing\");\n      if (typing) typing.remove();\n\n      chat.innerHTML += `<div class=\"message ai\">${data.reply.replace(/\\n/g, \"<br>\")}</div>`;\n      \nchat.scrollTop = chat.scrollHeight;\n\n  } catch (err) {\n    const typing = document.getElementById(\"typing\");\n    if (typing) typing.remove();\n\n    chat.innerHTML += `<div class=\"message ai\">Error contacting Speakra.</div>`;\n    console.error(err);\n  }\n}"
       },
       {
         "name": "uploadFile",
-        "line": 44,
+        "line": 42,
         "file": "public/app.js",
         "type": "function",
         "calls": [],
@@ -1782,7 +2273,7 @@
         "file": "routes/chat.js",
         "type": "function",
         "calls": [],
-        "body": "async function loadMemory() {\n  try {\n    history = await fs.readJson(MEMORY_FILE);\n  } catch {\n    history = [\n      {\n        role: \"system\",\n        content: \"You are SamuAI Chatbot, a friendly and helpful AI assistant.\"\n      }\n    ];\n  }\n}"
+        "body": "async function loadMemory() {\n  try {\n    history = await fs.readJson(MEMORY_FILE);\n  } catch {\n    history = [\n      {\n        role: \"system\",\n        content: \"You are Speakra, a friendly and helpful AI assistant.\"\n      }\n    ];\n  }\n}"
       },
       {
         "name": "saveMemory",
@@ -1839,7 +2330,7 @@
             "line": 123
           }
         ],
-        "body": "router.post(\"/\", async (req, res) => {\n  try {\n    const message = (req.body.message || \"\").trim();\n\n    if (!message) {\n      return res.status(400).json({\n        reply: \"Please enter a message.\"\n      });\n    }\nawait remember(message);\n\nconst factsFound = extractFacts(message);\n\nif (Object.keys(factsFound).length > 0) {\n  await mergeMemory(factsFound);\n}\nconst profile = await getProfile();\n\n\n\n    history.push({\n      role: \"user\",\n      content: message\n    });\n\n    let facts = \"\";\n\n    if (profile.name)\n      facts += `User's name is ${profile.name}.\\n`;\n\n    if (profile.favoriteColor)\n      facts += `User's favorite color is ${profile.favoriteColor}.\\n`;\n\n    if (profile.city)\n      facts += `User lives in ${profile.city}.\\n`;\n\n    if (profile.job)\n      facts += `User works as ${profile.job}.\\n`;\n\n    if (profile.learning)\n      facts += `User is learning ${profile.learning}.\\n`;\n\n    const messages = [\n      {\n        role: \"system\",\n        content:\n          \"You are SamuAI Chatbot, a friendly AI assistant.\\n\\nKnown facts:\\n\" +\n          facts\n      },\n      ...history.filter(msg => msg.role !== \"system\")\n    ];\n\n    const reply = await chat(messages);\n\n    history.push({\n      role: \"assistant\",\n      content: reply\n    });\n\n    if (history.length > 51) {\n      history = [history[0], ...history.slice(-50)];\n    }\n\n    await saveMemory();\n\n    res.json({\n      reply\n    });\n\n  } catch (err) {\n    console.error(err);\n\n    res.status(500).json({\n      reply: \"Sorry, I couldn't contact the AI.\"\n    });\n  }\n});"
+        "body": "router.post(\"/\", async (req, res) => {\n  try {\n    const message = (req.body.message || \"\").trim();\n\n    if (!message) {\n      return res.status(400).json({\n        reply: \"Please enter a message.\"\n      });\n    }\nawait remember(message);\n\nconst factsFound = extractFacts(message);\n\nif (Object.keys(factsFound).length > 0) {\n  await mergeMemory(factsFound);\n}\nconst profile = await getProfile();\n\n\n\n    history.push({\n      role: \"user\",\n      content: message\n    });\n\n    let facts = \"\";\n\n    if (profile.name)\n      facts += `User's name is ${profile.name}.\\n`;\n\n    if (profile.favoriteColor)\n      facts += `User's favorite color is ${profile.favoriteColor}.\\n`;\n\n    if (profile.city)\n      facts += `User lives in ${profile.city}.\\n`;\n\n    if (profile.job)\n      facts += `User works as ${profile.job}.\\n`;\n\n    if (profile.learning)\n      facts += `User is learning ${profile.learning}.\\n`;\n\n    const messages = [\n      {\n        role: \"system\",\n        content:\n          \"You are Speakra, a friendly AI assistant.\\n\\nKnown facts:\\n\" +\n          facts\n      },\n      ...history.filter(msg => msg.role !== \"system\")\n    ];\n\n    const reply = await chat(messages);\n\n    history.push({\n      role: \"assistant\",\n      content: reply\n    });\n\n    if (history.length > 51) {\n      history = [history[0], ...history.slice(-50)];\n    }\n\n    await saveMemory();\n\n    res.json({\n      reply\n    });\n\n  } catch (err) {\n    console.error(err);\n\n    res.status(500).json({\n      reply: \"Sorry, I couldn't contact the AI.\"\n    });\n  }\n});"
       }
     ],
     "arrowFunctions": [],
@@ -1920,93 +2411,197 @@
     "file": "server.js",
     "functions": [
       {
-        "name": "loadMemory",
-        "line": 29,
+        "name": "detectLanguage",
+        "line": 53,
         "file": "server.js",
         "type": "function",
         "calls": [],
-        "body": "async function loadMemory() {\n  try {\n    history = await fs.readJson(MEMORY_FILE);\n  } catch {\n    history = [\n      {\n        role: \"system\",\n        content: \"You are SamuAI Chatbot, a friendly and helpful AI assistant.\"\n      }\n    ];\n  }\n}"
+        "body": "function detectLanguage(filename = \"\") {\n  const ext = path.extname(filename).toLowerCase();\n\n  const languages = {\n    \".txt\": \"Plain Text\",\n    \".md\": \"Markdown\",\n    \".js\": \"JavaScript\",\n    \".jsx\": \"React JSX\",\n    \".ts\": \"TypeScript\",\n    \".tsx\": \"React TypeScript\",\n    \".json\": \"JSON\",\n    \".html\": \"HTML\",\n    \".css\": \"CSS\"\n  };\n\n  return languages[ext] || \"Unknown\";\n}"
+      },
+      {
+        "name": "extractFileInfo",
+        "line": 71,
+        "file": "server.js",
+        "type": "function",
+        "calls": [
+          {
+            "name": "detectLanguage",
+            "line": 151
+          }
+        ],
+        "body": "function extractFileInfo(content, filename) {\n  const imports = [];\n  const functions = [];\n  const components = [];\n  const classes = [];\n  const exports = [];\n\n  const importRegex =\n    /import\\s+(?:.*?\\s+from\\s+)?['\"](.+?)['\"]/g;\n\n  let match;\n\n  while ((match = importRegex.exec(content)) !== null) {\n    imports.push(match[1]);\n  }\n\n  const functionMatches =\n    content.match(/\\bfunction\\s+[A-Za-z0-9_$]+/g) || [];\n\n  for (const item of functionMatches) {\n    functions.push(item.replace(/^function\\s+/, \"\"));\n  }\n\n  const arrowMatches =\n    content.match(\n      /\\b(?:const|let|var)\\s+[A-Za-z0-9_$]+\\s*=\\s*(?:async\\s*)?\\(/g\n    ) || [];\n\n  for (const item of arrowMatches) {\n    const name = item\n      .replace(/^(const|let|var)\\s+/, \"\")\n      .replace(/\\s*=\\s*(?:async\\s*)?\\($/, \"\")\n      .trim();\n\n    if (name) {\n      functions.push(name);\n    }\n  }\n\n  const componentMatches =\n    content.match(/\\bfunction\\s+[A-Z][A-Za-z0-9_$]*/g) || [];\n\n  for (const item of componentMatches) {\n    components.push(item.replace(/^function\\s+/, \"\"));\n  }\n\n  const componentConstMatches =\n    content.match(\n      /\\bconst\\s+[A-Z][A-Za-z0-9_$]*\\s*=\\s*(?:\\([^)]*\\)|[A-Za-z0-9_$]+)\\s*=>/g\n    ) || [];\n\n  for (const item of componentConstMatches) {\n    const name = item\n      .replace(/^const\\s+/, \"\")\n      .split(\"=\")[0]\n      .trim();\n\n    if (name) {\n      components.push(name);\n    }\n  }\n\n  const classMatches =\n    content.match(/\\bclass\\s+[A-Za-z0-9_$]+/g) || [];\n\n  for (const item of classMatches) {\n    classes.push(item.replace(/^class\\s+/, \"\"));\n  }\n\n  const exportMatches =\n    content.match(\n      /\\bexport\\s+(?:default\\s+)?(?:function|class|const|let|var)?\\s*[A-Za-z0-9_$]*/g\n    ) || [];\n\n  for (const item of exportMatches) {\n    exports.push(item.trim());\n  }\n\n  return {\n    filename,\n    language: detectLanguage(filename),\n    imports: [...new Set(imports)],\n    functions: [...new Set(functions)],\n    components: [...new Set(components)],\n    classes: [...new Set(classes)],\n    exports: [...new Set(exports)],\n    size: Buffer.byteLength(content, \"utf8\"),\n    lines: content.split(\"\\n\").length\n  };\n}"
+      },
+      {
+        "name": "loadMemory",
+        "line": 213,
+        "file": "server.js",
+        "type": "function",
+        "calls": [],
+        "body": "async function loadMemory() {\n  try {\n    const savedHistory = await fs.readJson(MEMORY_FILE);\n\n    if (Array.isArray(savedHistory)) {\n      history = savedHistory.filter(\n        message =>\n          message &&\n          typeof message === \"object\" &&\n          (message.role === \"user\" ||\n            message.role === \"assistant\")\n      );\n    } else {\n      history = [];\n    }\n  } catch {\n    history = [];\n  }\n}"
       },
       {
         "name": "saveMemory",
-        "line": 42,
+        "line": 233,
         "file": "server.js",
         "type": "function",
         "calls": [],
-        "body": "async function saveMemory() {\n  await fs.writeJson(MEMORY_FILE, history, {\n    spaces: 2\n  });\n}"
+        "body": "async function saveMemory() {\n  await fs.writeJson(\n    MEMORY_FILE,\n    [SYSTEM_MESSAGE, ...history.slice(-MAX_STORED_MESSAGES)],\n    {\n      spaces: 2\n    }\n  );\n}"
       },
       {
         "name": "loadProfile",
-        "line": 48,
+        "line": 246,
         "file": "server.js",
         "type": "function",
         "calls": [],
-        "body": "async function loadProfile() {\n  try {\n    profile = await fs.readJson(PROFILE_FILE);\n  } catch {\n    profile = {};\n  }\n}"
+        "body": "async function loadProfile() {\n  try {\n    const savedProfile = await fs.readJson(PROFILE_FILE);\n\n    if (\n      savedProfile &&\n      typeof savedProfile === \"object\" &&\n      !Array.isArray(savedProfile)\n    ) {\n      profile = savedProfile;\n    } else {\n      profile = {};\n    }\n  } catch {\n    profile = {};\n  }\n}"
       },
       {
-        "name": "saveProfile",
-        "line": 56,
+        "name": "buildProfileFacts",
+        "line": 264,
         "file": "server.js",
         "type": "function",
         "calls": [],
-        "body": "async function saveProfile() {\n  await fs.writeJson(PROFILE_FILE, profile, {\n    spaces: 2\n  });\n}"
+        "body": "function buildProfileFacts() {\n  const facts = [];\n\n  if (profile.name) {\n    facts.push(`User's name is ${profile.name}.`);\n  }\n\n  if (profile.favoriteColor) {\n    facts.push(\n      `User's favorite color is ${profile.favoriteColor}.`\n    );\n  }\n\n  if (profile.favoriteFood) {\n    facts.push(\n      `User's favorite food is ${profile.favoriteFood}.`\n    );\n  }\n\n  if (profile.city) {\n    facts.push(`User lives in ${profile.city}.`);\n  }\n\n  if (profile.job) {\n    facts.push(`User works as ${profile.job}.`);\n  }\n\n  if (profile.learning) {\n    facts.push(`User is learning ${profile.learning}.`);\n  }\n\n  if (profile.favoriteLanguage) {\n    facts.push(\n      `User's favorite programming language is ${profile.favoriteLanguage}.`\n    );\n  }\n\n  if (\n    Array.isArray(profile.projects) &&\n    profile.projects.length > 0\n  ) {\n    facts.push(\n      `User's projects: ${profile.projects.join(\", \")}.`\n    );\n  }\n\n  if (\n    Array.isArray(profile.goals) &&\n    profile.goals.length > 0\n  ) {\n    facts.push(\n      `User's goals: ${profile.goals.join(\"; \")}.`\n    );\n  }\n\n  if (\n    Array.isArray(profile.notes) &&\n    profile.notes.length > 0\n  ) {\n    facts.push(\n      `User's preferences/notes: ${profile.notes.join(\"; \")}.`\n    );\n  }\n\n  return facts.join(\"\\n\");\n}"
       },
       {
-        "name": "GET route callback",
-        "line": 62,
+        "name": "saveUploadIndex",
+        "line": 334,
+        "file": "server.js",
+        "type": "function",
+        "calls": [],
+        "body": "async function saveUploadIndex() {\n  await fs.writeJson(\n    UPLOAD_INDEX_FILE,\n    uploadedIndex,\n    {\n      spaces: 2\n    }\n  );\n}"
+      },
+      {
+        "name": "loadUploadIndex",
+        "line": 344,
+        "file": "server.js",
+        "type": "function",
+        "calls": [],
+        "body": "async function loadUploadIndex() {\n  try {\n    const savedIndex = await fs.readJson(\n      UPLOAD_INDEX_FILE\n    );\n\n    if (\n      savedIndex &&\n      typeof savedIndex === \"object\" &&\n      !Array.isArray(savedIndex)\n    ) {\n      uploadedIndex = savedIndex;\n    } else {\n      uploadedIndex = {};\n    }\n  } catch {\n    uploadedIndex = {};\n  }\n}"
+      },
+      {
+        "name": "loadUploadedFiles",
+        "line": 364,
+        "file": "server.js",
+        "type": "function",
+        "calls": [
+          {
+            "name": "saveUploadIndex",
+            "line": 423
+          }
+        ],
+        "body": "async function loadUploadedFiles() {\n  uploadedFiles = {};\n\n  await fs.ensureDir(UPLOAD_DIR);\n\n  const files = await fs.readdir(UPLOAD_DIR);\n\n  for (const storedName of files) {\n    const fullPath = path.join(UPLOAD_DIR, storedName);\n\n    try {\n      const stat = await fs.stat(fullPath);\n\n      if (!stat.isFile()) {\n        continue;\n      }\n\n      const content = await fs.readFile(\n        fullPath,\n        \"utf8\"\n      );\n\n      const existingInfo = Object.values(\n        uploadedIndex\n      ).find(\n        info => info && info.storedName === storedName\n      );\n\n      if (existingInfo) {\n        uploadedFiles[existingInfo.filename] = content;\n      }\n    } catch (err) {\n      console.error(\n        `Couldn't load uploaded file ${storedName}:`,\n        err.message\n      );\n    }\n  }\n\n  /*\n   * Remove index entries whose files no longer exist.\n   */\n  for (const [filename, info] of Object.entries(\n    uploadedIndex\n  )) {\n    if (!info || !info.storedName) {\n      delete uploadedIndex[filename];\n      continue;\n    }\n\n    const exists = await fs.pathExists(\n      path.join(UPLOAD_DIR, info.storedName)\n    );\n\n    if (!exists) {\n      delete uploadedIndex[filename];\n    }\n  }\n\n  await saveUploadIndex();\n\n  console.log(\n    \"Stage 3: loaded\",\n    Object.keys(uploadedFiles).length,\n    \"uploaded files.\"\n  );\n}"
+      },
+      {
+        "name": "findRelevantFiles",
+        "line": 432,
+        "file": "server.js",
+        "type": "function",
+        "calls": [],
+        "body": "function findRelevantFiles(message) {\n  const filenames = Object.keys(uploadedFiles);\n\n  if (filenames.length === 0) {\n    return [];\n  }\n\n  const lowerMessage = message.toLowerCase();\n\n  /*\n   * If the user clearly refers to the uploaded file\n   * and only one file is uploaded, use that file directly.\n   */\n  const explicitFileReference =\n    /\\b(this file|the file|uploaded file|the uploaded file|this uploaded file)\\b/i.test(\n      message\n    );\n\n  if (explicitFileReference && filenames.length === 1) {\n    return [filenames[0]];\n  }\n\n  const words = lowerMessage\n    .split(/\\W+/)\n    .filter(word => word.length > 1);\n\n  const scored = [];\n\n  for (const [filename, content] of Object.entries(\n    uploadedFiles\n  )) {\n    const info = uploadedIndex[filename] || {};\n\n    const searchText = [\n      filename,\n      info.language || \"\",\n      ...(info.imports || []),\n      ...(info.functions || []),\n      ...(info.components || []),\n      ...(info.classes || []),\n      ...(info.exports || [])\n    ]\n      .join(\" \")\n      .toLowerCase();\n\n    const lowerContent = content.toLowerCase();\n\n    let score = 0;\n\n    for (const word of words) {\n      if (searchText.includes(word)) {\n        score += 3;\n      }\n\n      if (lowerContent.includes(word)) {\n        score += 1;\n      }\n    }\n\n    if (lowerMessage.includes(filename.toLowerCase())) {\n      score += 20;\n    }\n\n    if (score > 0) {\n      scored.push({\n        filename,\n        score\n      });\n    }\n  }\n\n  return scored\n    .sort((a, b) => b.score - a.score)\n    .slice(0, 3)\n    .map(item => item.filename);\n}"
+      },
+      {
+        "name": "sort callback",
+        "line": 504,
         "file": "server.js",
         "type": "callback",
         "calls": [],
-        "body": "app.get(\"/\", (req, res) => {\n  res.sendFile(__dirname + \"/public/index.html\");\n});"
+        "body": "    .sort((a, b) => b.score - a.score)"
+      },
+      {
+        "name": "buildFileContext",
+        "line": 509,
+        "file": "server.js",
+        "type": "function",
+        "calls": [
+          {
+            "name": "findRelevantFiles",
+            "line": 510
+          }
+        ],
+        "body": "function buildFileContext(message) {\n  const filenames = findRelevantFiles(message);\n\n  if (filenames.length === 0) {\n    return \"\";\n  }\n\n  let context = \"UPLOADED FILE CONTEXT:\\n\";\n\n  for (const filename of filenames) {\n    const info = uploadedIndex[filename] || {};\n    const content = uploadedFiles[filename] || \"\";\n\n    context += `\\nFILE: ${filename}\\n`;\n    context += `LANGUAGE: ${\n      info.language || \"Unknown\"\n    }\\n`;\n\n    if (info.functions?.length) {\n      context += `FUNCTIONS: ${info.functions.join(\n        \", \"\n      )}\\n`;\n    }"
+      },
+      {
+        "name": "GET route callback",
+        "line": 552,
+        "file": "server.js",
+        "type": "callback",
+        "calls": [],
+        "body": "app.get(\"/\", (req, res) => {\n  res.sendFile(\n    path.join(__dirname, \"public\", \"index.html\")\n  );\n});"
       },
       {
         "name": "POST /chat callback",
-        "line": 66,
+        "line": 561,
         "file": "server.js",
         "type": "callback",
         "calls": [
           {
             "name": "remember",
-            "line": 79
+            "line": 580
           },
           {
             "name": "loadProfile",
-            "line": 82
+            "line": 581
           },
           {
             "name": "answerProjectQuestion",
-            "line": 92
+            "line": 603
+          },
+          {
+            "name": "buildProfileFacts",
+            "line": 638
+          },
+          {
+            "name": "buildFileContext",
+            "line": 644
           },
           {
             "name": "search",
-            "line": 138
+            "line": 658
           },
           {
             "name": "saveMemory",
-            "line": 208
+            "line": 770
+          },
+          {
+            "name": "extractFileInfo",
+            "line": 837
+          },
+          {
+            "name": "saveUploadIndex",
+            "line": 879
           },
           {
             "name": "loadMemory",
-            "line": 224
+            "line": 908
+          },
+          {
+            "name": "loadUploadIndex",
+            "line": 910
           }
         ],
-        "body": "app.post(\"/chat\", async (req, res) => {\nconsole.log(\">>>>>>>> REQUEST FROM BROWSER <<<<<<<<\");\nconsole.log(req.headers[\"user-agent\"]);\nconsole.log(req.body);\n  try {\n    const message = (req.body.message || \"\").trim();\n    if (!message) {\n      return res.status(400).json({\n        reply: \"Please enter a message.\"\n      });\n    }\n\n    // Automatically remember important facts\n    await remember(message);\n\n    // Reload profile after saving\n    await loadProfile();\n\n// Project Brain\nconst projectQuestion =\n/function|trace|call|caller|chain|impact|dependency|used by|where|find|file|code|project|memory|brain|server|route|remember|execution|pipeline|startup/i.test(message);\n\nif (projectQuestion) {\n\n  console.log(\"MESSAGE:\", message);\n\nconst result = answerProjectQuestion(message);\n\nconsole.log(\"FOUND =\", result.found);\n\nif (result.found) {\n  console.log(\"ENTERED PROJECT BRAIN\");\n\n  return res.json({\n    reply: \"🔥 PROJECT BRAIN ACTIVE 🔥\\n\\n\" + result.reply\n  });\n}\n\n}\nhistory.push({\n      role: \"user\",\n      content: message\n    });\n\n    let facts = \"\";\n\n    if (profile.name) {\n      facts += `User's name is ${profile.name}.\\n`;\n    }\n\n    if (profile.favoriteColor) {\n      facts += `User's favorite color is ${profile.favoriteColor}.\\n`;\n    }\n\n    if (profile.city) {\n      facts += `User lives in ${profile.city}.\\n`;\n    }\n\n    if (profile.job) {\n      facts += `User works as ${profile.job}.\\n`;\n    }\n\n    if (profile.learning) {\n      facts += `User is learning ${profile.learning}.\\n`;\n    }    // Use Tavily for internet searches\n    let searchContext = \"\";\n\n    const needsSearch =\n      /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(message);\n\n    if (needsSearch) {\n      try {\n        const result = await search(message);\n\n        console.log(\"===== TAVILY SEARCH =====\");\n        console.log(result);\n        console.log(\"=========================\");\n\n        searchContext = `\nLIVE WEB SEARCH RESULTS\n\nSummary:\n${result.answer || \"No summary available.\"}\n\nTop Results:\n\n${(result.results || [])\n  .slice(0, 2)\n  .map(\n    (item, index) => `${index + 1}. ${item.title}\nSource: ${item.url}`\n  )\n  .join(\"\\n\\n\")}`;\n\n      } catch (e) {\n        console.error(\"Tavily search failed:\", e.response?.data || e.message);\n      }\n    }\n\n    const messages = [\n      {\n        role: \"system\",\n        content:\n          \"You are SamuAI Chatbot, a friendly and helpful AI assistant.\\n\\nRemember these facts about the user:\\n\" +\n         facts.slice(0, 300) +\n         searchContext.slice(0, 800)\n      },\n\n      ...history.filter(msg => msg.role !== \"system\").slice(-1)\n\n    ];    const response = await axios.post(\n      \"https://openrouter.ai/api/v1/chat/completions\",\n     {\n      model: \"openrouter/free\",\n      messages: messages,\n      max_tokens: 200\n     },\n\n      {\n        headers: {\n          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,\n          \"Content-Type\": \"application/json\",\n          \"HTTP-Referer\": \"http://localhost:3000\",\n          \"X-Title\": \"SamuAI Chatbot\"\n        }\n      }\n    );\n\n    const reply = response.data.choices[0].message.content;\n\n    history.push({\n      role: \"assistant\",\n      content: reply\n    });\n\n    if (history.length > 51) {\n      history = [\n        history[0],\n        ...history.slice(-50)\n      ];\n    }\n\n    await saveMemory();\n\n    res.json({\n      reply\n    });\n\n  } catch (err) {\n    console.error(err.response?.data || err.message);\n\n    res.status(500).json({\n      reply: \"Sorry, I couldn't contact the AI.\"\n    });\n  }\n});"
+        "body": "app.post(\"/chat\", async (req, res) => {\n  console.log(\n    \">>>>>>>> REQUEST FROM BROWSER <<<<<<<<\"\n  );\n  console.log(req.headers[\"user-agent\"]);\n  console.log(req.body);\n\n  try {\n    const message = (req.body.message || \"\").trim();\n\n    if (!message) {\n      return res.status(400).json({\n        reply: \"Please enter a message.\"\n      });\n    }\n\n    /*\n     * Stage 1 memory\n     */\n    await remember(message);\n    await loadProfile();\n\n    /*\n     * Project Brain\n     *\n     * Only explicit code/project-analysis questions\n     * should activate Project Brain.\n     */\n    const projectQuestion =\n      /\\b(function|caller|call\\s+chain|callchain|dependency|dependencies|source\\s+code|implementation|stack\\s+trace|execution\\s+path|pipeline|route|endpoint|module|import|export|variable|class|method|syntax|bug|error|debug|index|indexing|buildindex|project\\s+brain)\\b/i.test(\n        message\n      ) ||\n      /\\b(who calls|what calls|where is .* defined|where is .* used|what depends on|show me the call chain|trace .* function|trace .* call|which file|which files|find .* function|find .* code|how does .* work in the project)\\b/i.test(\n        message\n      ) ||\n      /\\b(analyze|analyse|inspect|explain|trace|find|show|check|debug)\\b.*\\b(project|code|function|module|dependency|pipeline|route)\\b/i.test(\n        message\n      );\n\n    if (projectQuestion) {\n      console.log(\"MESSAGE:\", message);\n\n      const result = answerProjectQuestion(message);\n\n      console.log(\"FOUND =\", result.found);\n\n      if (result.found) {\n        console.log(\n          \"ENTERED PROJECT BRAIN\"\n        );\n\n        return res.json({\n          reply:\n            \"🔥 PROJECT BRAIN ACTIVE 🔥\\n\\n\" +\n            result.reply\n        });\n      }\n    }\n\n    /*\n     * Store user's message.\n     */\n    history.push({\n      role: \"user\",\n      content: message\n    });\n\n    /*\n     * Stage 2 conversation context.\n     */\n    const recentHistory = history.slice(\n      -MAX_CONTEXT_MESSAGES\n    );\n\n    /*\n     * Stage 1 profile memory.\n     */\n    const facts = buildProfileFacts();\n\n    /*\n     * Stage 3 uploaded-file context.\n     */\n    const fileContext =\n      buildFileContext(message);\n\n    /*\n     * Tavily web search.\n     */\n    let searchContext = \"\";\n\n    const needsSearch =\n      /latest|today|news|search|look up|who is|what is|weather|price|score/i.test(\n        message\n      );\n\n    if (needsSearch) {\n      try {\n        const result = await search(message);\n\n        console.log(\n          \"===== TAVILY SEARCH =====\"\n        );\n        console.log(result);\n        console.log(\n          \"=========================\"\n        );\n\n        searchContext = `\nLIVE WEB SEARCH RESULTS\n\nSummary:\n${result.answer || \"No summary available.\"}\n\nTop Results:\n${(result.results || [])\n  .slice(0, 2)\n  .map(\n    (item, index) =>\n      `${index + 1}. ${item.title}\nSource: ${item.url}`\n  )\n  .join(\"\\n\\n\")}\n`;\n      } catch (e) {\n        console.error(\n          \"Tavily search failed:\",\n          e.response?.data || e.message\n        );\n      }\n    }\n\n    /*\n     * Build complete AI context.\n     */\n    const systemContent = [\n      \"You are Speakra, a friendly and helpful AI assistant.\",\n      \"\",\n      \"LONG-TERM USER MEMORY:\",\n      facts || \"No saved user facts.\",\n      \"\",\n      fileContext,\n      \"\",\n      searchContext\n    ].join(\"\\n\");\n\n    const messages = [\n      {\n        role: \"system\",\n        content: systemContent.slice(\n          0,\n          8000\n        )\n      },\n      ...recentHistory\n    ];\n\n    console.log(\n      `Sending ${recentHistory.length} conversation messages to AI`\n    );\n\n    if (fileContext) {\n      console.log(\n        \"Stage 3: uploaded file context included.\"\n      );\n    }\n\n    const response = await axios.post(\n      \"https://openrouter.ai/api/v1/chat/completions\",\n      {\n        model: \"openrouter/free\",\n        messages,\n        max_tokens: 300\n      },\n      {\n        headers: {\n          Authorization:\n            `Bearer ${process.env.OPENROUTER_API_KEY}`,\n          \"Content-Type\":\n            \"application/json\",\n          \"HTTP-Referer\":\n            \"https://speakra.onrender.com\",\n          \"X-Title\": \"Speakra\"\n        }\n      }\n    );\n\n    const reply =\n      response.data.choices[0].message.content;\n\n    /*\n     * Store assistant reply.\n     */\n    history.push({\n      role: \"assistant\",\n      content: reply\n    });\n\n    /*\n     * Keep only most recent 50 messages.\n     */\n    if (\n      history.length >\n      MAX_STORED_MESSAGES\n    ) {\n      history = history.slice(\n        -MAX_STORED_MESSAGES\n      );\n    }\n\n    await saveMemory();\n\n    res.json({\n      reply\n    });\n  } catch (err) {\n    console.error(\n      err.response?.data || err.message\n    );\n\n    res.status(500).json({\n      reply:\n        \"Sorry, I couldn't contact the AI.\"\n    });\n  }\n});"
       },
       {
         "name": "then callback",
-        "line": 226,
+        "line": 913,
         "file": "server.js",
         "type": "callback",
-        "calls": [],
-        "body": "]).then(() => {\n  app.listen(PORT, () => {\n    console.log(`SamuAI Chatbot is running on port ${PORT}`);\n  });\n});"
+        "calls": [
+          {
+            "name": "loadUploadedFiles",
+            "line": 914
+          }
+        ],
+        "body": "  .then(async () => {\n    await loadUploadedFiles();\n\n    app.listen(PORT, () => {\n      console.log(\n        `Speakra is running on port ${PORT}`\n      );\n    });\n  })"
       },
       {
         "name": "app.listen callback",
-        "line": 227,
+        "line": 916,
         "file": "server.js",
         "type": "callback",
         "calls": [],
-        "body": "  app.listen(PORT, () => {\n    console.log(`SamuAI Chatbot is running on port ${PORT}`);\n  });"
+        "body": "    app.listen(PORT, () => {\n      console.log(\n        `Speakra is running on port ${PORT}`\n      );\n    });"
       }
     ],
     "arrowFunctions": [],
@@ -2017,7 +2612,7 @@
       },
       {
         "module": "./brain/projectBrain",
-        "line": 2
+        "line": 3
       },
       {
         "module": "express",
@@ -2036,68 +2631,118 @@
         "line": 7
       },
       {
-        "module": "./memory",
+        "module": "multer",
         "line": 8
       },
       {
-        "module": "./services/search",
+        "module": "path",
         "line": 9
       },
       {
-        "module": "./index/searchIndex",
+        "module": "./memory",
+        "line": 10
+      },
+      {
+        "module": "./services/search",
         "line": 11
-      },
-      {
-        "module": "./index/projectQuery",
-        "line": 12
-      },
-      {
-        "module": "./whatsapp/whatsappRoutes",
-        "line": 16
       }
     ],
     "calls": [
       {
+        "caller": "extractFileInfo",
+        "callee": "detectLanguage",
+        "file": "server.js",
+        "line": 151
+      },
+      {
+        "caller": "loadUploadedFiles",
+        "callee": "saveUploadIndex",
+        "file": "server.js",
+        "line": 423
+      },
+      {
+        "caller": "buildFileContext",
+        "callee": "findRelevantFiles",
+        "file": "server.js",
+        "line": 510
+      },
+      {
         "caller": "POST /chat callback",
         "callee": "remember",
         "file": "server.js",
-        "line": 79
+        "line": 580
       },
       {
         "caller": "POST /chat callback",
         "callee": "loadProfile",
         "file": "server.js",
-        "line": 82
+        "line": 581
       },
       {
         "caller": "POST /chat callback",
         "callee": "answerProjectQuestion",
         "file": "server.js",
-        "line": 92
+        "line": 603
+      },
+      {
+        "caller": "POST /chat callback",
+        "callee": "buildProfileFacts",
+        "file": "server.js",
+        "line": 638
+      },
+      {
+        "caller": "POST /chat callback",
+        "callee": "buildFileContext",
+        "file": "server.js",
+        "line": 644
       },
       {
         "caller": "POST /chat callback",
         "callee": "search",
         "file": "server.js",
-        "line": 138
+        "line": 658
       },
       {
         "caller": "POST /chat callback",
         "callee": "saveMemory",
         "file": "server.js",
-        "line": 208
+        "line": 770
+      },
+      {
+        "caller": "POST /chat callback",
+        "callee": "extractFileInfo",
+        "file": "server.js",
+        "line": 837
+      },
+      {
+        "caller": "POST /chat callback",
+        "callee": "saveUploadIndex",
+        "file": "server.js",
+        "line": 879
       },
       {
         "caller": "POST /chat callback",
         "callee": "loadMemory",
         "file": "server.js",
-        "line": 224
+        "line": 908
       },
       {
         "caller": "POST /chat callback",
         "callee": "loadProfile",
         "file": "server.js",
-        "line": 225
+        "line": 909
+      },
+      {
+        "caller": "POST /chat callback",
+        "callee": "loadUploadIndex",
+        "file": "server.js",
+        "line": 910
+      },
+      {
+        "caller": "then callback",
+        "callee": "loadUploadedFiles",
+        "file": "server.js",
+        "line": 914
       }
     ]
   },
@@ -2123,7 +2768,7 @@
             "line": 11
           }
         ],
-        "body": "async function chat(messages) {\n  try {\n    if (!openRouterAvailable()) {\n      const err = new Error(\"OpenRouter is temporarily blocked.\");\n      err.response = { status: 429 };\n      throw err;\n    }\n\n    console.log(\"Sending request to OpenRouter...\");\n\n    const response = await axios.post(\n      \"https://openrouter.ai/api/v1/chat/completions\",\n{\n  model: \"openai/gpt-3.5-turbo\",\n  messages: messages,\nmax_tokens: 128\n},\n      {\n        timeout: 30000,\n        headers: {\n          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,\n          \"Content-Type\": \"application/json\",\n          \"HTTP-Referer\": process.env.SITE_URL || \"http://localhost:3000\",\n          \"X-Title\": \"SamuAI Chatbot\"\n        }\n      }\n    );\n\n    console.log(\"OpenRouter replied.\");\n    return response.data.choices[0].message.content;\n\n  } catch (err) {\n    console.log(\"========== OPENROUTER ERROR ==========\");\n\n    if (err.response?.status === 429) {\n      openRouterBlockedUntil = Date.now() + 30 * 60 * 1000;\n      console.log(\"OpenRouter disabled for 30 minutes.\");\n    }\n\n   if (\n  err.code === \"ECONNRESET\" ||\n  err.code === \"ETIMEDOUT\" ||\n  err.code === \"ENOTFOUND\"\n) {\n  err.response = { status: 429 };\n}\n\n   if (err.response) {\n      console.log(\"Status:\", err.response.status);\n      console.log(err.response.data);\n    } else {\n      console.log(err.message);\n    }\n\n    throw err;\n  }\n}"
+        "body": "async function chat(messages) {\n  try {\n    if (!openRouterAvailable()) {\n      const err = new Error(\"OpenRouter is temporarily blocked.\");\n      err.response = { status: 429 };\n      throw err;\n    }\n\n    console.log(\"Sending request to OpenRouter...\");\n\n    const response = await axios.post(\n      \"https://openrouter.ai/api/v1/chat/completions\",\n{\n  model: \"openai/gpt-3.5-turbo\",\n  messages: messages,\nmax_tokens: 128\n},\n      {\n        timeout: 30000,\n        headers: {\n          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,\n          \"Content-Type\": \"application/json\",\n          \"HTTP-Referer\": process.env.SITE_URL || \"http://localhost:3000\",\n          \"X-Title\": \"Speakra\"\n        }\n      }\n    );\n\n    console.log(\"OpenRouter replied.\");\n    return response.data.choices[0].message.content;\n\n  } catch (err) {\n    console.log(\"========== OPENROUTER ERROR ==========\");\n\n    if (err.response?.status === 429) {\n      openRouterBlockedUntil = Date.now() + 30 * 60 * 1000;\n      console.log(\"OpenRouter disabled for 30 minutes.\");\n    }\n\n   if (\n  err.code === \"ECONNRESET\" ||\n  err.code === \"ETIMEDOUT\" ||\n  err.code === \"ENOTFOUND\"\n) {\n  err.response = { status: 429 };\n}\n\n   if (err.response) {\n      console.log(\"Status:\", err.response.status);\n      console.log(err.response.data);\n    } else {\n      console.log(err.message);\n    }\n\n    throw err;\n  }\n}"
       }
     ],
     "arrowFunctions": [],
