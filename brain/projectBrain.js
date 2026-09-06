@@ -31,6 +31,7 @@ const { explainExecution } = require("./executionFlow");
 const { traceFunction } = require("./callChain");
 const { explainArchitecture } = require("./projectArchitecture");
 const { extractKeyword } = require("../index/projectQuery");
+const { detectProjectIntent } = require("./projectIntent");
 const { dependencyTree } = require("./dependencyTree");
 const { analyzeImpact } = require("./impactAnalyzer");
 const { listFunctions } = require("./functionExplorer");
@@ -58,6 +59,133 @@ function answerProjectQuestion(message) {
 const keyword = extractKeyword(message);
 console.log("MESSAGE:", message);
 console.log("KEYWORD:", keyword);
+const intent = detectProjectIntent(message);
+console.log("INTENT:", intent);
+
+/*
+ * Project Brain 2.0
+ * The intent detector handles the clearest project questions first.
+ * Existing Project Brain analyzers remain available below.
+ */
+if (intent === "CALLERS") {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const callers = projectSearch.findCallers(actualFunctionName);
+
+  if (callers.length > 0) {
+    return {
+      found: true,
+      reply:
+        `🔍 ${actualFunctionName}()\n` +
+        `Called from:\n` +
+        callers
+          .map(
+            c =>
+              `• ${c.caller}()\n  File: ${c.file}\n  Line: ${c.line}`
+          )
+          .join("\n\n") +
+        `\n\nTotal callers: ${callers.length}`
+    };
+  }
+
+  return {
+    found: true,
+    reply:
+      `🔍 ${actualFunctionName}()\n` +
+      `No project callers detected.`
+  };
+}
+
+if (intent === "CALLEES") {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const functionInfo = projectSearch.findFunction(actualFunctionName);
+
+  if (functionInfo.length === 0) {
+    return {
+      found: false,
+      reply:
+        `❌ I couldn't find ${actualFunctionName}() in the project.`
+    };
+  }
+
+  const callees = findCallees(actualFunctionName);
+
+  if (callees.length > 0) {
+    return {
+      found: true,
+      reply:
+        `🔍 ${actualFunctionName}()\n` +
+        `Calls:\n` +
+        callees
+          .map(
+            c =>
+              `• ${c.callee}()\n  File: ${c.file}\n  Line: ${c.line}`
+          )
+          .join("\n\n") +
+        `\n\nTotal calls: ${callees.length}`
+    };
+  }
+
+  return {
+    found: true,
+    reply:
+      `🔍 ${actualFunctionName}()\n` +
+      `No other project functions detected.`
+  };
+}
+
+if (intent === "DEFINITION") {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const result = locateFunction(actualFunctionName);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "FILE_EXPLANATION" && keyword.endsWith(".js")) {
+  const result = explainFile(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "FILE_USAGE" && keyword.endsWith(".js")) {
+  const usedBy = projectSearch.findUsedBy(keyword);
+
+  return {
+    found: true,
+    reply:
+      `📄 ${keyword}\n` +
+      (usedBy.length > 0
+        ? `Used by:\n${usedBy.map(f => "• " + f.file).join("\n")}\n\nTotal files: ${usedBy.length}`
+        : "No project files detected using this file.")
+  };
+}
+
+if (intent === "FUNCTION_LIST" && keyword.endsWith(".js")) {
+  const result = listFunctions(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "ARCHITECTURE") {
+  return explainArchitecture();
+}
+
+if (intent === "PROJECT_GRAPH") {
+  const graph = buildProjectGraph();
+
+  return {
+    found: true,
+    reply:
+      "🕸 Project Graph\n\n" +
+      JSON.stringify(graph, null, 2)
+  };
+}
+
 
 // Execution path to a specific function
 if (/execution path|flow to|path to/i.test(message)) {
