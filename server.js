@@ -88,6 +88,10 @@ function buildProfileFacts() {
   if (profile.favoriteColor) {
     facts.push(`User's favorite color is ${profile.favoriteColor}.`);
   }
+  if (profile.favoriteFood) {
+    facts.push(`User's favorite food is ${profile.favoriteFood}.`);
+  }
+
 
   if (profile.city) {
     facts.push(`User lives in ${profile.city}.`);
