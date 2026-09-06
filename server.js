@@ -430,8 +430,28 @@ async function loadUploadedFiles() {
 }
 
 function findRelevantFiles(message) {
-  const words = message
-    .toLowerCase()
+  const filenames = Object.keys(uploadedFiles);
+
+  if (filenames.length === 0) {
+    return [];
+  }
+
+  const lowerMessage = message.toLowerCase();
+
+  /*
+   * If the user clearly refers to the uploaded file
+   * and only one file is uploaded, use that file directly.
+   */
+  const explicitFileReference =
+    /\b(this file|the file|uploaded file|the uploaded file|this uploaded file)\b/i.test(
+      message
+    );
+
+  if (explicitFileReference && filenames.length === 1) {
+    return [filenames[0]];
+  }
+
+  const words = lowerMessage
     .split(/\W+/)
     .filter(word => word.length > 1);
 
@@ -468,11 +488,7 @@ function findRelevantFiles(message) {
       }
     }
 
-    if (
-      message
-        .toLowerCase()
-        .includes(filename.toLowerCase())
-    ) {
+    if (lowerMessage.includes(filename.toLowerCase())) {
       score += 20;
     }
 
@@ -571,13 +587,13 @@ app.post("/chat", async (req, res) => {
      * should activate Project Brain.
      */
     const projectQuestion =
-      /\b(function|caller|call\s+chain|callchain|dependency|dependencies|source\s+code|implementation|stack\s+trace|execution\s+path|pipeline|route|endpoint|module|import|export|variable|class|method|syntax|bug|error|debug|file|files|index|indexing|buildindex|project\s+brain)\b/i.test(
+      /\b(function|caller|call\s+chain|callchain|dependency|dependencies|source\s+code|implementation|stack\s+trace|execution\s+path|pipeline|route|endpoint|module|import|export|variable|class|method|syntax|bug|error|debug|index|indexing|buildindex|project\s+brain)\b/i.test(
         message
       ) ||
       /\b(who calls|what calls|where is .* defined|where is .* used|what depends on|show me the call chain|trace .* function|trace .* call|which file|which files|find .* function|find .* code|how does .* work in the project)\b/i.test(
         message
       ) ||
-      /\b(analyze|analyse|inspect|explain|trace|find|show|check|debug)\b.*\b(project|code|file|files|function|module|dependency|pipeline|route)\b/i.test(
+      /\b(analyze|analyse|inspect|explain|trace|find|show|check|debug)\b.*\b(project|code|function|module|dependency|pipeline|route)\b/i.test(
         message
       );
 
