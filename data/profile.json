@@ -5,14 +5,11 @@
     "I prefer step-by-step explanations."
   ],
   "projects": [
-    "SamuAIChatbot.",
+    "Speakra",
     "weather app"
   ],
   "goals": [
-    "to become the best AI engineer in Africa.",
     "Become the best AI engineer in Africa"
   ],
-  "query": "Where is AnchorProvider used?",
-  "file": "app.tsx",
   "favoriteColor": "blue"
 }
