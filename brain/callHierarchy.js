@@ -1,7 +1,6 @@
 const projectSearch = require("../index/searchIndex");
 
 function buildTree(index, fnName, depth = 0, visited = new Set()) {
-
   const indent = "│   ".repeat(depth);
 
   if (visited.has(fnName)) {
@@ -13,7 +12,6 @@ function buildTree(index, fnName, depth = 0, visited = new Set()) {
   let output = "";
 
   for (const file of index) {
-
     const functions = [
       ...(file.functions || []),
       ...(file.arrowFunctions || [])
@@ -28,32 +26,28 @@ function buildTree(index, fnName, depth = 0, visited = new Set()) {
     }
 
     for (const call of fn.calls) {
+      const calledFunction = call.name;
 
-      output += indent + "├── " + call + "()\n";
+      output += indent + "├── " + calledFunction + "()\n";
 
       output += buildTree(
         index,
-        call,
+        calledFunction,
         depth + 1,
         new Set(visited)
       );
-
     }
 
     break;
-
   }
 
   return output;
-
 }
 
 function buildCallHierarchy(functionName) {
-
   const index = projectSearch.loadIndex();
 
   for (const file of index) {
-
     const functions = [
       ...(file.functions || []),
       ...(file.arrowFunctions || [])
@@ -66,18 +60,15 @@ function buildCallHierarchy(functionName) {
     return {
       found: true,
       reply:
-`🌳 Call Hierarchy
-
-${functionName}()
-${buildTree(index, functionName)}`
+        `🌳 Call Hierarchy\n\n` +
+        `${functionName}()\n` +
+        buildTree(index, functionName)
     };
-
   }
 
   return {
     found: false
   };
-
 }
 
 module.exports = {

@@ -83,7 +83,7 @@ function detectProjectIntent(message) {
     return "REVERSE_CALL_GRAPH";
   }
 
-  if (/\b(list all files|list project files|show project files|list files)\b/i.test(text)) {
+  if (/\b(list all files|list all project files|list project files|show project files|show all project files|list files)\b/i.test(text)) {
     return "LIST_FILES";
   }
 

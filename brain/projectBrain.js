@@ -187,6 +187,122 @@ if (intent === "PROJECT_GRAPH") {
 }
 
 
+/* Project Brain 2.0 - remaining intents */
+
+if (intent === "IMPACT") {
+  if (keyword.endsWith(".js")) {
+    const result = analyzeImpact(keyword);
+    if (result.found) {
+      return result;
+    }
+  }
+
+  const result = analyzeFunctionImpact(keyword);
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "DEPENDENCIES" && keyword.endsWith(".js")) {
+  const result = dependencyTree(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "FUNCTION_ANALYSIS") {
+  const result = reasonAboutFunction(keyword);
+
+  if (result.found) {
+    return result;
+  }
+
+  const analysis = analyzeFunction(keyword);
+
+  if (analysis.found) {
+    return analysis;
+  }
+}
+
+if (intent === "EXECUTION") {
+  const actualFunctionName = resolveFunctionName(keyword);
+  const result = explainExecution(message);
+
+  if (result.found) {
+    return result;
+  }
+
+  const functionResult = explainExecution(actualFunctionName);
+
+  if (functionResult.found) {
+    return functionResult;
+  }
+}
+
+if (intent === "FEATURE") {
+  const result = explainFeature(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "CALL_HIERARCHY") {
+  const result = buildCallHierarchy(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "EXECUTION_GRAPH") {
+  const result = buildExecutionGraph(resolveFunctionName(keyword));
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "EXECUTION_PIPELINE") {
+  const result = buildAutoExecutionPipeline(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "EXECUTION_TREE") {
+  const lines = buildExecutionTree(keyword);
+
+  return {
+    found: true,
+    reply:
+      "🌳 Full Execution Tree\n\n" +
+      lines.join("\n")
+  };
+}
+
+if (intent === "REVERSE_CALL_GRAPH") {
+  const result = reverseCallGraph(keyword);
+
+  if (result.found) {
+    return result;
+  }
+}
+
+if (intent === "LIST_FILES") {
+  const files = projectSearch.listFiles();
+
+  return {
+    found: true,
+    reply:
+      `Project files:\n` +
+      files.map(f => "• " + f).join("\n") +
+      `\n\nTotal files: ${files.length}`
+  };
+}
+
 // Execution path to a specific function
 if (/execution path|flow to|path to/i.test(message)) {
   const actualFunctionName = resolveFunctionName(keyword);
