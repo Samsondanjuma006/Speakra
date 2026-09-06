@@ -26,7 +26,12 @@ function buildTree(index, fnName, depth = 0, visited = new Set()) {
     }
 
     for (const call of fn.calls) {
-      const calledFunction = call.name;
+      const calledFunction =
+        typeof call === "string"
+          ? call
+          : call && call.name;
+
+      if (!calledFunction) continue;
 
       output += indent + "├── " + calledFunction + "()\n";
 
