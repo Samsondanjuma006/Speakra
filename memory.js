@@ -23,6 +23,7 @@ const ALLOWED_FIELDS = new Set([
   "city",
   "learning",
   "favoriteColor",
+  "favoriteFood",
   "favoriteLanguage",
   "goals",
   "projects",
@@ -127,6 +128,13 @@ async function remember(message) {
   /*
    * City / location
    */
+  if (text.startsWith("my favorite food is ")) {
+    const value = cleanText(
+      original.substring("my favorite food is ".length)
+    );
+    if (value) profile.favoriteFood = value;
+  }
+
   if (text.startsWith("i live in ")) {
     const value = cleanText(
       original.substring("i live in ".length)
