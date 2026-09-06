@@ -22,3 +22,5 @@ backups/
 
 # Temporary files
 tatus
+
+.env.save
