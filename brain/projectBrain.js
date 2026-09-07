@@ -304,14 +304,6 @@ if (intent === "LIST_FILES") {
 }
 
 // Execution path to a specific function
-if (/execution path|flow to|path to/i.test(message)) {
-  const actualFunctionName = resolveFunctionName(keyword);
-  const result = buildExecutionGraph(actualFunctionName);
-
-  if (result.found) {
-    return result;
-  }
-}
 
 // Recursive caller trace
 if (/trace\s+callers/i.test(message)) {
@@ -586,28 +578,6 @@ if (/trace|full execution|execution trace|recursive execution/i.test(message)) {
 
 }
 // Execution Graph
-if (/execution graph|show execution graph/i.test(message)) {
-
-  if (keyword === "graph") {
-    return {
-      found: true,
-      reply:
-        "🕸 Execution Graph\n\n" +
-        "An execution graph shows how a specific function is reached and which functions call it.\n\n" +
-        "For example, you can ask:\n" +
-        "• show execution graph for buildAutoExecutionPipeline\n" +
-        "• execution graph for answerProjectQuestion\n\n" +
-        "This lets SamuAI trace the execution path through the project."
-    };
-  }
-
-  const result = buildExecutionGraph(keyword);
-
-  if (result.found) {
-    return result;
-  }
-
-}
 
 // Execution Pipeline
 if (/execution pipeline|pipeline|execution flow/i.test(message)) {
@@ -651,16 +621,6 @@ if (/project graph|show project graph/i.test(message)) {
 }
 
 // Execution path to a specific function
-if (/execution path|flow to|path to/i.test(message)) {
-
-  const actualFunctionName = resolveFunctionName(keyword);
-  const result = buildExecutionGraph(actualFunctionName);
-
-  if (result.found) {
-    return result;
-  }
-
-}
 
 // Function / File Impact Analysis
 if (/what affects|function impact|what happens if.*change|what breaks.*change|impact of/i.test(message)) {
