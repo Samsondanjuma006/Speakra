@@ -7,7 +7,7 @@ const IGNORED_FILES = new Set([
   "test-search.js"
 ]);
 
-// SamuAI's project-analysis machinery.
+// Speakra's project-analysis machinery.
 // These files describe/analyze the project rather than representing
 // the application's normal runtime execution path.
 const ANALYSIS_FILES = new Set([
@@ -81,24 +81,6 @@ answerProjectQuestion()
 ↓ resolveFunctionName()
 ↓ analyze project question
 ↓ return Project Brain result`
-    };
-  }
-
-  if (functionName === "buildAutoExecutionPipeline") {
-    return {
-      found: true,
-      reply: `🚀 Automatic Execution Pipeline
-
-buildAutoExecutionPipeline()
-
-↓ called by answerProjectQuestion()
-↓ receives the resolved project keyword
-↓ checks for runtime-specific pipeline
-↓ otherwise traces projectGraph
-↓ filters ignored files
-↓ filters analysis-only files
-↓ builds execution pipeline reply
-↓ returns { found, reply }`
     };
   }
 
