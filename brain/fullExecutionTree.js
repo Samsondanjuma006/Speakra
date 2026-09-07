@@ -3,14 +3,21 @@ const projectSearch = require("./projectGraph");
 function buildExecutionTree(functionName, visited = new Set(), depth = 0) {
   if (!functionName) return [];
 
+  const indent = "  ".repeat(depth);
+
+  // Detect recursion only within the current branch.
   if (visited.has(functionName)) {
-    return [`${"  ".repeat(depth)}↺ ${functionName}()`];
+    return [`${indent}↺ ${functionName}()`];
   }
 
-  visited.add(functionName);
+  // Create a new path for this branch so sibling branches
+  // can independently contain the same function.
+  const currentPath = new Set(visited);
+  currentPath.add(functionName);
 
   const output = [];
-  output.push(`${"  ".repeat(depth)}📌 ${functionName}()`);
+
+  output.push(`${indent}📌 ${functionName}()`);
 
   const callees = projectSearch.findCallees(functionName);
 
@@ -20,12 +27,14 @@ function buildExecutionTree(functionName, visited = new Set(), depth = 0) {
   }
 
   for (const callee of callees) {
-    output.push(`${"  ".repeat(depth + 1)}↓ ${callee.callee}()`);
+    output.push(
+      `${"  ".repeat(depth + 1)}↓ ${callee.callee}()`
+    );
 
     output.push(
       ...buildExecutionTree(
         callee.callee,
-        visited,
+        currentPath,
         depth + 2
       )
     );
