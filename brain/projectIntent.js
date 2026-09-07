@@ -19,6 +19,16 @@ function detectProjectIntent(message) {
     return "TRACE";
   }
 
+  /*
+   * Call hierarchy
+   *
+   * Keep hierarchy wording separate from CALLERS,
+   * CALLEES, and TRACE.
+   */
+  if (/\b(call hierarchy|hierarchy|function hierarchy|call tree|function call tree|hierarchy of|hierarchy for|show hierarchy|show the hierarchy|show call hierarchy|show the call hierarchy)\b/i.test(text)) {
+    return "CALL_HIERARCHY";
+  }
+
   if (/\b(what breaks|what affects|impact|remove|delete|what happens if.*change|impact of)\b/i.test(text)) {
     return "IMPACT";
   }
@@ -51,16 +61,6 @@ function detectProjectIntent(message) {
 
   if (/\b(how does .* work|feature|system)\b/i.test(text)) {
     return "FEATURE";
-  }
-
-  /*
-   * Call hierarchy
-   *
-   * Keep hierarchy wording separate from CALLERS,
-   * CALLEES, and TRACE.
-   */
-  if (/\b(call hierarchy|hierarchy|function hierarchy|call tree|function call tree|hierarchy of|hierarchy for|show hierarchy|show the hierarchy|show call hierarchy|show the call hierarchy)\b/i.test(text)) {
-    return "CALL_HIERARCHY";
   }
 
   if (/\b(execution graph|show execution graph)\b/i.test(text)) {

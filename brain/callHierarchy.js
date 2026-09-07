@@ -1,5 +1,17 @@
 const projectSearch = require("../index/searchIndex");
 
+function getCalledFunction(call) {
+  if (typeof call === "string") {
+    return call;
+  }
+
+  if (call && typeof call === "object") {
+    return call.name || call.callee || "";
+  }
+
+  return "";
+}
+
 function buildTree(index, fnName, depth = 0, visited = new Set()) {
   const indent = "│   ".repeat(depth);
 
@@ -26,10 +38,7 @@ function buildTree(index, fnName, depth = 0, visited = new Set()) {
     }
 
     for (const call of fn.calls) {
-      const calledFunction =
-        typeof call === "string"
-          ? call
-          : call && call.name;
+      const calledFunction = getCalledFunction(call);
 
       if (!calledFunction) continue;
 
