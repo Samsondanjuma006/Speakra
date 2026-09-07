@@ -36,9 +36,7 @@ function detectProjectIntent(message) {
   }
 
   if (
-    /\b(explain|describe)\b.*(?:\bfile\b|\b[a-z0-9_$.-]+\.js\b)/i.test(
-      text
-    )
+    /\b(explain|describe)\b.*(?:\bfile\b|\b[a-z0-9_$.-]+\.js\b)/i.test(text)
   ) {
     return "FILE_EXPLANATION";
   }
@@ -55,7 +53,13 @@ function detectProjectIntent(message) {
     return "FEATURE";
   }
 
-  if (/\b(call hierarchy|hierarchy)\b/i.test(text)) {
+  /*
+   * Call hierarchy
+   *
+   * Keep hierarchy wording separate from CALLERS,
+   * CALLEES, and TRACE.
+   */
+  if (/\b(call hierarchy|hierarchy|function hierarchy|call tree|function call tree|hierarchy of|hierarchy for|show hierarchy|show the hierarchy|show call hierarchy|show the call hierarchy)\b/i.test(text)) {
     return "CALL_HIERARCHY";
   }
 
