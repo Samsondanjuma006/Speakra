@@ -585,18 +585,6 @@ if (/trace|full execution|execution trace|recursive execution/i.test(message)) {
   };
 
 }
-// Call Hierarchy
-if (/call hierarchy|hierarchy|what calls|trace callers|caller chain/i.test(message)) {
-
-console.log("CALL HIERARCHY BLOCK:", message, keyword);
-
-  const result = buildCallHierarchy(keyword);
-
-  if (result.found) {
-    return result;
-  }
-
-}
 // Execution Graph
 if (/execution graph|show execution graph/i.test(message)) {
 
