@@ -203,6 +203,34 @@ if (intent === "IMPACT") {
   }
 }
 
+if (intent === "DEPENDENCY_TRACE") {
+  const files = message.match(
+    /(?:[A-Za-z0-9_$.-]+\/)*[A-Za-z0-9_$.-]+\.js\b/gi
+  ) || [];
+
+  const uniqueFiles = [...new Set(files)];
+
+  if (uniqueFiles.length >= 2) {
+    const result = traceDependencies(
+      uniqueFiles[0],
+      uniqueFiles[1]
+    );
+
+    if (result.found) {
+      return result;
+    }
+
+    return result;
+  }
+
+  return {
+    found: false,
+    reply:
+      "🔎 Dependency Trace\\n\\n" +
+      "Please specify a source file and a target file."
+  };
+}
+
 if (intent === "DEPENDENCIES" && keyword.endsWith(".js")) {
   const result = dependencyTree(keyword);
 

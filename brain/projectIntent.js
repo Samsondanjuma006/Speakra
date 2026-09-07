@@ -33,6 +33,10 @@ function detectProjectIntent(message) {
     return "IMPACT";
   }
 
+  if (/\b(trace dependencies|trace dependency|dependency path|trace dependency path)\b/i.test(text)) {
+    return "DEPENDENCY_TRACE";
+  }
+
   if (/\b(dependency tree|dependencies|depends on|dependency)\b/i.test(text)) {
     return "DEPENDENCIES";
   }
