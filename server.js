@@ -587,7 +587,7 @@ app.post("/chat", async (req, res) => {
      * should activate Project Brain.
      */
     const projectQuestion =
-      /\b(function|caller|call\s+hierarchy|call\s+chain|callchain|dependency|dependencies|source\s+code|implementation|stack\s+trace|execution\s+path|execution\s+graph|execution\s+tree|execution\s+pipeline|pipeline|route|endpoint|module|import|export|variable|class|method|syntax|bug|error|debug|index|indexing|buildindex|project\s+brain)\b/i.test(
+      /\b(function|caller|call\s+hierarchy|call\s+chain|callchain|reverse\s+call\s+graph|dependency|dependencies|source\s+code|implementation|stack\s+trace|execution\s+path|execution\s+graph|execution\s+tree|execution\s+pipeline|pipeline|route|endpoint|module|import|export|variable|class|method|syntax|bug|error|debug|index|indexing|buildindex|project\s+brain)\b/i.test(
         message
       ) ||
       /\b(who calls|what calls|where is .* defined|where is .* used|what depends on|show me the call chain|trace .* function|trace .* call|which file|which files|find .* function|find .* code|how does .* work in the project)\b/i.test(
